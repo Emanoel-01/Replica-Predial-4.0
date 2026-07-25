@@ -9,7 +9,7 @@ import { ToastService } from '../../services/toast.service';
   imports: [FormsModule],
 })
 export class LoginComponent {
-  loginSuccess = output<{ email: string; password: string }>();
+  loginSuccess = output<{ email: string }>();
   loginAsGuest = output<void>();
 
   email = signal('');
@@ -18,7 +18,7 @@ export class LoginComponent {
 
   handleLogin(): void {
     if (this.email().trim()) {
-      this.loginSuccess.emit({ email: this.email().trim(), password: '' });
+      this.loginSuccess.emit({ email: this.email().trim() });
     } else {
       this.toastService.show('Por favor, informe seu nome ou e-mail para identificação.', 'error');
     }

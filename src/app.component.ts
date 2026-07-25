@@ -171,7 +171,7 @@ export class AppComponent implements OnInit {
     this.notificationService.gerarLembretesLocais(this.todasVistorias(), profile);
   }
 
-  onLoginSuccess(cred: { email: string; password: string }): void {
+  onLoginSuccess(cred: { email: string }): void {
     // TODO(backend): substituir por POST /api/auth/login retornando JWT.
     // O JWT deve ser armazenado em cookie HttpOnly + Secure + SameSite=Strict,
     // nunca em localStorage. Toda ação sensível (gerar laudo, chamar IA)

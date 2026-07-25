@@ -1,5 +1,11 @@
-import { Injectable, signal } from '@angular/core';
-import { GoogleGenAI, GenerateContentResponse, Part, Type } from '@google/genai';
+// TODO(backend): este serviço deve chamar exclusivamente endpoints do nosso
+// backend. A chave da API do Gemini deve existir SOMENTE no servidor.
+// O endpoint server-side deve autenticar o usuário via JWT e aplicar rate
+// limit por licença antes de repassar a chamada ao Gemini.
+
+import { Injectable, signal, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../environments/environment';
 
 export interface UserProfile {
@@ -42,59 +48,40 @@ export function generateStandardFooter(profile: UserProfile | null): string {
   providedIn: 'root',
 })
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private http = inject(HttpClient);
   public loading = signal(false);
 
-  constructor() {
-    // IMPORTANT: In a real application, the API key should be handled securely
-    // and not hardcoded. Using process.env is the required way for this environment.
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      console.error('API_KEY environment variable not set.');
-      throw new Error('API_KEY environment variable not set.');
-    }
-    this.ai = new GoogleGenAI({ apiKey });
-  }
+  private readonly errorMessage =
+    'Integração de IA temporariamente indisponível. Esta função depende do ' +
+    'servidor central, ainda não conectado nesta versão. Seus dados de campo ' +
+    'já digitados não foram perdidos — você pode preencher o diagnóstico ' +
+    'manualmente e continuar o laudo normalmente.';
 
   async generateText(prompt: string): Promise<string> {
     this.loading.set(true);
     try {
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-      });
-      return response.text;
+      const res = await firstValueFrom(
+        this.http.post<{ text: string }>('/api/ia/texto', { prompt })
+      );
+      return res.text;
     } catch (error) {
-      console.error('Error generating content:', error);
-      throw error;
+      console.error('Erro ao chamar serviço de IA:', error);
+      throw new Error(this.errorMessage);
     } finally {
       this.loading.set(false);
     }
   }
 
-  async generateTextWithImages(prompt: string, images: { base64: string, mimeType: string }[]): Promise<string> {
+  async generateTextWithImages(prompt: string, images: { base64: string; mimeType: string }[]): Promise<string> {
     this.loading.set(true);
     try {
-      const imageParts: Part[] = images.map(image => ({
-        inlineData: {
-          data: image.base64,
-          mimeType: image.mimeType,
-        },
-      }));
-
-      const textPart: Part = {
-        text: prompt
-      };
-      
-      const response: GenerateContentResponse = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: { parts: [textPart, ...imageParts] },
-      });
-
-      return response.text;
+      const res = await firstValueFrom(
+        this.http.post<{ text: string }>('/api/ia/texto-com-imagens', { prompt, images })
+      );
+      return res.text;
     } catch (error) {
-      console.error('Error generating content with image:', error);
-      throw error;
+      console.error('Erro ao chamar serviço de IA:', error);
+      throw new Error(this.errorMessage);
     } finally {
       this.loading.set(false);
     }
@@ -103,20 +90,12 @@ export class GeminiService {
   async generateStructured<T>(contents: any, responseSchema: object): Promise<T> {
     this.loading.set(true);
     try {
-      const res = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents,
-        config: { responseMimeType: 'application/json', responseSchema },
-      });
-      const txt = (res.text ?? '').trim();
-      try {
-        return JSON.parse(txt) as T;
-      } catch {
-        throw new Error('Resposta do modelo não é JSON válido: ' + txt.slice(0, 200));
-      }
+      return await firstValueFrom(
+        this.http.post<T>('/api/ia/diagnostico-estruturado', { contents, responseSchema })
+      );
     } catch (error) {
-      console.error('Error generating structured content:', error);
-      throw error;
+      console.error('Erro ao chamar serviço de IA:', error);
+      throw new Error(this.errorMessage);
     } finally {
       this.loading.set(false);
     }
