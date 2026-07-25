@@ -47,11 +47,6 @@ export class AppComponent implements OnInit {
   private dbService = inject(VistoriaDbService);
   todasVistorias = signal<Vistoria[]>([]);
 
-  private readonly EMAIL_ADM = 'emanoel.s.amorim@gmail.com';
-  private readonly SENHA_ADM = 'Amorim$123*';
-  private readonly PIN_ADM = '8803';
-
-  mostrarPinAdm = signal<boolean>(false);
   admAcessoLiberado = signal<boolean>(false);
 
   activeView = signal('visao-geral');
@@ -185,26 +180,9 @@ export class AppComponent implements OnInit {
     this.showLogin.set(false);
     this.toastService.show(`Bem-vindo, ${this.userName()}!`, 'success');
 
-    const emailMatch = cred.email.toLowerCase() === this.EMAIL_ADM.toLowerCase();
-    const senhaMatch = cred.password === this.SENHA_ADM;
-
-    if (emailMatch && senhaMatch) {
-      this.mostrarPinAdm.set(true); // login segue normal; só pede a confirmação extra por cima
-    }
-  }
-
-  confirmarPinAdm(pin: string): void {
-    if (pin.trim() === this.PIN_ADM) {
-      this.admAcessoLiberado.set(true);
-      this.mostrarPinAdm.set(false);
-      this.toastService.show('Acesso ADM liberado.', 'success');
-    } else {
-      this.toastService.show('PIN incorreto.', 'error');
-    }
-  }
-
-  cancelarPinAdm(): void {
-    this.mostrarPinAdm.set(false);
+    // TODO(backend): Ferramentas Admin devem ser liberadas por claim `role: admin`
+    // validada server-side via JWT, nunca por comparação de string no cliente.
+    // Ver bloco de implementação de autenticação (Fase Backend).
   }
 
   handleGuestAccess(): void {
@@ -213,7 +191,6 @@ export class AppComponent implements OnInit {
     this.showLogin.set(false);
     this.activeView.set('visao-geral');
     this.admAcessoLiberado.set(false);
-    this.mostrarPinAdm.set(false);
   }
 
   showLoginRequiredToast(): void {
@@ -235,7 +212,6 @@ export class AppComponent implements OnInit {
     this.userName.set('');
     this.activeView.set('visao-geral');
     this.admAcessoLiberado.set(false);
-    this.mostrarPinAdm.set(false);
     this.toastService.show('Você saiu com sucesso.', 'info');
   }
 
