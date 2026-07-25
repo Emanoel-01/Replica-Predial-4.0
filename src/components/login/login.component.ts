@@ -13,16 +13,14 @@ export class LoginComponent {
   loginAsGuest = output<void>();
 
   email = signal('');
-  password = signal('');
 
   private toastService = inject(ToastService);
 
   handleLogin(): void {
-    if (this.email().trim() && this.password().trim()) {
-      // Mock login successful
-      this.loginSuccess.emit({ email: this.email().trim(), password: this.password().trim() });
+    if (this.email().trim()) {
+      this.loginSuccess.emit({ email: this.email().trim(), password: '' });
     } else {
-      this.toastService.show('Por favor, insira o e-mail e a senha.', 'error');
+      this.toastService.show('Por favor, informe seu nome ou e-mail para identificação.', 'error');
     }
   }
 

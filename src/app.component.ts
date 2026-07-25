@@ -172,13 +172,22 @@ export class AppComponent implements OnInit {
   }
 
   onLoginSuccess(cred: { email: string; password: string }): void {
+    // TODO(backend): substituir por POST /api/auth/login retornando JWT.
+    // O JWT deve ser armazenado em cookie HttpOnly + Secure + SameSite=Strict,
+    // nunca em localStorage. Toda ação sensível (gerar laudo, chamar IA)
+    // deve validar o token no servidor antes de executar.
+
     const profile = this.userProfile();
     if (profile && profile.fullName) {
       this.userName.set(profile.fullName.split(' ')[0]);
+    } else if (cred && cred.email) {
+      const cleanInput = cred.email.trim();
+      const displayName = cleanInput.includes('@') ? cleanInput.split('@')[0] : cleanInput;
+      this.userName.set(displayName);
     }
     this.isLoggedIn.set(true);
     this.showLogin.set(false);
-    this.toastService.show(`Bem-vindo, ${this.userName()}!`, 'success');
+    this.toastService.show(`Identificado como: ${this.userName() || 'Usuário'}`, 'success');
 
     // TODO(backend): Ferramentas Admin devem ser liberadas por claim `role: admin`
     // validada server-side via JWT, nunca por comparação de string no cliente.
