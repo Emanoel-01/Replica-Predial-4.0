@@ -26,3 +26,11 @@ dist-ssr
 # Angular
 .angular/
 
+# Environment variables — nunca versionar
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+!.env.example
+
