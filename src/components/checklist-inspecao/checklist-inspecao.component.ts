@@ -2403,7 +2403,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
             .print-thead-td {
               height: 13mm;
               padding: 0;
-              border-bottom: 2px solid #B5642A;
               background: #fff;
             }
             .print-tfoot-td {
@@ -3977,7 +3976,15 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (linhas.length === 0) return '';
+    if (linhas.length === 0) {
+      return `
+        <div style="page-break-before:always;margin-top:8mm;page-break-inside:avoid;">
+          <h2 class="sec-h" id="sec-14"><span class="sn">14.0</span>Relação de Anexos</h2>
+          <p style="font-size:9pt;color:#6B7280;font-style:italic;margin-bottom:6mm;">
+            Nenhum anexo (documento ou imagem) foi vinculado à Anamnese ou aos Documentos Norteadores desta vistoria.
+          </p>
+        </div>`;
+    }
 
     const tipoLabel = (a: Anexo): string => {
       if (a.tipo.startsWith('image/')) return 'Imagem';
