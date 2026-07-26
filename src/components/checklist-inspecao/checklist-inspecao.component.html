@@ -73,6 +73,47 @@
                   <span>Itens: {{ vistoria.items.length }}</span>
                   <span>Atualizado: {{ vistoria.dateUpdated | date:'dd/MM HH:mm' }}</span>
                 </div>
+
+                <!-- Status de Sincronização e Botão Salvar na Nuvem -->
+                <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  @if (vistoriaEmSincronizacaoId() === vistoria.id) {
+                    <span class="inline-flex items-center gap-1.5 text-sky-700 bg-sky-50 px-2 py-1 rounded-md text-[10px] font-bold border border-sky-200">
+                      <span class="w-2.5 h-2.5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin"></span>
+                      <span>Sincronizando...</span>
+                    </span>
+                  } @else if (vistoria.sincronizadoEm) {
+                    @if (syncService.evidenciasComFalha() > 0 && vistoriaEmSincronizacaoId() === null && vistoriaAtiva()?.id === vistoria.id) {
+                      <span class="inline-flex items-center gap-1 text-amber-800 bg-amber-50 px-2 py-1 rounded-md text-[10px] font-bold border border-amber-200" title="Algumas fotos falharam no upload. Tente salvar na nuvem novamente.">
+                        <svg class="w-3 h-3 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span>Sincronizado ({{ syncService.evidenciasComFalha() }} foto(s) pendente(s))</span>
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2 py-1 rounded-md text-[10px] font-bold border border-emerald-200">
+                        <svg class="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        <span>Sincronizado {{ vistoria.sincronizadoEm | date:'HH:mm' }}</span>
+                      </span>
+                    }
+                  } @else if (syncService.status() === 'error' && vistoriaEmSincronizacaoId() === null && vistoriaAtiva()?.id === vistoria.id) {
+                    <span class="inline-flex items-center gap-1 text-red-800 bg-red-50 px-2 py-1 rounded-md text-[10px] font-bold border border-red-200">
+                      <svg class="w-3 h-3 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span>Falha no envio</span>
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center gap-1 text-slate-500 bg-slate-100 px-2 py-1 rounded-md text-[10px] font-medium border border-slate-200">
+                      <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                      <span>Somente local</span>
+                    </span>
+                  }
+
+                  <button type="button"
+                          (click)="sincronizarNuvem($event, vistoria)"
+                          [disabled]="syncService.status() === 'syncing'"
+                          class="inline-flex items-center gap-1 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] transition-all shadow-xs active:scale-95 cursor-pointer relative z-10"
+                          title="Salvar esta vistoria e fotos na nuvem (Supabase)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    <span>Salvar na Nuvem</span>
+                  </button>
+                </div>
               </div>
             </div>
           }
@@ -727,12 +768,42 @@
       <div class="bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg p-3 sm:p-5 border border-slate-200 space-y-3 sm:space-y-4">
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>
-                Inspeção Ativa de Campo
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-pulse"></span>
+                Inspeção Ativa
               </span>
               <span class="text-xs text-slate-400 font-mono">ID: {{ vistoriaAtiva()?.id }}</span>
+
+              <!-- Badge de Sincronização em Nuvem na Execução -->
+              @if (vistoriaEmSincronizacaoId() === vistoriaAtiva()?.id) {
+                <span class="bg-sky-100 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-sky-200 flex items-center gap-1">
+                  <span class="w-2 h-2 border-2 border-sky-600 border-t-transparent rounded-full animate-spin"></span>
+                  <span>Sincronizando...</span>
+                </span>
+              } @else if (vistoriaAtiva()?.sincronizadoEm) {
+                @if (syncService.evidenciasComFalha() > 0 && vistoriaEmSincronizacaoId() === null) {
+                  <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1" title="Fotos pendentes de envio. Clique em Salvar na Nuvem para tentar novamente.">
+                    <svg class="w-3 h-3 text-amber-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span>Sincronizado ({{ syncService.evidenciasComFalha() }} foto(s) pendente(s))</span>
+                  </span>
+                } @else {
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                    <svg class="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <span>Sincronizado às {{ vistoriaAtiva()?.sincronizadoEm | date:'HH:mm' }}</span>
+                  </span>
+                }
+              } @else if (syncService.status() === 'error' && vistoriaEmSincronizacaoId() === null) {
+                <span class="bg-red-100 text-red-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-red-200 flex items-center gap-1">
+                  <svg class="w-3 h-3 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>Falha no envio</span>
+                </span>
+              } @else {
+                <span class="bg-slate-100 text-slate-600 text-[10px] font-medium px-2.5 py-0.5 rounded-full border border-slate-200 flex items-center gap-1">
+                  <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>
+                  <span>Somente local</span>
+                </span>
+              }
             </div>
             <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">{{ vistoriaAtiva()?.buildingName }}</h2>
             <p class="text-slate-500 text-xs flex items-center gap-1 mt-0.5">
@@ -770,6 +841,20 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
               <span>Anexo IV (ART/RRT)</span>
             </button>
+
+            <!-- Botão Salvar na Nuvem na Prancheta de Execução -->
+            <button (click)="sincronizarNuvem($event, vistoriaAtiva())"
+                    [disabled]="syncService.status() === 'syncing'"
+                    class="flex-shrink-0 flex-1 lg:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm transition-all shadow-sm active:scale-95 cursor-pointer">
+              @if (syncService.status() === 'syncing' && vistoriaEmSincronizacaoId() === vistoriaAtiva()?.id) {
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Salvando na Nuvem...</span>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                <span>Salvar na Nuvem</span>
+              }
+            </button>
+
             <button (click)="solicitarExportarRelatorioPDF()" class="flex-shrink-0 flex-1 lg:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm transition-all shadow-sm active:scale-95">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
               <span>Gerar Relatório</span>

@@ -7,6 +7,7 @@ import { registroValido, generateStandardFooter, GeminiService } from '../../ser
 import { VistoriaDbService, Evidencia } from '../../services/vistoria-db.service';
 import { CameraService } from '../../services/camera.service';
 import { OrcamentoService, Composicao } from '../../services/orcamento.service';
+import { SyncService } from '../../services/sync.service';
 
 export interface FichaDano {
   id: string;
@@ -232,6 +233,51 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   public camera = inject(CameraService);
   private geminiService = inject(GeminiService);
   orcamentoService = inject(OrcamentoService);
+  public syncService = inject(SyncService);
+
+  vistoriaEmSincronizacaoId = signal<string | null>(null);
+
+  async sincronizarNuvem(event?: Event, vistoriaAlvo?: Vistoria): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+    }
+    const target = vistoriaAlvo || this.vistoriaAtiva();
+    if (!target) {
+      this.toastService.show('Nenhuma vistoria selecionada para salvar na nuvem.', 'error');
+      return;
+    }
+
+    this.vistoriaEmSincronizacaoId.set(target.id);
+    const sucesso = await this.syncService.salvarNaNuvem(target);
+    this.vistoriaEmSincronizacaoId.set(null);
+
+    // Recarregar vistorias salvas localmente
+    await this.carregarVistorias();
+
+    // Se a vistoria ativa é a que foi sincronizada, atualizar a referência
+    if (this.vistoriaAtiva()?.id === target.id) {
+      const atual = this.vistorias().find(v => v.id === target.id);
+      if (atual) {
+        this.vistoriaAtiva.set(atual);
+      }
+    }
+
+    if (sucesso) {
+      const falhasFotos = this.syncService.evidenciasComFalha();
+      if (falhasFotos > 0) {
+        this.toastService.show(
+          `Vistoria salva, mas ${falhasFotos} foto(s) não foram enviadas. Tente sincronizar novamente.`,
+          'info',
+          6000
+        );
+      } else {
+        this.toastService.show('Vistoria salva na nuvem com sucesso.', 'success');
+      }
+    } else {
+      const msg = this.syncService.errorMessage() || 'Não foi possível salvar na nuvem.';
+      this.toastService.show(msg, 'error', 6000);
+    }
+  }
 
   // Controle de carregamento das vistorias
   carregandoVistorias = signal(true);

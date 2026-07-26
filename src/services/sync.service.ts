@@ -12,10 +12,12 @@ export class SyncService {
 
   public status = signal<SyncStatus>('idle');
   public errorMessage = signal<string | null>(null);
+  public evidenciasComFalha = signal<number>(0);
 
   async salvarNaNuvem(vistoria: Vistoria): Promise<boolean> {
     this.status.set('syncing');
     this.errorMessage.set(null);
+    this.evidenciasComFalha.set(0);
 
     try {
       const session = await this.supabaseService.getSession();
@@ -24,7 +26,8 @@ export class SyncService {
       }
 
       // 1. Upload das evidências (fotos) associadas a esta vistoria, se houver.
-      await this.uploadEvidenciasDaVistoria(vistoria, session.user.id);
+      const { falhas } = await this.uploadEvidenciasDaVistoria(vistoria, session.user.id);
+      this.evidenciasComFalha.set(falhas);
 
       // 2. Upsert do payload completo da vistoria.
       const nowIso = new Date().toISOString();
@@ -66,7 +69,7 @@ export class SyncService {
     }
   }
 
-  private async uploadEvidenciasDaVistoria(vistoria: Vistoria, userId: string): Promise<void> {
+  private async uploadEvidenciasDaVistoria(vistoria: Vistoria, userId: string): Promise<{ falhas: number }> {
     const evidenciaIds = new Set<string>();
 
     if (Array.isArray(vistoria.items)) {
@@ -85,6 +88,7 @@ export class SyncService {
       }
     }
 
+    let falhas = 0;
     for (const idEvid of evidenciaIds) {
       try {
         const ev = await this.dbService.getEvidencia(idEvid);
@@ -99,7 +103,10 @@ export class SyncService {
         }
       } catch (err) {
         console.warn(`Falha ao fazer upload da evidência ${idEvid}:`, err);
+        falhas++;
       }
     }
+
+    return { falhas };
   }
 }
