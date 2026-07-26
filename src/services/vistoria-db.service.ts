@@ -38,7 +38,7 @@ interface Predial4DB extends DBSchema {
 }
 
 const DB_NAME = 'predial4-db';
-const DB_VERSION = 7;
+const DB_VERSION = 8;
 
 @Injectable({ providedIn: 'root' })
 export class VistoriaDbService {
@@ -77,6 +77,10 @@ export class VistoriaDbService {
         }
         if (oldVersion < 7) {
           db.createObjectStore('laudosEmitidos', { keyPath: 'id' });
+        }
+        if (oldVersion < 8) {
+          // v8: adiciona suporte a vistoria.cloudId (UUID do Supabase). Campo opcional,
+          // não requer alteração de índices ou keyPath — apenas bump de versão por disciplina.
         }
       },
     });

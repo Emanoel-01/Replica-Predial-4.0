@@ -136,6 +136,7 @@ export interface Vistoria {
   conclusaoConsideracoesTexto?: string;   // NOVO — 13.4
   anexoArtRrt?: Anexo;   // NOVO — metadados do ART/RRT anexado; blob no store 'anexos' (mesmo mecanismo do Bloco 3)
   sincronizadoEm?: string; // NOVO — ISO timestamp da última sincronização bem-sucedida. undefined = nunca sincronizado.
+  cloudId?: string; // UUID gerado pelo Supabase na primeira sincronização. Nunca gerado localmente, nunca editado manualmente.
 }
 
 export interface LaudoEmitido {

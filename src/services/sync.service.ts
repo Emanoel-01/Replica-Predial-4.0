@@ -33,18 +33,34 @@ export class SyncService {
       const nowIso = new Date().toISOString();
       const vistoriaAtualizada: Vistoria = { ...vistoria, sincronizadoEm: nowIso };
 
-      const { error } = await this.supabaseService.client
+      const payloadUpsert: any = {
+        profissional_id: session.user.id,
+        building_name: vistoria.buildingName,
+        address: vistoria.address,
+        payload: vistoriaAtualizada,
+        sincronizado_em: nowIso,
+      };
+
+      // Se já existe cloudId (sincronização anterior bem-sucedida), inclui o id
+      // real do Postgres no upsert — isso faz UPDATE da mesma linha em vez de
+      // criar uma linha nova a cada sincronização.
+      if (vistoria.cloudId) {
+        payloadUpsert.id = vistoria.cloudId;
+      }
+
+      const { data, error } = await this.supabaseService.client
         .from('vistorias')
-        .upsert({
-          id: vistoria.id,
-          profissional_id: session.user.id,
-          building_name: vistoria.buildingName,
-          address: vistoria.address,
-          payload: vistoriaAtualizada,
-          sincronizado_em: nowIso,
-        });
+        .upsert(payloadUpsert, { onConflict: 'id' })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Guarda o UUID retornado pelo Postgres (seja de insert novo ou update)
+      // no registro local, para as próximas sincronizações desta mesma vistoria.
+      if (data?.id) {
+        vistoriaAtualizada.cloudId = data.id;
+      }
 
       // 3. Marca localmente como sincronizada (persistido no próprio IndexedDB).
       const todasVistorias = await this.dbService.getAllVistorias();
