@@ -6,7 +6,6 @@ import { UserProfile } from '../../models/user-profile.model';
 import { registroValido, generateStandardFooter, GeminiService } from '../../services/gemini.service';
 import { VistoriaDbService, Evidencia } from '../../services/vistoria-db.service';
 import { CameraService } from '../../services/camera.service';
-import { Type } from '@google/genai';
 import { OrcamentoService, Composicao } from '../../services/orcamento.service';
 
 export interface FichaDano {
@@ -147,19 +146,27 @@ export interface LaudoEmitido {
   snapshotProfile: UserProfile;// cópia profunda e congelada do perfil do RT no momento da emissão
 }
 
+const SchemaType = {
+  OBJECT: 'object',
+  STRING: 'string',
+  ARRAY: 'array',
+  NUMBER: 'number',
+  BOOLEAN: 'boolean',
+} as const;
+
 const SCHEMA_ANALISE_EVIDENCIA = {
-  type: Type.OBJECT,
+  type: SchemaType.OBJECT,
   properties: {
-    texto: { type: Type.STRING },
-    severitySugerida: { type: Type.STRING, enum: ['Mínimo', 'Regular', 'Crítico'] },
-    correlacaoFotoPatologia: { type: Type.STRING, enum: ['CONFIRMADA', 'DIVERGENTE', 'INCONCLUSIVA'] },
-    observacaoDivergencia: { type: Type.STRING },
-    classificacaoTipo: { type: Type.STRING, enum: ['ANOMALIA', 'FALHA', 'INDETERMINADO'] },
-    classificacaoSubtipo: { type: Type.STRING, enum: ['endogena','exogena','natural','funcional','planejamento','execucao','operacional','gerencial'] },
-    manifestacao: { type: Type.STRING },
-    causaProvavel: { type: Type.STRING },
-    recomendacaoTecnica: { type: Type.STRING },
-    criticidadeSugerida: { type: Type.STRING, enum: ['P1', 'P2', 'P3'] },
+    texto: { type: SchemaType.STRING },
+    severitySugerida: { type: SchemaType.STRING, enum: ['Mínimo', 'Regular', 'Crítico'] },
+    correlacaoFotoPatologia: { type: SchemaType.STRING, enum: ['CONFIRMADA', 'DIVERGENTE', 'INCONCLUSIVA'] },
+    observacaoDivergencia: { type: SchemaType.STRING },
+    classificacaoTipo: { type: SchemaType.STRING, enum: ['ANOMALIA', 'FALHA', 'INDETERMINADO'] },
+    classificacaoSubtipo: { type: SchemaType.STRING, enum: ['endogena','exogena','natural','funcional','planejamento','execucao','operacional','gerencial'] },
+    manifestacao: { type: SchemaType.STRING },
+    causaProvavel: { type: SchemaType.STRING },
+    recomendacaoTecnica: { type: SchemaType.STRING },
+    criticidadeSugerida: { type: SchemaType.STRING, enum: ['P1', 'P2', 'P3'] },
   },
   required: ['texto', 'severitySugerida', 'correlacaoFotoPatologia'],
 };

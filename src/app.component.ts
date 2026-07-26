@@ -12,6 +12,7 @@ import { AdminPanelComponent } from './components/admin-panel/admin-panel.compon
 import { OrcamentoRoadmapComponent } from './components/orcamento-roadmap/orcamento-roadmap.component';
 import { NotificationService } from './services/notification.service';
 import { VistoriaDbService } from './services/vistoria-db.service';
+import { SupabaseService } from './services/supabase.service';
 import { Vistoria } from './components/checklist-inspecao/checklist-inspecao.component';
 
 @Component({
@@ -67,6 +68,7 @@ export class AppComponent implements OnInit {
   isLoggedIn = signal(false);
   private toastService = inject(ToastService);
   public notificationService = inject(NotificationService);
+  private supabaseService = inject(SupabaseService);
 
   navItems = [
     { id: 'visao-geral', label: 'Visão Geral', icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10' },
@@ -171,29 +173,6 @@ export class AppComponent implements OnInit {
     this.notificationService.gerarLembretesLocais(this.todasVistorias(), profile);
   }
 
-  onLoginSuccess(cred: { email: string }): void {
-    // TODO(backend): substituir por POST /api/auth/login retornando JWT.
-    // O JWT deve ser armazenado em cookie HttpOnly + Secure + SameSite=Strict,
-    // nunca em localStorage. Toda ação sensível (gerar laudo, chamar IA)
-    // deve validar o token no servidor antes de executar.
-
-    const profile = this.userProfile();
-    if (profile && profile.fullName) {
-      this.userName.set(profile.fullName.split(' ')[0]);
-    } else if (cred && cred.email) {
-      const cleanInput = cred.email.trim();
-      const displayName = cleanInput.includes('@') ? cleanInput.split('@')[0] : cleanInput;
-      this.userName.set(displayName);
-    }
-    this.isLoggedIn.set(true);
-    this.showLogin.set(false);
-    this.toastService.show(`Identificado como: ${this.userName() || 'Usuário'}`, 'success');
-
-    // TODO(backend): Ferramentas Admin devem ser liberadas por claim `role: admin`
-    // validada server-side via JWT, nunca por comparação de string no cliente.
-    // Ver bloco de implementação de autenticação (Fase Backend).
-  }
-
   handleGuestAccess(): void {
     this.userName.set('');
     this.isLoggedIn.set(false);
@@ -214,8 +193,9 @@ export class AppComponent implements OnInit {
     }
   }
 
-  handleLogout(): void {
+  async handleLogout(): Promise<void> {
     this.isProfileModalOpen.set(false);
+    await this.supabaseService.signOut();
     this.isLoggedIn.set(false);
     this.showLogin.set(true);
     this.userName.set('');
@@ -225,6 +205,32 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    // Verificar sessão existente no Supabase Auth
+    try {
+      const session = await this.supabaseService.getSession();
+      if (session && session.user) {
+        this.isLoggedIn.set(true);
+        this.showLogin.set(false);
+        const email = session.user.email || '';
+        const name = email.includes('@') ? email.split('@')[0] : email;
+        this.userName.set(name || 'Usuário');
+      }
+    } catch (e) {
+      console.error('Erro ao verificar sessão do Supabase:', e);
+    }
+
+    // Listener para mudanças no estado de autenticação (ex: callback do Magic Link)
+    this.supabaseService.onAuthStateChange((session) => {
+      if (session && session.user) {
+        this.isLoggedIn.set(true);
+        this.showLogin.set(false);
+        const email = session.user.email || '';
+        const name = email.includes('@') ? email.split('@')[0] : email;
+        this.userName.set(name || 'Usuário');
+        this.toastService.show(`Autenticado como: ${email}`, 'success');
+      }
+    });
+
     try {
       await this.dbService.migrarDoLocalStorageSeNecessario();
       const list = await this.dbService.getAllVistorias();
