@@ -2194,8 +2194,12 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     novaJanela.document.write('<html><body style="font-family:sans-serif;padding:20px">Gerando relatório, aguarde…</body></html>');
 
     // Registro imutável da emissão — snapshot congelado, nunca editado depois
+    let numeroDocumentoFormatado = '';
+    const anoAtual = new Date().getFullYear();
+    let numeroEmissao = 1;
     try {
-      const numeroEmissao = (await this.dbService.countLaudosEmitidos()) + 1;
+      numeroEmissao = (await this.dbService.countLaudosEmitidosNoAno(anoAtual)) + 1;
+      numeroDocumentoFormatado = `LTIP-nº${String(numeroEmissao).padStart(3, '0')}/${anoAtual}`;
       const novoLaudo: LaudoEmitido = {
         id: crypto.randomUUID(),
         numeroEmissao,
@@ -2212,6 +2216,12 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       console.error('Falha ao registrar emissão do laudo (o PDF ainda será gerado normalmente):', e);
       // Falha no registro NÃO deve impedir a geração do PDF em si.
     }
+
+    if (!numeroDocumentoFormatado) {
+      numeroDocumentoFormatado = `LTIP-nº${String(numeroEmissao).padStart(3, '0')}/${anoAtual}`;
+    }
+    const ltipNumero = numeroDocumentoFormatado;
+    const documentoRegistrado = !!(profile.professionalId?.trim() && ativa.artRrtNumero?.trim() && ativa.anexoArtRrt);
 
     // Pré-carregar evidências como data URL base64
     const evidenciasMap = new Map<string, { dataUrl: string; geo: any; timestamp: string; tipo: string }>();
@@ -2319,6 +2329,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     const conclusoes = this.gerarConclusoesHtml(ativa);
     const anamnese = this.gerarAnamneseHtml(ativa, anexoImagensMap);
     const secao7 = this.gerarSecao7Html(itens, evidenciasMap);
+    const secao8 = this.gerarSecao8DocumentosNorteadoresHtml(ativa);
     const secao9 = this.gerarSecao9Html(itens);
     const anexoI = this.gerarAnexoINorteadoresHtml(ativa);
     const relacaoAnexos = this.gerarRelacaoAnexosHtml(ativa);
@@ -2333,6 +2344,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       { href: 'sec-5',  num: '5.0',  label: 'Ressalvas e Princípios' },
       { href: 'sec-6',  num: '6.0',  label: 'Metodologia Aplicada' },
       { href: 'sec-7',  num: '7.0',  label: 'Caracterização do Objeto da Inspeção' },
+      { href: 'sec-8',  num: '8.0',  label: 'Levantamento e Análise dos Documentos Norteadores' },
       { href: 'sec-9',  num: '9.0',  label: 'Vistoria no Objeto da Inspeção' },
       { href: 'sec-10', num: '10.0', label: 'Diagnóstico do Objeto da Inspeção' },
       { href: 'sec-11', num: '11.0', label: 'Avaliação da Manutenção e Uso' },
@@ -2822,7 +2834,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
                 <td class="print-tfoot-td">
                   <div class="rf-wrap">
                     <span class="rf-doc">Laudo Técnico de Inspeção Predial — ${form.buildingName.length > 45 ? form.buildingName.slice(0, 42) + '…' : form.buildingName}</span>
-                    <span class="rf-prov">⚠ Documento Provisório</span>
+                    <span class="rf-prov">${documentoRegistrado ? numeroDocumentoFormatado : '⚠ Documento Provisório'}</span>
                     <span class="rf-page"></span>
                   </div>
                 </td>
@@ -2861,9 +2873,14 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
               <b>Responsável Técnico:</b> ${profile.fullName}${profile.professionalTitle ? ` — ${profile.professionalTitle}` : ''}${profile.professionalId ? ` — ${profile.professionalId}` : ''}<br>
               <b>Data da vistoria:</b> ${new Date(ativa.dateCreated).toLocaleDateString('pt-BR')}
             </div>
-            <div class="prov-banner">
-              ⚠ Documento provisório — Adquire validade técnica mediante assinatura do Responsável Técnico (ART/RRT).
-            </div>
+            ${documentoRegistrado
+              ? `<div class="prov-banner" style="background:#EAF3EC;border-color:#1E7A46;">
+                   <strong style="color:#1E7A46;">${numeroDocumentoFormatado}</strong> — ART/RRT nº ${ativa.artRrtNumero} anexado. Documento adquire plena validade técnica mediante assinatura do Responsável Técnico.
+                 </div>`
+              : `<div class="prov-banner">
+                   ⚠ Documento provisório — Adquire validade técnica mediante assinatura do Responsável Técnico (ART/RRT).
+                 </div>`
+            }
           </div>
 
           <!-- SUMÁRIO -->
@@ -2957,6 +2974,9 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           <!-- 7.0 Caracterização do Objeto da Inspeção -->
           ${secao4}
 
+          <!-- 8.0 Levantamento e Análise dos Documentos Norteadores -->
+          ${secao8}
+
           <!-- 9.0 Vistoria no Objeto da Inspeção -->
           <h2 class="sec-h" id="sec-9"><span class="sn">9.0</span>Vistoria no Objeto da Inspeção</h2>
 
@@ -3047,8 +3067,12 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
 
           <!-- RODAPÉ P4 -->
           <div class="doc-footer">
-            <span class="prov-tag">PROVISÓRIO</span>
-            Documento provisório. Adquire validade técnica mediante assinatura do RT (ART/RRT).
+            ${documentoRegistrado
+              ? `<span class="prov-tag" style="background:#EAF3EC;color:#1E7A46;">${numeroDocumentoFormatado}</span>
+                 ART/RRT nº ${ativa.artRrtNumero}. Documento adquire plena validade técnica mediante assinatura do RT.`
+              : `<span class="prov-tag">PROVISÓRIO</span>
+                 Documento provisório. Adquire validade técnica mediante assinatura do RT (ART/RRT).`
+            }
             Emitido por: ${profile.fullName} — ${profile.professionalId || ''} — ${profile.companyName || ''}
           </div>
           <div class="chancela-at">
@@ -3478,85 +3502,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     `;
   }
 
-  private gerarSecao8Html(itens: ChecklistItem[]): string {
-    const itensComOrcamento = itens.filter(
-      item => (item.status === 'NAO_CONFORME' || item.status === 'FAIL') && item.ocorrencias?.[0]?.composicoesAplicadas?.length
-    );
 
-    if (itensComOrcamento.length === 0) {
-      return `
-        <h2 class="anexo-h" id="anexo-6"><span class="an">Anexo VI</span>Orçamento de Referência</h2>
-        <p style="font-size:9pt;color:#6B7280;font-style:italic;margin-bottom:6mm;">
-          Nenhuma composição de custo vinculada a itens desta vistoria. O banco de composições está em construção — quando disponível, vincule composições a cada item Não Conforme para gerar esta seção.
-        </p>`;
-    }
-
-    const thS = 'background:#2C5AA0;color:#fff;padding:1.5mm 3mm;font-size:7.5pt;font-weight:700;text-align:left;border:1px solid #1a3f70;';
-    const tdS = 'padding:1.5mm 3mm;font-size:8pt;border:1px solid #D8D0C6;vertical-align:top;';
-    const td1S = 'padding:1.5mm 3mm;font-size:8pt;border:1px solid #D8D0C6;vertical-align:top;font-weight:600;color:#B5642A;';
-
-    let html = `<h2 class="anexo-h" id="anexo-6"><span class="an">Anexo VI</span>Orçamento de Referência</h2>`;
-
-    for (const item of itensComOrcamento) {
-      const idx = itens.findIndex(i => i.id === item.id);
-      const seqStr = String(idx + 1).padStart(2, '0');
-      const oc = item.ocorrencias?.[0];
-
-      const composicoesCalc = ((oc?.composicoesAplicadas) ?? [])
-        .map(id => this.orcamentoService.getComposicao(id))
-        .filter((c): c is Composicao => !!c)
-        .map(c => this.orcamentoService.calcularComposicao(c));
-
-      let totalItem = 0;
-      let tabelasHtml = '';
-      for (const calc of composicoesCalc) {
-        totalItem += calc.totalGeral;
-        const linhasInsumos = calc.insumos.map(ins => `
-          <tr>
-            <td style="${td1S}">${ins.tipo}</td>
-            <td style="${tdS}">${ins.codigo}</td>
-            <td style="${tdS}">${ins.descricao}</td>
-            <td style="${tdS}">${ins.unidade}</td>
-            <td style="${tdS}">${ins.coeficiente}</td>
-            <td style="${tdS}">R$ ${ins.precoUnitario.toFixed(2)}</td>
-            <td style="${tdS}">R$ ${(ins.coeficiente * ins.precoUnitario).toFixed(2)}</td>
-          </tr>`).join('');
-
-        const rotuloAplicado = calc.metodologia === 'TCU_BDI'
-          ? `BDI ${calc.bdiPercent ?? 0}%`
-          : `Fator K ${calc.fatorK ?? 1}`;
-
-        tabelasHtml += `
-          <table style="width:100%;border-collapse:collapse;margin:3mm 0;font-size:8pt;page-break-inside:avoid;">
-            <thead><tr>
-              <th style="${thS}">Tipo</th><th style="${thS}">Código</th><th style="${thS}">Descrição</th>
-              <th style="${thS}">Unid.</th><th style="${thS}">Coef.</th><th style="${thS}">Preço Unit.</th><th style="${thS}">Subtotal</th>
-            </tr></thead>
-            <tbody>${linhasInsumos}</tbody>
-          </table>
-          <p style="font-size:8pt;text-align:right;margin:1mm 0 3mm;">
-            Custo direto: R$ ${calc.custoDireto.toFixed(2)} · ${rotuloAplicado}: R$ ${calc.valorAplicado.toFixed(2)} · <strong>Total: R$ ${calc.totalGeral.toFixed(2)}</strong>
-            ${calc.status === 'PENDENTE_VALIDACAO' ? ' <span style="color:#B77D1A;">(composição pendente de validação)</span>' : ''}
-          </p>`;
-      }
-
-      html += `
-        <div class="s9-card no-break">
-          <div class="s9-header">
-            <span class="s9-id">${seqStr}</span>
-            <div class="s9-chips">
-              <span class="s9-chip">${item.systemTitle ?? ''}</span>
-              <span class="s9-chip">${item.typologyTitle ?? ''}</span>
-            </div>
-          </div>
-          <div class="s9-title">${item.title ?? ''}</div>
-          <div class="s9-body">${tabelasHtml}</div>
-          <div class="s9-quant"><strong>Total do item:</strong> R$ ${totalItem.toFixed(2)}</div>
-        </div>`;
-    }
-
-    return html;
-  }
 
   private gerarSecao9Html(itens: ChecklistItem[]): string {
     const todasFichas: { item: ChecklistItem; ficha: FichaDano }[] = [];
@@ -3721,6 +3667,78 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     html = html.replace(/\n{2,}/g, `</p><p style="${pStyle}">`);
 
     return `<p style="${pStyle}">${html}</p>`;
+  }
+
+  private gerarSecao8DocumentosNorteadoresHtml(ativa: Vistoria): string {
+    const docs = ativa.documentosNorteadores ?? [];
+
+    if (docs.length === 0) {
+      return `
+        <h2 class="sec-h" id="sec-8"><span class="sn">8.0</span>Levantamento e Análise dos Documentos Norteadores</h2>
+        <p style="font-size:9pt;color:#6B7280;font-style:italic;margin-bottom:6mm;">
+          Nenhum documento norteador foi registrado para análise nesta vistoria. Ver detalhamento no Anexo I.
+        </p>`;
+    }
+
+    const total = docs.length;
+    const naoAplica        = docs.filter(d => d.disponibilidade === 'NA').length;
+    const aAvaliar         = docs.filter(d => d.disponibilidade === 'A_AVALIAR').length;
+    const disponibilizados = docs.filter(d => d.disponibilidade === 'DD').length;
+    const naoDisponib      = docs.filter(d => d.disponibilidade === 'DND').length;
+    const conformes        = docs.filter(d => d.disponibilidade === 'DD' && d.conformidade === 'EC').length;
+    const naoConformes     = docs.filter(d => d.disponibilidade === 'DD' && d.conformidade === 'NC').length;
+    const aplicaveis       = total - naoAplica;
+
+    let veredito: string;
+    let vereditoCor = '#6B7280';
+    if (aplicaveis === 0) {
+      veredito = 'não se aplica (nenhum documento norteador aplicável à edificação)';
+    } else if (disponibilizados === aplicaveis && naoConformes === 0 && aAvaliar === 0) {
+      veredito = 'CONFORMIDADE';
+      vereditoCor = '#1E7A46';
+    } else if (disponibilizados === 0) {
+      veredito = 'NÃO CONFORMIDADE';
+      vereditoCor = '#B23A48';
+    } else {
+      veredito = 'NÃO CONFORMIDADE PARCIAL';
+      vereditoCor = '#B23A48';
+    }
+
+    const s = (n: number, sing: string, plur: string) => (n === 1 ? sing : plur);
+
+    const naoAplicaClausula = naoAplica > 0
+      ? `, ${s(naoAplica, 'do qual', 'dos quais')} ${naoAplica} não se ${s(naoAplica, 'aplica', 'aplicam')} à edificação` : '';
+    const naoDisponibClausula = naoDisponib > 0
+      ? ` e ${naoDisponib} não ${s(naoDisponib, 'disponibilizado', 'disponibilizados')}` : '';
+    const aAvaliarClausula = aAvaliar > 0
+      ? `, com ${aAvaliar} ainda ${s(aAvaliar, 'pendente', 'pendentes')} de avaliação` : '';
+    const conformidadeClausula = disponibilizados > 0
+      ? `Dentre os disponibilizados, ${conformes} ${s(conformes, 'encontra-se', 'encontram-se')} em conformidade e ${naoConformes} em não conformidade. ` : '';
+
+    const analise = `${s(total, 'Foi inventariado', 'Foram inventariados')} ${total} ${s(total, 'documento norteador', 'documentos norteadores')}${naoAplicaClausula}. ` +
+      `${s(aplicaveis, 'Do', 'Dos')} ${aplicaveis} ${s(aplicaveis, 'documento aplicável', 'documentos aplicáveis')}, ${disponibilizados} ${s(disponibilizados, 'foi disponibilizado', 'foram disponibilizados')} pelo responsável legal${naoDisponibClausula}${aAvaliarClausula}. ` +
+      conformidadeClausula +
+      `Diante do exposto, verifica-se que a edificação encontra-se em <strong style="color:${vereditoCor};">${veredito}</strong> ` +
+      `com as boas práticas de gestão documental do uso, operação e manutenção, nos termos das ABNT NBR 5674 e NBR 14037.`;
+
+    return `
+      <h2 class="sec-h" id="sec-8"><span class="sn">8.0</span>Levantamento e Análise dos Documentos Norteadores</h2>
+      <p style="font-size:9.5pt;line-height:1.6;color:#1A2A38;margin-bottom:4mm;">${analise}</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:6mm;">
+        <thead>
+          <tr>
+            <th style="background:#132A41;color:#fff;padding:2mm 3mm;font-size:8pt;text-align:left;">Indicador</th>
+            <th style="background:#132A41;color:#fff;padding:2mm 3mm;font-size:8pt;text-align:center;">Quantidade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding:1.5mm 3mm;font-size:8.5pt;border:1px solid #D8D0C6;">Total de documentos inventariados</td><td style="padding:1.5mm 3mm;font-size:8.5pt;border:1px solid #D8D0C6;text-align:center;">${total}</td></tr>
+          <tr><td style="padding:1.5mm 3mm;font-size:8.5pt;border:1px solid #D8D0C6;background:#F7F5F0;">Aplicáveis à edificação</td><td style="padding:1.5mm 3mm;font-size:8.5pt;border:1px solid #D8D0C6;background:#F7F5F0;text-align:center;">${aplicaveis}</td></tr>
+          <tr><td style="padding:1.5mm 3mm;font-size:8.5pt;border:1px solid #D8D0C6;">Disponibilizados pelo responsável legal</td><td style="padding:1.5mm 3mm;font-size:8.5pt;border:1px solid #D8D0C6;text-align:center;">${disponibilizados}</td></tr>
+          <tr><td style="padding:1.5mm 3mm;font-size:8.5pt;border:1px solid #D8D0C6;background:#F7F5F0;">Não disponibilizados</td><td style="padding:1.5mm 3mm;font-size:8.5pt;border:1px solid #D8D0C6;background:#F7F5F0;text-align:center;">${naoDisponib}</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:8pt;color:#6B7280;font-style:italic;">Ver relação completa, documento por documento, no Anexo I.</p>`;
   }
 
   private gerarAnexoINorteadoresHtml(ativa: Vistoria): string {

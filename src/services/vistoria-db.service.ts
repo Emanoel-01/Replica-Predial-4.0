@@ -101,6 +101,12 @@ export class VistoriaDbService {
     return db.count('laudosEmitidos');
   }
 
+  async countLaudosEmitidosNoAno(ano: number): Promise<number> {
+    const db = await this.dbPromise;
+    const todos = await db.getAll('laudosEmitidos');
+    return todos.filter(l => new Date(l.dataEmissao).getFullYear() === ano).length;
+  }
+
   async getAllVistorias(): Promise<Vistoria[]> {
     const db = await this.dbPromise;
     return db.getAll('vistorias');
