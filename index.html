@@ -5,7 +5,7 @@
   <title>Predial 4.0</title>
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#132A41">
+  <meta name="theme-color" content="#0c4a6e">
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,65 +36,6 @@
       extend: {
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
-        },
-        colors: {
-          // ============================================================
-          // Design System AmorimTech — paleta da INTERFACE (telas RGB).
-          // As escalas `slate`, `sky` e `stone` foram redefinidas para os
-          // tokens da marca. As classes existentes (bg-sky-600, text-slate-900,
-          // etc.) continuam funcionando — apenas passam a renderizar as
-          // cores corretas do design system.
-          //
-          // NÃO confundir com o PDF do laudo, que usa --p4-copper (#B5642A),
-          // a cor de impressão, definida separadamente em
-          // checklist-inspecao.component.ts. São cores distintas de propósito.
-          // ============================================================
-
-          // NEUTROS — navy e cinzas frios. Base de fundos, textos e superfícies.
-          slate: {
-            50:  '#F7F5F0',  // paper/ivory — fundo de página
-            100: '#EFEDE7',
-            200: '#D8D0C6',  // rule — bordas e divisores
-            300: '#C2BCB2',
-            400: '#8A949C',  // faint — texto secundário, placeholders
-            500: '#6B7680',
-            600: '#4A5A66',  // soft — texto de apoio
-            700: '#344553',
-            800: '#1A2A38',  // ink — texto principal
-            900: '#132A41',  // navy — sidebar, cabeçalhos, superfícies escuras
-            950: '#0B1926',
-          },
-
-          // PRIMÁRIA / AÇÃO — laranja da marca (#E27832 em 600).
-          // Botões primários, item ativo do menu, focus ring, destaques.
-          sky: {
-            50:  '#FEF6F0',
-            100: '#FCE8D9',
-            200: '#F8CDB0',
-            300: '#F3AE83',
-            400: '#EC9455',
-            500: '#E7853D',
-            600: '#E27832',  // ← laranja da marca (interface RGB)
-            700: '#C05F24',
-            800: '#954A1D',
-            900: '#713817',
-            950: '#3E1D0B',
-          },
-
-          // NEUTROS QUENTES — usados no modal de perfil. Alinhados às bordas
-          // e ao papel do design system.
-          stone: {
-            50:  '#F7F5F0',
-            100: '#EFEBE3',
-            200: '#D8D0C6',  // rule
-            300: '#C0B6A8',
-            400: '#A2968A',
-            500: '#857A6E',
-            600: '#6B6157',
-            700: '#524A42',
-            800: '#3A342E',
-            900: '#26221E',
-          },
         },
       },
     },

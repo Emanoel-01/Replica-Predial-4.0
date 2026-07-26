@@ -12,9 +12,11 @@
       
       <!-- Top Group -->
       <div class="space-y-6">
-        <div class="text-center py-4 border-b border-white/5">
-          <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400 tracking-tight">Predial 4.0</h1>
-          <p class="text-[10px] uppercase font-bold text-sky-300 tracking-widest mt-1">Plano Interativo</p>
+        <div class="py-4 border-b border-white/5 space-y-3">
+          <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b4f78756902b494e56bda9/8e18562d8_AmorimTech.PNG"
+               alt="Amorim Tech"
+               class="w-full h-12 object-contain object-center bg-white/95 rounded-lg px-3 py-2">
+          <h1 class="text-xl font-black text-white tracking-tight text-center">Predial 4.0</h1>
         </div>
         
         <nav class="flex flex-col space-y-1.5">
@@ -34,6 +36,16 @@
 
       <!-- Bottom Actions Group (As shown in screenshot Image 11) -->
       <div class="pt-6 border-t border-white/5 space-y-1.5 mb-2">
+        <!-- Comunidade AmorimTech (link externo) -->
+        <a href="https://emanoelamorim.base44.app/"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer">
+          <!-- Icone Comunidade / Pessoas -->
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" /></svg>
+          <span>Comunidade</span>
+        </a>
+
         <!-- Fazer Tour -->
         <button 
           (click)="startTour()"
@@ -87,7 +99,6 @@
         <header class="hidden lg:flex justify-between items-center mb-8">
             <div>
               <h1 class="text-3xl font-bold text-slate-900">{{ activeViewLabel() }}</h1>
-              <p class="text-slate-500 mt-1">Plano Interativo de Manutenção Predial 4.0</p>
             </div>
             <div class="flex items-center gap-4">
               @if (isLoggedIn()) {
