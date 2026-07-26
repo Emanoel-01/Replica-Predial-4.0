@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate-env.js",
     "dev": "ng serve",
+    "prebuild": "node scripts/generate-env.js",
     "build": "ng build",
+    "prepreview": "node scripts/generate-env.js",
     "preview": "ng serve --configuration=production"
   },
   "dependencies": {
@@ -15,6 +18,7 @@
     "@angular/forms": "^20.1.6-0",
     "@angular/platform-browser": "^20.1.0",
     "@google/genai": "^1.16.0",
+    "@supabase/supabase-js": "^2.110.8",
     "idb": "^8.0.3",
     "rxjs": "^7.8.2",
     "tailwindcss": "4.3.1"
