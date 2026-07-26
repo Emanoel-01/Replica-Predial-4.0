@@ -574,6 +574,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   modoExibicao = signal<'LISTA' | 'CRIACAO' | 'EXECUCAO' | 'EDICAO' | 'NORTEADORES' | 'ANAMNESE' | 'DETALHE_LAUDO' | 'AVALIACAO_MANUTENCAO' | 'AVALIACAO_CRITICIDADE' | 'CONCLUSOES' | 'ANEXO_ART'>('LISTA');
   vistoriaEmEdicao = signal<Vistoria | null>(null);
   laudoSelecionado = signal<LaudoEmitido | null>(null);
+  exibirModalPreEmissao = signal<boolean>(false);
   novoAvaliacaoManutencaoTexto = signal<string>('');
   novoAvaliacaoCriticidadeTexto = signal<string>('');
   novoConclusaoSinteseTexto = signal<string>('');
@@ -1655,7 +1656,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     void this.salvarVistorias(lista);
   }
 
-  private sugerirAvaliacaoManutencao(vistoria: Vistoria): string {
+  sugerirAvaliacaoManutencao(vistoria: Vistoria): string {
     const docs = vistoria.documentosNorteadores ?? [];
     const constatacoes = Array.isArray(vistoria.anamnese?.constatacoes) ? vistoria.anamnese!.constatacoes : [];
 
@@ -1717,7 +1718,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     this.salvarAvaliacaoManutencao(sugestao);
   }
 
-  private sugerirAvaliacaoCriticidade(vistoria: Vistoria): string {
+  sugerirAvaliacaoCriticidade(vistoria: Vistoria): string {
     const todasFichas: { item: ChecklistItem; ficha: FichaDano }[] = [];
     (vistoria.items ?? []).forEach(item => {
       (item.ocorrencias ?? []).forEach(ficha => todasFichas.push({ item, ficha }));
@@ -1786,7 +1787,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     this.salvarAvaliacaoCriticidade(sugestao);
   }
 
-  private sugerirConclusaoSintese(vistoria: Vistoria): string {
+  sugerirConclusaoSintese(vistoria: Vistoria): string {
     const stats = this.calcularEstatisticas(vistoria);
     const todasFichas: FichaDano[] = [];
     (vistoria.items ?? []).forEach(item => (item.ocorrencias ?? []).forEach(f => todasFichas.push(f)));
@@ -1808,7 +1809,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       'pelo Responsável Técnico.';
   }
 
-  private sugerirConclusaoRiscos(vistoria: Vistoria): string {
+  sugerirConclusaoRiscos(vistoria: Vistoria): string {
     const fichasP1: FichaDano[] = [];
     (vistoria.items ?? []).forEach(item => (item.ocorrencias ?? []).forEach(f => { if (f.criticidade === 'P1') fichasP1.push(f); }));
 
@@ -1827,7 +1828,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       'dos dados levantados e deve ser revisado pelo Responsável Técnico.';
   }
 
-  private sugerirConclusaoRecomendacoes(vistoria: Vistoria): string {
+  sugerirConclusaoRecomendacoes(vistoria: Vistoria): string {
     const todasFichas: FichaDano[] = [];
     (vistoria.items ?? []).forEach(item => (item.ocorrencias ?? []).forEach(f => todasFichas.push(f)));
     const p1 = todasFichas.filter(f => f.criticidade === 'P1').length;
@@ -1856,7 +1857,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     return partes.join(' ');
   }
 
-  private sugerirConclusaoConsideracoesFinais(vistoria: Vistoria): string {
+  sugerirConclusaoConsideracoesFinais(vistoria: Vistoria): string {
     return `O presente laudo reflete as condições observadas na edificação ${vistoria.buildingName || ''} na data ` +
       'da vistoria, dentro do escopo e metodologia declarados nas Seções 6.0 e 7.0 deste documento. Recomenda-se ' +
       'a adoção das medidas indicadas na Seção 13.3 e a reavaliação periódica dos sistemas construtivos, em ' +
@@ -1920,6 +1921,134 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     const s = this.sugerirConclusaoConsideracoesFinais(ativa);
     this.novoConclusaoConsideracoesTexto.set(s);
     this.salvarConclusaoConsideracoes(s);
+  }
+
+  textoAvaliacaoManutencaoDesatualizado(vistoria: Vistoria | null): boolean {
+    if (!vistoria) return false;
+    const salvo = vistoria.avaliacaoManutencaoTexto?.trim();
+    if (!salvo) return false;
+    const atual = this.sugerirAvaliacaoManutencao(vistoria).trim();
+    return salvo !== atual;
+  }
+
+  textoAvaliacaoCriticidadeDesatualizado(vistoria: Vistoria | null): boolean {
+    if (!vistoria) return false;
+    const salvo = vistoria.avaliacaoCriticidadeTexto?.trim();
+    if (!salvo) return false;
+    const atual = this.sugerirAvaliacaoCriticidade(vistoria).trim();
+    return salvo !== atual;
+  }
+
+  textoConclusaoSinteseDesatualizado(vistoria: Vistoria | null): boolean {
+    if (!vistoria) return false;
+    const salvo = vistoria.conclusaoSinteseTexto?.trim();
+    if (!salvo) return false;
+    const atual = this.sugerirConclusaoSintese(vistoria).trim();
+    return salvo !== atual;
+  }
+
+  textoConclusaoRiscosDesatualizado(vistoria: Vistoria | null): boolean {
+    if (!vistoria) return false;
+    const salvo = vistoria.conclusaoRiscosTexto?.trim();
+    if (!salvo) return false;
+    const atual = this.sugerirConclusaoRiscos(vistoria).trim();
+    return salvo !== atual;
+  }
+
+  textoConclusaoRecomendacoesDesatualizado(vistoria: Vistoria | null): boolean {
+    if (!vistoria) return false;
+    const salvo = vistoria.conclusaoRecomendacoesTexto?.trim();
+    if (!salvo) return false;
+    const atual = this.sugerirConclusaoRecomendacoes(vistoria).trim();
+    return salvo !== atual;
+  }
+
+  textoConclusaoConsideracoesDesatualizado(vistoria: Vistoria | null): boolean {
+    if (!vistoria) return false;
+    const salvo = vistoria.conclusaoConsideracoesTexto?.trim();
+    if (!salvo) return false;
+    const atual = this.sugerirConclusaoConsideracoesFinais(vistoria).trim();
+    return salvo !== atual;
+  }
+
+  obterSecoesDesatualizadas(vistoria: Vistoria | null): { titulo: string; acao: string; navegar: () => void }[] {
+    if (!vistoria) return [];
+    const lista: { titulo: string; acao: string; navegar: () => void }[] = [];
+
+    if (this.textoAvaliacaoManutencaoDesatualizado(vistoria)) {
+      lista.push({
+        titulo: 'Seção 11.0 — Avaliação da Manutenção e Uso',
+        acao: 'Revisar / Regerar Seção 11.0',
+        navegar: () => this.navegarParaAvaliacaoManutencao(),
+      });
+    }
+    if (this.textoAvaliacaoCriticidadeDesatualizado(vistoria)) {
+      lista.push({
+        titulo: 'Seção 12.0 — Avaliação do Grau de Criticidade',
+        acao: 'Revisar / Regerar Seção 12.0',
+        navegar: () => this.navegarParaAvaliacaoCriticidade(),
+      });
+    }
+    if (this.textoConclusaoSinteseDesatualizado(vistoria)) {
+      lista.push({
+        titulo: 'Seção 13.1 — Síntese Geral do Grau de Conformidade',
+        acao: 'Revisar / Regerar Seção 13.1',
+        navegar: () => this.navegarParaConclusoes(),
+      });
+    }
+    if (this.textoConclusaoRiscosDesatualizado(vistoria)) {
+      lista.push({
+        titulo: 'Seção 13.2 — Riscos Identificados à Segurança e Funcionalidade',
+        acao: 'Revisar / Regerar Seção 13.2',
+        navegar: () => this.navegarParaConclusoes(),
+      });
+    }
+    if (this.textoConclusaoRecomendacoesDesatualizado(vistoria)) {
+      lista.push({
+        titulo: 'Seção 13.3 — Recomendações Prioritárias e Plano de Ação',
+        acao: 'Revisar / Regerar Seção 13.3',
+        navegar: () => this.navegarParaConclusoes(),
+      });
+    }
+    if (this.textoConclusaoConsideracoesDesatualizado(vistoria)) {
+      lista.push({
+        titulo: 'Seção 13.4 — Considerações Finais',
+        acao: 'Revisar / Regerar Seção 13.4',
+        navegar: () => this.navegarParaConclusoes(),
+      });
+    }
+
+    return lista;
+  }
+
+  solicitarExportarRelatorioPDF(): void {
+    const ativa = this.vistoriaAtiva();
+    const profile = this.userProfile();
+    if (!profile || !registroValido(profile.professionalId)) {
+      this.toastService.show('Emissão bloqueada. É necessário possuir um registro profissional (CAU/CREA) válido cadastrado no seu perfil para emitir documentos técnicos.', 'error');
+      return;
+    }
+    if (!ativa) {
+      this.toastService.show('Dados insuficientes para gerar o relatório em PDF.', 'error');
+      return;
+    }
+
+    const desatualizadas = this.obterSecoesDesatualizadas(ativa);
+    if (desatualizadas.length > 0) {
+      this.exibirModalPreEmissao.set(true);
+      return;
+    }
+
+    void this.exportarRelatorioPDF();
+  }
+
+  confirmarEmissaoComTextosDesatualizados(): void {
+    this.exibirModalPreEmissao.set(false);
+    void this.exportarRelatorioPDF();
+  }
+
+  fecharModalPreEmissao(): void {
+    this.exibirModalPreEmissao.set(false);
   }
 
   navegarParaAnexoArt(): void {
@@ -2999,9 +3128,9 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           <tr style="background:#F7F5F0;"><td>2</td><td>Levantamento e análise dos documentos norteadores</td><td>Anexo I</td></tr>
           <tr><td>3</td><td>Vistoria no objeto da inspeção, incluindo anamnese</td><td>Síntese / Sistemas Inspecionados / Anamnese</td></tr>
           <tr style="background:#F7F5F0;"><td>4</td><td>Diagnóstico do objeto da inspeção</td><td>Anexo III</td></tr>
-          <tr><td>5</td><td>Avaliação da manutenção e uso</td><td><span style="color:#8A949C;">bloco futuro</span></td></tr>
-          <tr style="background:#F7F5F0;"><td>6</td><td>Avaliação do grau de criticidade</td><td><span style="color:#8A949C;">bloco futuro</span></td></tr>
-          <tr><td>7</td><td>Conclusões e considerações finais</td><td><span style="color:#8A949C;">bloco futuro</span></td></tr>
+          <tr><td>5</td><td>Avaliação da manutenção e uso</td><td>11.0</td></tr>
+          <tr style="background:#F7F5F0;"><td>6</td><td>Avaliação do grau de criticidade</td><td>12.0</td></tr>
+          <tr><td>7</td><td>Conclusões e considerações finais</td><td>13.0</td></tr>
         </tbody>
       </table>
 

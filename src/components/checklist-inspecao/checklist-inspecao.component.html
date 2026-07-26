@@ -770,12 +770,34 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
               <span>Anexo IV (ART/RRT)</span>
             </button>
-            <button (click)="exportarRelatorioPDF()" class="flex-shrink-0 flex-1 lg:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm transition-all shadow-sm active:scale-95">
+            <button (click)="solicitarExportarRelatorioPDF()" class="flex-shrink-0 flex-1 lg:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm transition-all shadow-sm active:scale-95">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
               <span>Gerar Relatório</span>
             </button>
           </div>
         </div>
+
+        @if (obterSecoesDesatualizadas(vistoriaAtiva()).length > 0) {
+          <div class="mt-4 bg-amber-50 border border-amber-300 rounded-xl p-4 text-amber-900 shadow-sm space-y-2">
+            <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-900">
+              <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" />
+              </svg>
+              <span>Textos do laudo potencialmente desatualizados</span>
+            </div>
+            <p class="text-xs text-amber-800 leading-relaxed">
+              Este texto foi editado ou gerado antes de mudanças recentes na vistoria (novas fichas, alteração de criticidade, anamnese ou documentos norteadores). Ele pode não refletir os dados atuais. Clique na seção desejada para revisar ou regerar a sugestão antes de emitir o laudo:
+            </p>
+            <div class="flex flex-wrap gap-2 pt-1">
+              @for (sec of obterSecoesDesatualizadas(vistoriaAtiva()); track sec.titulo) {
+                <button (click)="sec.navegar()" class="inline-flex items-center gap-1.5 bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold px-3 py-1.5 rounded-lg text-xs transition-all border border-amber-300 cursor-pointer active:scale-95 shadow-2xs">
+                  <span>{{ sec.titulo }}</span>
+                  <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                </button>
+              }
+            </div>
+          </div>
+        }
 
         <!-- Barra de Progresso com Métricas -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-slate-100">
@@ -2086,6 +2108,20 @@
             </div>
           </div>
 
+          @if (textoAvaliacaoManutencaoDesatualizado(vistoriaAtiva())) {
+            <div class="bg-amber-100 border-l-4 border-amber-500 text-amber-900 p-4 rounded-r-xl shadow-sm space-y-1">
+              <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-900">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" />
+                </svg>
+                <span>⚠ Texto potencialmente desatualizado</span>
+              </div>
+              <p class="text-xs text-amber-900 leading-relaxed">
+                Este texto foi editado ou gerado antes de mudanças recentes na vistoria (novas fichas, alteração de criticidade, documentos ou anamnese). Ele pode não refletir os dados atuais. Clique em "Regerar Sugestão (IA)" para atualizar, ou revise manualmente antes de emitir o laudo.
+              </p>
+            </div>
+          }
+
           <!-- Textarea de edição -->
           <div class="space-y-2">
             <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">Texto do Laudo (Editável)</label>
@@ -2190,6 +2226,20 @@
             </div>
           </div>
 
+          @if (textoAvaliacaoCriticidadeDesatualizado(vistoriaAtiva())) {
+            <div class="bg-amber-100 border-l-4 border-amber-500 text-amber-900 p-4 rounded-r-xl shadow-sm space-y-1">
+              <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-900">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" />
+                </svg>
+                <span>⚠ Texto potencialmente desatualizado</span>
+              </div>
+              <p class="text-xs text-amber-900 leading-relaxed">
+                Este texto foi editado ou gerado antes de mudanças recentes na vistoria (novas fichas, alteração de criticidade). Ele pode não refletir os dados atuais. Clique em "Regerar Sugestão (IA)" para atualizar, ou revise manualmente antes de emitir o laudo.
+              </p>
+            </div>
+          }
+
           <!-- Textarea de edição -->
           <div class="space-y-2">
             <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">Texto do Laudo (Editável)</label>
@@ -2266,6 +2316,15 @@
           </button>
         </div>
         <div class="p-5">
+          @if (textoConclusaoSinteseDesatualizado(vistoriaAtiva())) {
+            <div class="mb-3 bg-amber-100 border-l-4 border-amber-500 text-amber-900 p-3.5 rounded-r-xl shadow-sm space-y-1">
+              <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-900">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" /></svg>
+                <span>⚠ Texto potencialmente desatualizado</span>
+              </div>
+              <p class="text-xs text-amber-900 leading-relaxed">Este texto foi editado ou gerado antes de mudanças recentes na vistoria (novas fichas, alteração de criticidade). Ele pode não refletir os dados atuais. Clique em "Sugerir novamente" para atualizar ou revise manualmente.</p>
+            </div>
+          }
           <textarea [value]="novoConclusaoSinteseTexto()"
                     #sinteseTextarea
                     (blur)="salvarConclusaoSintese(sinteseTextarea.value)"
@@ -2293,6 +2352,15 @@
           </button>
         </div>
         <div class="p-5">
+          @if (textoConclusaoRiscosDesatualizado(vistoriaAtiva())) {
+            <div class="mb-3 bg-amber-100 border-l-4 border-amber-500 text-amber-900 p-3.5 rounded-r-xl shadow-sm space-y-1">
+              <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-900">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" /></svg>
+                <span>⚠ Texto potencialmente desatualizado</span>
+              </div>
+              <p class="text-xs text-amber-900 leading-relaxed">Este texto foi editado ou gerado antes de mudanças recentes na vistoria (novas fichas ou alteração de criticidade P1). Ele pode não refletir os dados atuais. Clique em "Sugerir novamente" para atualizar ou revise manualmente.</p>
+            </div>
+          }
           <textarea [value]="novoConclusaoRiscosTexto()"
                     #riscosTextarea
                     (blur)="salvarConclusaoRiscos(riscosTextarea.value)"
@@ -2320,6 +2388,15 @@
           </button>
         </div>
         <div class="p-5">
+          @if (textoConclusaoRecomendacoesDesatualizado(vistoriaAtiva())) {
+            <div class="mb-3 bg-amber-100 border-l-4 border-amber-500 text-amber-900 p-3.5 rounded-r-xl shadow-sm space-y-1">
+              <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-900">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" /></svg>
+                <span>⚠ Texto potencialmente desatualizado</span>
+              </div>
+              <p class="text-xs text-amber-900 leading-relaxed">Este texto foi editado ou gerado antes de mudanças recentes na vistoria (novas fichas P1 ou documentos norteadores). Ele pode não refletir os dados atuais. Clique em "Sugerir novamente" para atualizar ou revise manualmente.</p>
+            </div>
+          }
           <textarea [value]="novoConclusaoRecomendacoesTexto()"
                     #recomendacoesTextarea
                     (blur)="salvarConclusaoRecomendacoes(recomendacoesTextarea.value)"
@@ -2347,6 +2424,15 @@
           </button>
         </div>
         <div class="p-5">
+          @if (textoConclusaoConsideracoesDesatualizado(vistoriaAtiva())) {
+            <div class="mb-3 bg-amber-100 border-l-4 border-amber-500 text-amber-900 p-3.5 rounded-r-xl shadow-sm space-y-1">
+              <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-900">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" /></svg>
+                <span>⚠ Texto potencialmente desatualizado</span>
+              </div>
+              <p class="text-xs text-amber-900 leading-relaxed">Este texto foi editado ou gerado antes de mudanças recentes na vistoria. Clique em "Sugerir novamente" para atualizar ou revise manualmente.</p>
+            </div>
+          }
           <textarea [value]="novoConclusaoConsideracoesTexto()"
                     #consideracoesTextarea
                     (blur)="salvarConclusaoConsideracoes(consideracoesTextarea.value)"
@@ -2710,6 +2796,59 @@
           {{ laudo.snapshotVistoria.documentosNorteadores?.length ?? 0 }} documento(s) norteador(es) registrado(s) ·
           {{ (laudo.snapshotVistoria.anamnese?.constatacoes?.length ?? 0) }} constatação(ões) de anamnese
         </p>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Pré-Emissão de Laudo (Validação de Textos Desatualizados) -->
+  @if (exibirModalPreEmissao() && vistoriaAtiva()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+        
+        <div class="flex items-start gap-3 border-b border-slate-100 pb-4">
+          <div class="p-2.5 bg-amber-100 text-amber-800 rounded-xl flex-shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-lg font-bold text-slate-900 leading-tight">Pré-Emissão do Laudo — Textos Desatualizados</h3>
+            <p class="text-xs text-slate-500">Atenção do Responsável Técnico antes de gerar o laudo final em PDF</p>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-700 leading-relaxed">
+          <p>
+            Identificamos que o laudo possui textos salvos previamente que foram editados ou gerados <b>antes</b> de alterações recentes nesta vistoria (por exemplo: adição/edição de fichas de danos, alteração de criticidade P1/P2/P3, anamnese ou documentos).
+          </p>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+            <span class="font-bold text-amber-950 uppercase tracking-wider text-[10px] block">Seções com texto potencialmente desalinhado dos dados:</span>
+            <div class="space-y-1.5">
+              @for (sec of obterSecoesDesatualizadas(vistoriaAtiva()); track sec.titulo) {
+                <div class="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border border-amber-200">
+                  <span class="font-semibold text-slate-800 text-[11px]">{{ sec.titulo }}</span>
+                  <button (click)="sec.navegar(); fecharModalPreEmissao()" class="flex-shrink-0 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded text-[10px] border border-amber-300 transition-all cursor-pointer">
+                    Revisar
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+          <p class="text-slate-500 italic">
+            Como o Responsável Técnico possui controle livre para editar o texto do laudo, a atualização não é feita de forma automática. Você pode escolher revisar essas seções agora ou prosseguir com a emissão do PDF mantendo os textos salvos atuais.
+          </p>
+        </div>
+
+        <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <button (click)="fecharModalPreEmissao()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all cursor-pointer">
+            Cancelar e Voltar
+          </button>
+          <button (click)="confirmarEmissaoComTextosDesatualizados()" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+            <span>Gerar PDF Mesmo Assim</span>
+          </button>
+        </div>
+
       </div>
     </div>
   }
