@@ -19,6 +19,7 @@ export interface FichaDano {
   memorialDescritivo?: string;
   correlacaoFotoPatologia?: 'CONFIRMADA' | 'DIVERGENTE' | 'INCONCLUSIVA';
   observacaoDivergencia?: string;
+  falhaAnaliseIa?: boolean;
   composicoesAplicadas?: string[];
   severity?: 'Mínimo' | 'Regular' | 'Crítico';
   notes: string;
@@ -250,7 +251,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   tipoEvidencia = signal<'contexto' | 'detalhe'>('contexto');
   capturando = signal(false);
   analisandoIa = signal(false);
-  gerandoMemorialId = signal<string | null>(null);
   cameraIndisponivel = signal(false);
   dragOver = signal(false);
   itemSalvoFeedback = signal<string | null>(null);
@@ -1153,19 +1153,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     this.sinalizarSalvo(itemId);
   }
 
-  toggleComposicaoItem(itemId: string, composicaoId: string): void {
-    this.aplicarMudancaNoItem(itemId, it => {
-      const oc = this.obterOuCriarOcorrenciaAtiva(it);
-      const atuais = oc.composicoesAplicadas ?? [];
-      const jaAplicada = atuais.includes(composicaoId);
-      const novas = jaAplicada
-        ? atuais.filter(id => id !== composicaoId)
-        : [...atuais, composicaoId];
-      oc.composicoesAplicadas = novas;
-      return it;
-    });
-  }
-
   async abrirCaptura(item: ChecklistItem, tipo: 'contexto'|'detalhe'): Promise<void> {
     this.tipoEvidencia.set(tipo);
     this.itemCapturandoEvidencia.set(item);
@@ -1227,12 +1214,13 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       this.capturando.set(false);
       this.analisandoIa.set(true);
 
-      const base64 = await this.blobParaBase64(blob);
-      const diag = await this.analisarComGemini(item, base64);
+      const imagens = await this.obterImagensParaAnalise(item, blob, file.type);
+      const diag = await this.analisarComGemini(item, imagens);
 
       if (diag?.texto) {
         this.aplicarMudancaNoItem(item.id, it => {
           const oc = this.obterOuCriarOcorrenciaAtiva(it);
+          oc.falhaAnaliseIa = false;
           oc.diagnostico_ia = diag.texto;
           oc.correlacaoFotoPatologia = diag.correlacaoFotoPatologia;
           oc.observacaoDivergencia = diag.observacaoDivergencia;
@@ -1249,6 +1237,12 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           }
           return it;
         });
+      } else {
+        this.aplicarMudancaNoItem(item.id, it => {
+          const oc = this.obterOuCriarOcorrenciaAtiva(it);
+          oc.falhaAnaliseIa = true;
+          return it;
+        });
       }
 
       const itemAtualizado = this.vistoriaAtiva()?.items.find(it => it.id === item.id);
@@ -1261,6 +1255,11 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     } catch (e) {
       console.error('Falha no processamento do arquivo/análise', e);
       this.toastService.show('Falha ao processar arquivo ou analisar evidência.', 'error');
+      this.aplicarMudancaNoItem(item.id, it => {
+        const oc = this.obterOuCriarOcorrenciaAtiva(it);
+        oc.falhaAnaliseIa = true;
+        return it;
+      });
     } finally {
       this.analisandoIa.set(false);
       this.fecharCaptura();
@@ -1289,84 +1288,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     this.dragOver.set(false);
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
       void this.processarArquivoSelecionado(event.dataTransfer.files[0]);
-    }
-  }
-
-  async gerarMemorialItem(item: ChecklistItem): Promise<void> {
-    const ativa = this.vistoriaAtiva();
-    if (!ativa) return;
-
-    this.gerandoMemorialId.set(item.id);
-
-    const oc = this.obterOuCriarOcorrenciaAtiva(item);
-    const fotoNaoConfiavel = oc.correlacaoFotoPatologia === 'DIVERGENTE' || oc.correlacaoFotoPatologia === 'INCONCLUSIVA';
-
-    const blocoDiagnosticoCampo = fotoNaoConfiavel
-      ? `AVISO: a evidência fotográfica deste item foi classificada como ${oc.correlacaoFotoPatologia} em relação à patologia descrita (${oc.observacaoDivergencia?.trim() || 'sem observação adicional registrada'}). IGNORE totalmente esta análise de imagem — ela não corresponde à patologia do item. Baseie o diagnóstico técnico EXCLUSIVAMENTE na anotação do Responsável Técnico abaixo.`
-      : (oc.diagnostico_ia?.trim() || 'Diagnóstico não gerado para este item.');
-
-    const prompt = `Você é um engenheiro civil perito em manutenção e patologia predial, especialista em inspeção conforme ABNT NBR 16747 e ABNT NBR 5674.
-
-INSTRUÇÃO CRÍTICA: Responda APENAS com os 6 blocos estruturados abaixo. NÃO inclua introdução, preâmbulo, saudação nem qualquer texto antes do Bloco 1. Comece diretamente com "**1. DIAGNÓSTICO TÉCNICO**".
-
-Com base nas evidências coletadas em campo para o item abaixo, redija o Memorial Descritivo de Intervenção em português técnico do Brasil.
-
-===== DADOS DO ITEM DE INSPEÇÃO =====
-Edificação: ${ativa.buildingName}
-Sistema Construtivo: ${item.systemTitle}
-Tipologia: ${item.typologyTitle}
-Item de Inspeção: ${item.title}
-Grau de Risco (NBR 16747): ${oc.severity ?? 'Não classificado'}
-Quantitativo Verificado em Campo: ${oc.quantitativo?.trim() || 'Não informado — use estimativa técnica proporcional'}
-
-===== DIAGNÓSTICO TÉCNICO DE CAMPO =====
-${blocoDiagnosticoCampo}
-
-===== ANOTAÇÃO DO RESPONSÁVEL TÉCNICO =====
-${oc.notes?.trim() || 'Sem anotação de campo.'}
-
-===== ESTRUTURA OBRIGATÓRIA DO MEMORIAL =====
-
-Redija exatamente os 6 blocos abaixo. Use Markdown: títulos com ** e listas com -.
-
-**1. DIAGNÓSTICO TÉCNICO**
-Com base nas evidências registradas em campo (fotografias, diagnóstico assistido por IA e anotações do Responsável Técnico), descreva a causa raiz confirmada e seu mecanismo de degradação. Esta é uma CONFIRMAÇÃO — não oriente investigação, a causa já está identificada.
-
-**2. AÇÕES CORRETIVAS**
-Procedimento de reparo passo a passo. Cada bloco de procedimento deve indicar expressamente a Classe de Ação conforme ABNT NBR 5674: "Imediata", "Necessária" ou "Preventiva". Dimensione os serviços usando o quantitativo de campo informado acima.
-
-**3. ESPECIFICAÇÕES TÉCNICAS — CADERNO DE ENCARGOS**
-Materiais, equipamentos, ferramentas e mão de obra especializada necessários (com normas técnicas e especificações do fabricante quando aplicável). Detalhar tolerâncias de execução, controles de qualidade e critérios de aceitação dos serviços.
-
-**4. MEDIDAS PREVENTIVAS**
-Ações de manutenção periódica e inspeções recomendadas para evitar reincidência após o reparo.
-
-**5. SEGURANÇA NA EXECUÇÃO**
-EPIs obrigatórios, isolamento de área, condicionantes ambientais e cuidados específicos para este tipo de serviço.
-
-**6. NORMAS TÉCNICAS RELACIONADAS**
-Liste em tabela Markdown as normas diretamente citadas nos blocos 1 a 5 deste memorial. NÃO inclua o ano da norma no código. Use EXATAMENTE este formato de tabela:
-
-| Norma | Título e Aplicação |
-|---|---|
-| ABNT NBR XXXXX | Título da norma — aplicação específica no contexto desta intervenção |
-
-Inclua apenas as normas realmente referenciadas. Mínimo 2, máximo 8.`;
-
-    try {
-      const resposta = await this.geminiService.generateText(prompt);
-      const memorial = this.geminiService.sanitizeAiText(resposta);
-      this.aplicarMudancaNoItem(item.id, it => {
-        const o = this.obterOuCriarOcorrenciaAtiva(it);
-        o.memorialDescritivo = memorial;
-        return it;
-      });
-      this.toastService.show('Memorial descritivo gerado. Revise antes de emitir o Laudo Técnico de Inspeção Predial.', 'success');
-    } catch (error) {
-      console.error('Erro ao gerar memorial descritivo:', error);
-      this.toastService.show('Não foi possível gerar o memorial. Tente novamente.', 'error');
-    } finally {
-      this.gerandoMemorialId.set(null);
     }
   }
 
@@ -1463,9 +1384,35 @@ Inclua apenas as normas realmente referenciadas. Mínimo 2, máximo 8.`;
     });
   }
 
+  private async obterImagensParaAnalise(
+    item: ChecklistItem,
+    blobNovo?: Blob,
+    mimeTypeNovo = 'image/jpeg'
+  ): Promise<{ base64: string; mimeType: string }[]> {
+    const itemAtual = this.vistoriaAtiva()?.items.find(it => it.id === item.id);
+    const oc = itemAtual ? this.obterOcorrenciaAtiva(itemAtual) : null;
+    const ids = oc?.id_evidencias ?? [];
+    const imagens: { base64: string; mimeType: string }[] = [];
+
+    for (const id of ids) {
+      const ev = await this.dbService.getEvidencia(id);
+      if (ev) {
+        const base64 = await this.blobParaBase64(ev.blob);
+        imagens.push({ base64, mimeType: ev.mimeType || 'image/jpeg' });
+      }
+    }
+
+    if (imagens.length === 0 && blobNovo) {
+      const base64 = await this.blobParaBase64(blobNovo);
+      imagens.push({ base64, mimeType: mimeTypeNovo });
+    }
+
+    return imagens;
+  }
+
   private async analisarComGemini(
     item: ChecklistItem,
-    base64: string
+    imagens: { base64: string; mimeType: string }[]
   ): Promise<{ texto: string; severitySugerida?: 'Mínimo' | 'Regular' | 'Crítico';
             correlacaoFotoPatologia?: 'CONFIRMADA' | 'DIVERGENTE' | 'INCONCLUSIVA';
             observacaoDivergencia?: string;
@@ -1477,41 +1424,41 @@ Inclua apenas as normas realmente referenciadas. Mínimo 2, máximo 8.`;
             criticidadeSugerida?: string; } | null> {
     try {
       const prompt = `Você é um engenheiro civil perito especializado em inspeção predial de acordo com a NBR 16747.
-  Uma foto de evidência foi anexada ao seguinte item de checklist marcado como não conforme:
+  ${imagens.length > 1 ? 'Anexamos ' + imagens.length + ' fotos de evidência (contexto e/ou detalhe)' : 'Uma foto de evidência foi anexada'} ao seguinte item de checklist marcado como não conforme:
   - Sistema: ${item.systemTitle}
   - Tipologia: ${item.typologyTitle}
   - Item: ${item.title}
   - Descrição detalhada: ${item.description}
 
-  PRIMEIRO, avalie se a imagem de fato retrata a patologia descrita no item acima:
+  PRIMEIRO, avalie se a(s) imagem(ns) de fato retrata(m) a patologia descrita no item acima:
   - Se retrata: correlacaoFotoPatologia = 'CONFIRMADA'. Forneça o diagnóstico técnico da anomalia visível.
   - Se retrata OUTRA patologia ou outro objeto: correlacaoFotoPatologia = 'DIVERGENTE'. Em observacaoDivergencia,
-    descreva objetivamente o que a imagem mostra e por que não corresponde ao item. No campo texto, NÃO invente
+    descreva objetivamente o que a(s) imagem(ns) mostra(m) e por que não corresponde(m) ao item. No campo texto, NÃO invente
     diagnóstico da patologia do item — apenas registre a divergência e recomende novo registro fotográfico.
-  - Se a imagem não permite conclusão (desfocada, escura, enquadramento insuficiente):
+  - Se a(s) imagem(ns) não permite(m) conclusão (desfocada, escura, enquadramento insuficiente):
     correlacaoFotoPatologia = 'INCONCLUSIVA'.
 
   Forneça também o grau de risco sugerido conforme a NBR 16747 (estritamente 'Mínimo', 'Regular' ou 'Crítico'),
   baseado APENAS no que é visível e correlacionado — em caso DIVERGENTE ou INCONCLUSIVO, sugira o grau com base
   na descrição do item, sinalizando a limitação no texto.
 
-  Se correlacaoFotoPatologia for 'CONFIRMADA', forneça também, com base estritamente no que é visível na imagem e no contexto do item:
+  Se correlacaoFotoPatologia for 'CONFIRMADA', forneça também, com base estritamente no que é visível na(s) imagem(ns) e no contexto do item:
   - classificacaoTipo: 'ANOMALIA' (perda de desempenho por projeto/execução/vida útil/fatores externos) ou 'FALHA' (perda de desempenho por uso/operação/manutenção) — use 'INDETERMINADO' se não for possível classificar com segurança.
   - classificacaoSubtipo: se ANOMALIA, um de endogena/exogena/natural/funcional; se FALHA, um de planejamento/execucao/operacional/gerencial.
-  - manifestacao: descrição objetiva do que se observa na imagem.
+  - manifestacao: descrição objetiva do que se observa na(s) imagem(ns).
   - causaProvavel: hipótese técnica da origem, com base no que é visível.
   - recomendacaoTecnica: ação corretiva recomendada, em linguagem técnica objetiva.
   - criticidadeSugerida: 'P1' (crítico — risco à saúde/segurança/funcionalidade), 'P2' (médio) ou 'P3' (mínimo), conforme os patamares da NBR 16747.
-  Se correlacaoFotoPatologia for 'DIVERGENTE' ou 'INCONCLUSIVA', deixe esses 6 campos como string vazia — não invente classificação para uma foto que não corresponde ao item ou que não permite conclusão.`;
+  Se correlacaoFotoPatologia for 'DIVERGENTE' ou 'INCONCLUSIVA', deixe esses 6 campos como string vazia — não invente classificação para foto(s) que não corresponde(m) ao item ou que não permite(m) conclusão.`;
 
       const textPart = { text: prompt };
-      const imagePart = {
+      const imageParts = imagens.map(img => ({
         inlineData: {
-          data: base64,
-          mimeType: 'image/jpeg',
+          data: img.base64,
+          mimeType: img.mimeType || 'image/jpeg',
         },
-      };
-      const contents = { parts: [textPart, imagePart] };
+      }));
+      const contents = { parts: [textPart, ...imageParts] };
 
       const result = await this.geminiService.generateStructured<{
         texto: string;
@@ -1575,12 +1522,13 @@ Inclua apenas as normas realmente referenciadas. Mínimo 2, máximo 8.`;
       this.capturando.set(false);
       this.analisandoIa.set(true);
 
-      const base64 = await this.blobParaBase64(blob);
-      const diag = await this.analisarComGemini(item, base64);
+      const imagens = await this.obterImagensParaAnalise(item, blob, 'image/jpeg');
+      const diag = await this.analisarComGemini(item, imagens);
 
       if (diag?.texto) {
         this.aplicarMudancaNoItem(item.id, it => {
           const oc = this.obterOuCriarOcorrenciaAtiva(it);
+          oc.falhaAnaliseIa = false;
           oc.diagnostico_ia = diag.texto;
           oc.correlacaoFotoPatologia = diag.correlacaoFotoPatologia;
           oc.observacaoDivergencia = diag.observacaoDivergencia;
@@ -1597,6 +1545,12 @@ Inclua apenas as normas realmente referenciadas. Mínimo 2, máximo 8.`;
           }
           return it;
         });
+      } else {
+        this.aplicarMudancaNoItem(item.id, it => {
+          const oc = this.obterOuCriarOcorrenciaAtiva(it);
+          oc.falhaAnaliseIa = true;
+          return it;
+        });
       }
 
       const itemAtualizado = this.vistoriaAtiva()?.items.find(it => it.id === item.id);
@@ -1609,6 +1563,11 @@ Inclua apenas as normas realmente referenciadas. Mínimo 2, máximo 8.`;
     } catch (e) {
       console.error('Falha na captura/análise de evidência', e);
       this.toastService.show('Falha ao capturar ou analisar a evidência.', 'error');
+      this.aplicarMudancaNoItem(item.id, it => {
+        const oc = this.obterOuCriarOcorrenciaAtiva(it);
+        oc.falhaAnaliseIa = true;
+        return it;
+      });
     } finally {
       this.analisandoIa.set(false);
       this.fecharCaptura();

@@ -37,8 +37,8 @@ export interface ComposicaoCalculada extends Composicao {
 
 @Injectable({ providedIn: 'root' })
 export class OrcamentoService {
-  // Banco de composições — inicia VAZIO de propósito. Populado em bloco futuro,
-  // após auditoria da planilha mestra da JI Construtora. NÃO adicionar dados de
+  // Banco de composições — inicia VAZIO de propósito. Catálogo de composições
+  // a ser populado no módulo de Orçamento (bloco futuro). NÃO adicionar dados de
   // exemplo, fictícios ou estimados aqui.
   private composicoes: Composicao[] = [];
 
