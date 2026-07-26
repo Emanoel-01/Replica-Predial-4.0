@@ -1762,6 +1762,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   regerarSugestaoAvaliacaoManutencao(): void {
     const ativa = this.vistoriaAtiva(); if (!ativa) return;
     const sugestao = this.sugerirAvaliacaoManutencao(ativa);
+    this.novoAvaliacaoManutencaoTexto.set('');
     this.novoAvaliacaoManutencaoTexto.set(sugestao);
     this.salvarAvaliacaoManutencao(sugestao);
   }
@@ -1831,6 +1832,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   regerarSugestaoAvaliacaoCriticidade(): void {
     const ativa = this.vistoriaAtiva(); if (!ativa) return;
     const sugestao = this.sugerirAvaliacaoCriticidade(ativa);
+    this.novoAvaliacaoCriticidadeTexto.set('');
     this.novoAvaliacaoCriticidadeTexto.set(sugestao);
     this.salvarAvaliacaoCriticidade(sugestao);
   }
@@ -1946,6 +1948,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   regerarSugestaoConclusaoSintese(): void {
     const ativa = this.vistoriaAtiva(); if (!ativa) return;
     const s = this.sugerirConclusaoSintese(ativa);
+    this.novoConclusaoSinteseTexto.set('');
     this.novoConclusaoSinteseTexto.set(s);
     this.salvarConclusaoSintese(s);
   }
@@ -1953,6 +1956,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   regerarSugestaoConclusaoRiscos(): void {
     const ativa = this.vistoriaAtiva(); if (!ativa) return;
     const s = this.sugerirConclusaoRiscos(ativa);
+    this.novoConclusaoRiscosTexto.set('');
     this.novoConclusaoRiscosTexto.set(s);
     this.salvarConclusaoRiscos(s);
   }
@@ -1960,6 +1964,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   regerarSugestaoConclusaoRecomendacoes(): void {
     const ativa = this.vistoriaAtiva(); if (!ativa) return;
     const s = this.sugerirConclusaoRecomendacoes(ativa);
+    this.novoConclusaoRecomendacoesTexto.set('');
     this.novoConclusaoRecomendacoesTexto.set(s);
     this.salvarConclusaoRecomendacoes(s);
   }
@@ -1967,6 +1972,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   regerarSugestaoConclusaoConsideracoes(): void {
     const ativa = this.vistoriaAtiva(); if (!ativa) return;
     const s = this.sugerirConclusaoConsideracoesFinais(ativa);
+    this.novoConclusaoConsideracoesTexto.set('');
     this.novoConclusaoConsideracoesTexto.set(s);
     this.salvarConclusaoConsideracoes(s);
   }

@@ -2212,6 +2212,7 @@
             <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">Texto do Laudo (Editável)</label>
             <textarea [value]="novoAvaliacaoManutencaoTexto()"
                       #manutencaoTextarea
+                      (input)="novoAvaliacaoManutencaoTexto.set(manutencaoTextarea.value)"
                       (blur)="salvarAvaliacaoManutencao(manutencaoTextarea.value)"
                       rows="18"
                       placeholder="Análise da gestão de manutenção, PMOC, AVCB e conservação dos sistemas..."
@@ -2330,6 +2331,7 @@
             <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">Texto do Laudo (Editável)</label>
             <textarea [value]="novoAvaliacaoCriticidadeTexto()"
                       #criticidadeTextarea
+                      (input)="novoAvaliacaoCriticidadeTexto.set(criticidadeTextarea.value)"
                       (blur)="salvarAvaliacaoCriticidade(criticidadeTextarea.value)"
                       rows="14"
                       placeholder="Análise estatística e gerencial dos patamares de criticidade..."
@@ -2412,6 +2414,7 @@
           }
           <textarea [value]="novoConclusaoSinteseTexto()"
                     #sinteseTextarea
+                    (input)="novoConclusaoSinteseTexto.set(sinteseTextarea.value)"
                     (blur)="salvarConclusaoSintese(sinteseTextarea.value)"
                     rows="6"
                     placeholder="Sua análise da taxa de conformidade e panorama geral..."
@@ -2448,6 +2451,7 @@
           }
           <textarea [value]="novoConclusaoRiscosTexto()"
                     #riscosTextarea
+                    (input)="novoConclusaoRiscosTexto.set(riscosTextarea.value)"
                     (blur)="salvarConclusaoRiscos(riscosTextarea.value)"
                     rows="6"
                     placeholder="Análise de riscos à segurança e integridade das estruturas..."
@@ -2484,6 +2488,7 @@
           }
           <textarea [value]="novoConclusaoRecomendacoesTexto()"
                     #recomendacoesTextarea
+                    (input)="novoConclusaoRecomendacoesTexto.set(recomendacoesTextarea.value)"
                     (blur)="salvarConclusaoRecomendacoes(recomendacoesTextarea.value)"
                     rows="6"
                     placeholder="Instruções para correções prioritárias..."
@@ -2520,6 +2525,7 @@
           }
           <textarea [value]="novoConclusaoConsideracoesTexto()"
                     #consideracoesTextarea
+                    (input)="novoConclusaoConsideracoesTexto.set(consideracoesTextarea.value)"
                     (blur)="salvarConclusaoConsideracoes(consideracoesTextarea.value)"
                     rows="6"
                     placeholder="Enquadramento normativo, periodicidade e encerramento..."
