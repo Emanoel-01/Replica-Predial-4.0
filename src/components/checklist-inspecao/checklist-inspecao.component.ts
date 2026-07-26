@@ -134,6 +134,7 @@ export interface Vistoria {
   conclusaoRecomendacoesTexto?: string;   // NOVO — 13.3
   conclusaoConsideracoesTexto?: string;   // NOVO — 13.4
   anexoArtRrt?: Anexo;   // NOVO — metadados do ART/RRT anexado; blob no store 'anexos' (mesmo mecanismo do Bloco 3)
+  sincronizadoEm?: string; // NOVO — ISO timestamp da última sincronização bem-sucedida. undefined = nunca sincronizado.
 }
 
 export interface LaudoEmitido {
