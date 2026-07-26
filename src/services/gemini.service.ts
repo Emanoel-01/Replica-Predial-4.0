@@ -15,8 +15,7 @@ export const RE_CAU = /^A\d{6}-\d$/i;
 export const RE_CREA = /^CREA-[A-Z]{2}\s?\d{4,7}(\/[A-Z])?$/i;
 
 export function registroValido(reg: string): boolean {
-  const r = (reg ?? '').trim();
-  return RE_CAU.test(r) || RE_CREA.test(r);
+  return (reg ?? '').trim().length > 0;
 }
 
 export function generateStandardFooter(profile: UserProfile | null): string {

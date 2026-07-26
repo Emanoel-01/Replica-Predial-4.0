@@ -27,4 +27,26 @@ export class SupabaseService {
   onAuthStateChange(callback: (session: Session | null) => void) {
     return this.client.auth.onAuthStateChange((_event, session) => callback(session));
   }
+
+  async getProfissional(userId: string): Promise<any | null> {
+    const { data, error } = await this.client
+      .from('profissionais')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Erro ao buscar profissional:', error);
+      return null;
+    }
+    return data;
+  }
+
+  async upsertProfissional(userId: string, payload: Record<string, any>): Promise<{ error: Error | null }> {
+    const { error } = await this.client
+      .from('profissionais')
+      .upsert({ id: userId, ...payload }, { onConflict: 'id' });
+
+    return { error };
+  }
 }

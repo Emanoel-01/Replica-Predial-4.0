@@ -88,27 +88,9 @@ export class AppComponent implements OnInit {
   });
   
   constructor() {
-    const saved = localStorage.getItem('user_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        this.userProfile.set(parsed);
-        return;
-      } catch (e) {
-        console.error('Error parsing user_profile', e);
-      }
-    }
-    const initialProfile: UserProfile = {
-      fullName: 'Emanoel Amorim',
-      professionalTitle: 'Arquiteto e Urbanista',
-      professionalId: 'CAU-PE 123456',
-      companyName: 'AmorimTech',
-      position: 'Diretor de Engenharia',
-      companyCnpj: '12.345.678/0001-90',
-      companyAddress: 'Recife - PE, Brasil',
-    };
-    this.userProfile.set(initialProfile);
-    localStorage.setItem('user_profile', JSON.stringify(initialProfile));
+    // Perfil agora é carregado do Supabase (tabela `profissionais`) no ngOnInit,
+    // vinculado ao usuário autenticado. Não há mais leitura de localStorage
+    // nem perfil de exemplo hardcoded aqui.
   }
 
   startTour(): void {
@@ -162,14 +144,70 @@ export class AppComponent implements OnInit {
     this.isMenuOpen.set(false);
   }
 
-  onProfileUpdate(profile: UserProfile): void {
+  private async carregarPerfilDoSupabase(userId: string): Promise<void> {
+    const row = await this.supabaseService.getProfissional(userId);
+
+    if (!row) {
+      // Não deveria acontecer (a trigger de banco cria a linha no primeiro login),
+      // mas por segurança: sem linha, abre o modal para o usuário preencher do zero.
+      this.userProfile.set(null);
+      this.isProfileModalOpen.set(true);
+      return;
+    }
+
+    const profile: UserProfile = {
+      fullName: row.full_name || '',
+      professionalTitle: row.professional_title || '',
+      professionalId: row.professional_id || '',
+      categoriaProfissional: row.categoria_profissional || undefined,
+      companyName: row.company_name || '',
+      companyCnpj: row.company_cnpj || '',
+      companyAddress: row.company_address || '',
+      companyPhone: row.company_phone || '',
+      companyEmail: row.company_email || '',
+      companySite: row.company_site || '',
+    };
+
+    this.userProfile.set(profile);
+
+    // Perfil incompleto = falta o registro profissional (CAU/CREA/CFT), o dado
+    // mínimo necessário para emitir laudos. Abre o modal automaticamente para
+    // o usuário completar assim que loga.
+    if (!profile.professionalId || profile.professionalId.trim() === '') {
+      this.isProfileModalOpen.set(true);
+    }
+  }
+
+  async onProfileUpdate(profile: UserProfile): Promise<void> {
     this.userProfile.set(profile);
     localStorage.setItem('user_profile', JSON.stringify(profile));
+
     if (this.isLoggedIn() && profile && profile.fullName) {
       this.userName.set(profile.fullName.split(' ')[0]);
     } else {
       this.userName.set('');
     }
+
+    const session = await this.supabaseService.getSession();
+    if (session?.user) {
+      const { error } = await this.supabaseService.upsertProfissional(session.user.id, {
+        full_name: profile.fullName,
+        professional_title: profile.professionalTitle,
+        professional_id: profile.professionalId,
+        categoria_profissional: profile.categoriaProfissional,
+        company_name: profile.companyName,
+        company_cnpj: profile.companyCnpj,
+        company_address: profile.companyAddress,
+        company_phone: profile.companyPhone,
+        company_email: profile.companyEmail,
+        company_site: profile.companySite,
+      });
+      if (error) {
+        console.error('Erro ao salvar perfil no Supabase:', error);
+        this.toastService.show('Perfil salvo localmente, mas houve falha ao sincronizar com a nuvem.', 'error');
+      }
+    }
+
     this.notificationService.gerarLembretesLocais(this.todasVistorias(), profile);
   }
 
@@ -214,6 +252,7 @@ export class AppComponent implements OnInit {
         const email = session.user.email || '';
         const name = email.includes('@') ? email.split('@')[0] : email;
         this.userName.set(name || 'Usuário');
+        await this.carregarPerfilDoSupabase(session.user.id);
       }
     } catch (e) {
       console.error('Erro ao verificar sessão do Supabase:', e);
@@ -228,6 +267,7 @@ export class AppComponent implements OnInit {
         const name = email.includes('@') ? email.split('@')[0] : email;
         this.userName.set(name || 'Usuário');
         this.toastService.show(`Autenticado como: ${email}`, 'success');
+        void this.carregarPerfilDoSupabase(session.user.id);
       }
     });
 

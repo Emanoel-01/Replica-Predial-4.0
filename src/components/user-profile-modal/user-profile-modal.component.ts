@@ -19,19 +19,8 @@ export class UserProfileModalComponent {
   private toastService = inject(ToastService);
 
   profile: UserProfile = {
-    fullName: 'Emanoel Amorim',
-    professionalTitle: 'Arquiteto e Urbanista',
-    professionalId: 'CAU-PE 123456',
-    companyName: 'AmorimTech',
-    position: 'Diretor de Engenharia',
-    companyCnpj: '12.345.678/0001-90',
-    companyAddress: 'Recife - PE, Brasil',
-    companyPhone: '(81) 99999-9999',
-    companyEmail: 'contato@suaempresa.com.br',
-    companySite: 'https://suaempresa.com.br',
-    socialNetworkLabel: 'Instagram',
-    socialNetworkUrl: 'https://instagram.com/suaempresa',
-    categoriaProfissional: 'arquiteto',
+    fullName: '',
+    professionalTitle: '',
   };
 
   saveState = signal<'idle' | 'saving' | 'saved'>('idle');
@@ -41,13 +30,6 @@ export class UserProfileModalComponent {
       const data = this.profileData();
       if (data) {
         this.profile = { ...data };
-      } else {
-        const saved = localStorage.getItem('user_profile');
-        if (saved) {
-          try {
-            this.profile = JSON.parse(saved);
-          } catch {}
-        }
       }
     });
   }
