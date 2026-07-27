@@ -310,6 +310,15 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   cameraIndisponivel = signal(false);
   dragOver = signal(false);
   itemSalvoFeedback = signal<string | null>(null);
+  menuMaisAcoesAberto = signal<boolean>(false);
+
+  toggleMenuMaisAcoes(): void {
+    this.menuMaisAcoesAberto.update(v => !v);
+  }
+
+  fecharMenuMaisAcoes(): void {
+    this.menuMaisAcoesAberto.set(false);
+  }
   itemGaleriaAberta = signal<string | null>(null);
   evidenciasGaleria = signal<{ url: string; ev: Evidencia }[]>([]);
   fichaEmEdicaoId = signal<string | null>(null);
