@@ -2390,6 +2390,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       { href: 'sec-7',  num: '7.0',  label: 'Caracterização do Objeto da Inspeção' },
       { href: 'sec-8',  num: '8.0',  label: 'Levantamento e Análise dos Documentos Norteadores' },
       { href: 'sec-9',  num: '9.0',  label: 'Vistoria no Objeto da Inspeção' },
+      { href: 'sec-9-1', num: '9.1', label: 'Anamnese — Histórico e Constatações' },
       { href: 'sec-10', num: '10.0', label: 'Diagnóstico do Objeto da Inspeção' },
       { href: 'sec-11', num: '11.0', label: 'Avaliação da Manutenção e Uso' },
       { href: 'sec-12', num: '12.0', label: 'Avaliação do Grau de Criticidade' },
@@ -2896,10 +2897,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
                 ? `<img src="${profile.companyLogoBase64}" style="max-height:22mm;max-width:60mm;object-fit:contain;">`
                 : `<div class="capa-logo-mark">${(profile.companyName || 'P4').slice(0,2).toUpperCase()}</div>`
               }
-              <div>
-                <div class="capa-logo">${profile.companyName || 'Predial 4.0'}</div>
-                <div class="capa-logo-sub">Ecossistema Predial 4.0</div>
-              </div>
             </div>
             <div class="capa-titulo">
               <h1>Laudo Técnico de Inspeção Predial</h1>
@@ -3457,7 +3454,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     const mapaHtml = ativa.mapaImagemBase64 ? `
       <div style="margin:3mm 0;border:1px solid #D8D0C6;border-radius:4px;overflow:hidden;page-break-inside:avoid;">
         <div style="background:#F7F5F0;padding:1.5mm 3mm;font-size:7.5pt;font-weight:600;color:#4A5A66;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #D8D0C6;">Mapa de Localização</div>
-        <img src="${ativa.mapaImagemBase64}" alt="Mapa de localização" style="width:100%;max-height:85mm;object-fit:contain;display:block;">
+        <img src="${ativa.mapaImagemBase64}" alt="Mapa de localização" style="width:100%;aspect-ratio:16/9;max-height:85mm;object-fit:cover;display:block;">
       </div>
       <p style="font-size:7.5pt;color:#6B7280;font-style:italic;margin-bottom:3mm;">Imagem do mapa de localização gerada externamente e anexada pelo Responsável Técnico.</p>
     ` : (ativa.lat && ativa.lng) ? `
@@ -3930,13 +3927,21 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   }
 
   private gerarAnamneseHtml(ativa: Vistoria, anexoImagensMap: Map<string, string>): string {
-    if (!ativa.anamnese) return '';
-    const constatacoes = Array.isArray(ativa.anamnese.constatacoes) ? ativa.anamnese.constatacoes : [];
-    const anexos = Array.isArray(ativa.anamnese.anexos) ? ativa.anamnese.anexos : [];
-    if (constatacoes.length === 0 && anexos.length === 0) return '';
+    const constatacoes = Array.isArray(ativa.anamnese?.constatacoes) ? ativa.anamnese!.constatacoes : [];
+    const anexos = Array.isArray(ativa.anamnese?.anexos) ? ativa.anamnese!.anexos : [];
+
+    if (constatacoes.length === 0 && anexos.length === 0) {
+      return `
+        <div style="page-break-before:always;margin-top:8mm;" id="sec-9-1">
+          <h3 style="font-size:10pt;font-weight:700;color:#132A41;margin:4mm 0 2mm;">9.1 Anamnese — Histórico e Constatações</h3>
+          <p style="font-size:9pt;color:#6B7280;font-style:italic;margin-bottom:6mm;">
+            Nenhuma constatação ou anexo foi registrado na Anamnese desta vistoria.
+          </p>
+        </div>`;
+    }
 
     let html = `
-      <div style="page-break-before:always;margin-top:8mm;">
+      <div style="page-break-before:always;margin-top:8mm;" id="sec-9-1">
         <h3 style="font-size:10pt;font-weight:700;color:#132A41;margin:4mm 0 2mm;">9.1 Anamnese — Histórico e Constatações</h3>
     `;
 
