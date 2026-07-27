@@ -1118,6 +1118,35 @@
 
                           @if (fichaEmEdicaoId() === f.id) {
                             <div class="space-y-3 pt-2 border-t border-slate-200/60">
+
+                              <!-- Banner de contexto: mostra que esta ficha pertence a um item maior, com 3 estados possíveis -->
+                              <div class="bg-slate-800 rounded-lg p-3 text-white">
+                                <p class="text-[9px] uppercase font-semibold text-slate-400 tracking-wide mb-0.5">
+                                  {{ item.systemTitle }} &bull; {{ item.typologyTitle }}
+                                </p>
+                                <p class="font-bold text-xs mb-2.5">{{ item.title }}</p>
+                                <div class="flex gap-1.5">
+                                  <div [class]="'flex-1 text-center text-[10px] font-bold py-1.5 rounded-md border ' +
+                                               ((item.status === 'CONFORME' || item.status === 'PASS') && (item.ocorrencias ?? []).length === 0
+                                                 ? 'bg-emerald-600 border-emerald-600 text-white'
+                                                 : 'border-white/15 text-slate-300')">
+                                    ✓ Sem Dano
+                                  </div>
+                                  <div [class]="'flex-1 text-center text-[10px] font-bold py-1.5 rounded-md border ' +
+                                               ((item.status === 'NAO_APLICAVEL' || item.status === 'NA') && (item.ocorrencias ?? []).length === 0
+                                                 ? 'bg-slate-500 border-slate-500 text-white'
+                                                 : 'border-white/15 text-slate-300')">
+                                    – N/A
+                                  </div>
+                                  <div [class]="'flex-1 text-center text-[10px] font-bold py-1.5 rounded-md border ' +
+                                               ((item.ocorrencias ?? []).length > 0
+                                                 ? 'bg-rose-600 border-rose-600 text-white'
+                                                 : 'border-white/15 text-slate-300')">
+                                    ⚠ Com Dano
+                                  </div>
+                                </div>
+                              </div>
+
                               <div class="grid grid-cols-2 gap-2">
                                 <div class="space-y-1">
                                   <label class="block text-[9px] font-bold uppercase text-slate-500">Pavimento</label>
