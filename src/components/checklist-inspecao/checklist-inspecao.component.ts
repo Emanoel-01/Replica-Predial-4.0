@@ -16,6 +16,14 @@ export interface FichaDano {
   ambiente?: string;
   id_evidencias?: string[];               // chaves das fotos no store 'evidencias'
   diagnostico_ia?: string;
+  sugestaoIaPendente?: {
+    classificacaoTipo?: string;
+    classificacaoSubtipo?: string;
+    manifestacao?: string;
+    causaProvavel?: string;
+    recomendacaoTecnica?: string;
+    criticidadeSugerida?: string;
+  } | null;
   quantitativo?: string;
   memorialDescritivo?: string;
   correlacaoFotoPatologia?: 'CONFIRMADA' | 'DIVERGENTE' | 'INCONCLUSIVA';
@@ -1583,14 +1591,14 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           oc.observacaoDivergencia = diag.observacaoDivergencia;
 
           if (diag.correlacaoFotoPatologia === 'CONFIRMADA') {
-            if (diag.classificacaoTipo) {
-              oc.classificacao = { tipo: diag.classificacaoTipo as any, subtipo: diag.classificacaoSubtipo as any };
-            }
-            oc.manifestacao = diag.manifestacao || oc.manifestacao;
-            oc.causaProvavel = diag.causaProvavel || oc.causaProvavel;
-            oc.recomendacaoTecnica = diag.recomendacaoTecnica || oc.recomendacaoTecnica;
-            oc.criticidade = (diag.criticidadeSugerida as any) || oc.criticidade;
-            oc.normasAplicaveis = this.dataService.getNormasTipologia(it.systemTitle, it.typologyTitle);
+            oc.sugestaoIaPendente = {
+              classificacaoTipo: diag.classificacaoTipo,
+              classificacaoSubtipo: diag.classificacaoSubtipo,
+              manifestacao: diag.manifestacao,
+              causaProvavel: diag.causaProvavel,
+              recomendacaoTecnica: diag.recomendacaoTecnica,
+              criticidadeSugerida: diag.criticidadeSugerida,
+            };
           }
           return it;
         });
@@ -1621,6 +1629,33 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       this.analisandoIa.set(false);
       this.fecharCaptura();
     }
+  }
+
+  aceitarSugestaoIa(itemId: string, fichaId: string): void {
+    this.aplicarMudancaNoItem(itemId, it => {
+      const oc = it.ocorrencias?.find(f => f.id === fichaId);
+      if (!oc || !oc.sugestaoIaPendente) return it;
+
+      const s = oc.sugestaoIaPendente;
+      if (s.classificacaoTipo) {
+        oc.classificacao = { tipo: s.classificacaoTipo as any, subtipo: s.classificacaoSubtipo as any };
+      }
+      oc.manifestacao = s.manifestacao || oc.manifestacao;
+      oc.causaProvavel = s.causaProvavel || oc.causaProvavel;
+      oc.recomendacaoTecnica = s.recomendacaoTecnica || oc.recomendacaoTecnica;
+      oc.criticidade = (s.criticidadeSugerida as any) || oc.criticidade;
+      oc.normasAplicaveis = this.dataService.getNormasTipologia(it.systemTitle, it.typologyTitle);
+      oc.sugestaoIaPendente = null;
+      return it;
+    });
+  }
+
+  descartarSugestaoIa(itemId: string, fichaId: string): void {
+    this.aplicarMudancaNoItem(itemId, it => {
+      const oc = it.ocorrencias?.find(f => f.id === fichaId);
+      if (oc) oc.sugestaoIaPendente = null;
+      return it;
+    });
   }
 
   atualizarNotasItem(itemId: string, event: Event): void {

@@ -1133,6 +1133,44 @@
                                 </div>
                               </div>
 
+                              <!-- Bloco de fotos, agora dentro da edição da ficha, logo após localização -->
+                              <div class="p-2.5 bg-rose-50/50 border border-rose-100 rounded-lg space-y-2">
+                                <div class="flex items-center gap-2">
+                                  <button type="button" (click)="abrirCaptura(item, 'contexto')"
+                                          class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-[10px] font-bold rounded-lg uppercase tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer">
+                                    <span>+ Foto de Contexto</span>
+                                  </button>
+                                  <button type="button" (click)="abrirCaptura(item, 'detalhe')"
+                                          class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-[10px] font-bold rounded-lg uppercase tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer">
+                                    <span>+ Foto de Detalhe</span>
+                                  </button>
+                                </div>
+                                @if (f.id_evidencias?.length) {
+                                  <p class="text-[10px] text-slate-500 font-semibold">{{ f.id_evidencias?.length }} evidência(s) anexada(s)</p>
+                                }
+                              </div>
+
+                              <!-- Sugestão da IA — card separado, nunca escreve direto nos campos abaixo -->
+                              @if (f.sugestaoIaPendente) {
+                                <div class="p-3 border-2 border-dashed border-amber-500 bg-amber-50 rounded-lg space-y-2">
+                                  <p class="text-[9px] font-bold uppercase text-amber-700">Sugestão da IA — não é o texto final</p>
+                                  <p class="text-xs text-slate-700 leading-snug">{{ f.sugestaoIaPendente.manifestacao }}</p>
+                                  @if (f.sugestaoIaPendente.causaProvavel) {
+                                    <p class="text-xs text-slate-600 leading-snug"><span class="font-semibold">Causa provável:</span> {{ f.sugestaoIaPendente.causaProvavel }}</p>
+                                  }
+                                  <div class="flex justify-end gap-1.5 pt-1">
+                                    <button type="button" (click)="descartarSugestaoIa(item.id, f.id)"
+                                            class="px-2 py-1 text-[10px] font-bold text-slate-500 hover:bg-slate-200 rounded transition-colors cursor-pointer border border-slate-200 bg-white">
+                                      Descartar
+                                    </button>
+                                    <button type="button" (click)="aceitarSugestaoIa(item.id, f.id)"
+                                            class="px-2 py-1 text-[10px] font-bold bg-amber-600 hover:bg-amber-700 text-white rounded transition-colors cursor-pointer border border-amber-600">
+                                      Usar como base
+                                    </button>
+                                  </div>
+                                </div>
+                              }
+
                               <div class="grid grid-cols-2 gap-2">
                                 <div class="space-y-1">
                                   <label class="block text-[9px] font-bold uppercase text-slate-500">Classificação (Tipo)</label>
