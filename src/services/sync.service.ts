@@ -75,11 +75,12 @@ export class SyncService {
       this.status.set('success');
       return true;
     } catch (error: any) {
-      console.error('Erro ao sincronizar vistoria:', error);
-      this.errorMessage.set(
-        'Não foi possível salvar na nuvem. Verifique sua conexão e tente novamente. ' +
-        'Seus dados continuam salvos localmente neste dispositivo.'
-      );
+      const isAuthError = error?.message?.includes('autenticado');
+      const msg = isAuthError
+        ? 'Você precisa estar autenticado com e-mail para salvar na nuvem. Seus dados continuam salvos localmente neste dispositivo.'
+        : 'Não foi possível salvar na nuvem. Verifique sua conexão e tente novamente. Seus dados continuam salvos localmente neste dispositivo.';
+      console.warn('Não foi possível sincronizar vistoria na nuvem:', error?.message || error);
+      this.errorMessage.set(msg);
       this.status.set('error');
       return false;
     }

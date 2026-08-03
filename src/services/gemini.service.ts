@@ -54,11 +54,14 @@ export class GeminiService {
       const { data, error } = await this.supabaseService.client.functions.invoke('diagnostico-ia', {
         body: { operation, contents, responseSchema },
       });
-      if (error) throw error;
+      if (error) {
+        console.warn('Função de IA retornou alerta/erro:', error.message || error);
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
       return data as T;
-    } catch (error) {
-      console.error('Erro ao chamar serviço de IA:', error);
+    } catch (error: any) {
+      console.warn('Serviço de IA indisponível ou não autenticado:', error?.message || error);
       throw new Error(this.errorMessage);
     } finally {
       this.loading.set(false);

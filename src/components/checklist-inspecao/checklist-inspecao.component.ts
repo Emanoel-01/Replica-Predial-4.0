@@ -1551,8 +1551,13 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
         recomendacaoTecnica: result.recomendacaoTecnica,
         criticidadeSugerida: result.criticidadeSugerida,
       };
-    } catch (e) {
-      console.error('Erro na chamada do Gemini:', e);
+    } catch (e: any) {
+      console.warn('Diagnóstico de IA indisponível:', e?.message || e);
+      this.toastService.show(
+        'Diagnóstico por IA indisponível no momento. Você pode preencher os dados de campo manualmente.',
+        'info',
+        6000
+      );
       return null;
     }
   }
