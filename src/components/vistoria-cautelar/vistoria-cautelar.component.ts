@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } 
 import { FormsModule } from '@angular/forms';
 import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
+import { GeminiService } from '../../services/gemini.service';
 
 // ═══════════════════════════════════════════════════════════════════
 // VISTORIA CAUTELAR DE VIZINHANÇA — MODELO DE DADOS
@@ -239,6 +240,7 @@ export class VistoriaCautelarComponent implements OnInit {
   readonly ELEMENTOS_CONSTRUTIVOS = ELEMENTOS_CONSTRUTIVOS;
   private dbService = inject(VistoriaDbService);
   private toastService = inject(ToastService);
+  private geminiService = inject(GeminiService);
 
   modoExibicao = signal<'LISTA' | 'CRIACAO' | 'DETALHE' | 'DETALHE_IMOVEL'>('LISTA');
   todasVistoriasCautelares = signal<VistoriaCautelar[]>([]);
@@ -342,6 +344,21 @@ export class VistoriaCautelarComponent implements OnInit {
   edOcFotos = signal<string[]>([]);
   edOcTestemunhoInstalado = signal(false);
   edOcFotoTestemunho = signal<string | null>(null);
+
+  // ─── VC-6b-ii: Gravação de voz ───
+  gravandoAudio = signal(false);
+  transcrevendoAudio = signal(false);
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: Blob[] = [];
+
+  // ─── VC-6b-ii: Sugestão por IA ───
+  sugerindoIA = signal(false);
+  sugestaoIAPendente = signal<{
+    elementoConstrutivo?: ElementoConstrutivo;
+    tipoConstatacao?: TipoConstatacaoCautelar;
+    descricaoSugerida?: string;
+  } | null>(null);
+  private sugestaoIAAplicadaNestaSessao: { elementoConstrutivo?: ElementoConstrutivo; tipoConstatacao?: TipoConstatacaoCautelar; descricaoSugerida?: string } | null = null;
 
   // Classificação automática, recalculada a cada digitação de mm
   edOcFamiliaCalculada = computed<FamiliaAbertura | null>(() => {
@@ -838,6 +855,8 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edOcFotos.set([]);
     this.edOcTestemunhoInstalado.set(false);
     this.edOcFotoTestemunho.set(null);
+    this.sugestaoIAPendente.set(null);
+    this.sugestaoIAAplicadaNestaSessao = null;
     this.modalOcorrenciaAberto.set(true);
   }
 
@@ -909,6 +928,12 @@ export class VistoriaCautelarComponent implements OnInit {
       localizacaoNoAmbiente: this.edOcLocalizacaoNoAmbiente(),
       testemunhoInstalado: this.edOcTestemunhoInstalado(),
       fotoTestemunho: this.edOcTestemunhoInstalado() ? (this.edOcFotoTestemunho() ?? undefined) : undefined,
+      sugestaoIA: this.sugestaoIAAplicadaNestaSessao ? {
+        elementoConstrutivo: this.sugestaoIAAplicadaNestaSessao.elementoConstrutivo,
+        tipoConstatacao: this.sugestaoIAAplicadaNestaSessao.tipoConstatacao,
+        descricaoSugerida: this.sugestaoIAAplicadaNestaSessao.descricaoSugerida,
+        confirmadaPeloUsuario: true,
+      } : undefined,
     };
 
     const imoveisAtualizados = vistoria.imoveis.map(im => {
@@ -933,6 +958,158 @@ export class VistoriaCautelarComponent implements OnInit {
     this.vistoriaAtivaId.set(atualizada.id);
     this.modalOcorrenciaAberto.set(false);
     this.toastService.show('Ocorrência registrada.', 'success');
+  }
+
+  async iniciarGravacaoAudio(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.audioChunks = [];
+      this.mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      this.mediaRecorder.ondataavailable = (e) => this.audioChunks.push(e.data);
+      this.mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+        stream.getTracks().forEach(t => t.stop());
+        await this.transcreverAudio(audioBlob);
+      };
+      this.mediaRecorder.start();
+      this.gravandoAudio.set(true);
+    } catch (err) {
+      console.warn('Erro ao acessar microfone:', err);
+      this.toastService.show('Não foi possível acessar o microfone. Verifique as permissões do navegador.', 'error');
+    }
+  }
+
+  pararGravacaoAudio(): void {
+    if (this.mediaRecorder && this.gravandoAudio()) {
+      this.mediaRecorder.stop();
+      this.gravandoAudio.set(false);
+    }
+  }
+
+  private blobParaBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]); // remove o prefixo "data:audio/webm;base64,"
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  private async transcreverAudio(audioBlob: Blob): Promise<void> {
+    this.transcrevendoAudio.set(true);
+    try {
+      const base64 = await this.blobParaBase64(audioBlob);
+      const texto = await this.geminiService.generateTextWithImages(
+        'Transcreva fielmente o áudio a seguir, em português. Retorne apenas o texto transcrito, sem comentários adicionais.',
+        [{ base64, mimeType: 'audio/webm' }]
+      );
+      const transcricaoLimpa = this.geminiService.sanitizeAiText(texto);
+      this.edOcDescricao.update(atual => atual ? `${atual}\n${transcricaoLimpa}` : transcricaoLimpa);
+      this.toastService.show('Áudio transcrito e adicionado à descrição.', 'success');
+    } catch (err) {
+      console.warn('Erro ao transcrever áudio:', err);
+      this.toastService.show('Não foi possível transcrever o áudio. Você pode digitar a descrição manualmente.', 'info', 6000);
+    } finally {
+      this.transcrevendoAudio.set(false);
+    }
+  }
+
+  async sugerirComIA(): Promise<void> {
+    const fotos = this.edOcFotos();
+    if (fotos.length === 0) {
+      this.toastService.show('Adicione ao menos uma foto antes de pedir sugestão por IA.', 'info');
+      return;
+    }
+    this.sugerindoIA.set(true);
+    try {
+      const prompt = `Você é um vistoriador técnico realizando uma Vistoria Cautelar de Vizinhança,
+conforme a Norma de Vistoria Cautelar de Vizinhança do IBAPE/SP (2025) e a ABNT NBR 13752:2024,
+item 7.3.3.2 — Vistoria de Constatação.
+
+REGRA ABSOLUTA: este é um registro de CONSTATAÇÃO, não um diagnóstico. Você deve descrever
+exclusivamente o que é visível na foto — tipo de elemento, aparência, localização, extensão
+aparente. É TERMINANTEMENTE PROIBIDO mencionar, sugerir ou insinuar: causa da ocorrência,
+responsabilidade de qualquer parte, origem da manifestação (ex.: não diga se uma infiltração
+vem "de cima" ou "de baixo", não diga se uma fissura está "ativa" ou "estabilizada"), ou
+qualquer recomendação de reparo ou solução técnica.
+
+Analise a foto anexada e responda:
+- elementoConstrutivo: qual dos seguintes elementos está mais evidente na foto — Piso, Paredes,
+  Forros, Portas, Janelas, Pinturas, Cobertas, Instalações Elétricas, Instalações Sanitárias,
+  Instalações Especiais.
+- tipoConstatacao: classifique como ANOMALIA (irregularidade/exceção ao padrão), FALHA
+  (ocorrência que prejudica a utilização do elemento, com desempenho inferior ao requerido) ou
+  MANIFESTACAO_PATOLOGICA (irregularidade visível decorrente de falha em projeto, execução, uso
+  ou manutenção) — classifique pela NATUREZA do que é visto, nunca pela causa.
+- descricaoSugerida: um parágrafo curto e objetivo (2-3 frases) descrevendo apenas o que é
+  visível na foto — aparência, localização aproximada, extensão — em linguagem técnica de
+  constatação. Não inclua nenhuma palavra sobre causa, responsabilidade ou solução.
+
+Se a foto não permitir uma constatação clara (desfocada, mal enquadrada, sem elemento
+identificável), deixe descricaoSugerida em branco e explique isso não é possível determinar,
+sem inventar conteúdo.`;
+
+      const primeiraFoto = fotos[0];
+      const base64 = primeiraFoto.split(',')[1] ?? primeiraFoto;
+
+      const schema = {
+        type: 'object',
+        properties: {
+          elementoConstrutivo: { type: 'string' },
+          tipoConstatacao: { type: 'string', enum: ['ANOMALIA', 'FALHA', 'MANIFESTACAO_PATOLOGICA'] },
+          descricaoSugerida: { type: 'string' },
+        },
+        required: ['elementoConstrutivo', 'tipoConstatacao', 'descricaoSugerida'],
+      };
+
+      const textPart = { text: prompt };
+      const imagePart = { inlineData: { data: base64, mimeType: 'image/jpeg' } };
+      const contents = { parts: [textPart, imagePart] };
+
+      const resultado = await this.geminiService.generateStructured<{
+        elementoConstrutivo: string;
+        tipoConstatacao: TipoConstatacaoCautelar;
+        descricaoSugerida: string;
+      }>(contents, schema);
+
+      const elementoValido = ELEMENTOS_CONSTRUTIVOS.includes(resultado.elementoConstrutivo as ElementoConstrutivo)
+        ? (resultado.elementoConstrutivo as ElementoConstrutivo)
+        : undefined;
+
+      this.sugestaoIAPendente.set({
+        elementoConstrutivo: elementoValido,
+        tipoConstatacao: resultado.tipoConstatacao,
+        descricaoSugerida: resultado.descricaoSugerida,
+      });
+    } catch (err) {
+      console.warn('Erro ao obter sugestão por IA:', err);
+      this.toastService.show('Sugestão por IA indisponível no momento. Você pode preencher manualmente.', 'info', 6000);
+    } finally {
+      this.sugerindoIA.set(false);
+    }
+  }
+
+  aceitarSugestaoIA(): void {
+    const sugestao = this.sugestaoIAPendente();
+    if (!sugestao) return;
+    this.sugestaoIAAplicadaNestaSessao = sugestao;
+    if (sugestao.elementoConstrutivo) {
+      this.edOcElementoConstrutivo.set(sugestao.elementoConstrutivo);
+      this.onElementoConstrutivoChange();
+    }
+    if (sugestao.tipoConstatacao) this.edOcTipoConstatacao.set(sugestao.tipoConstatacao);
+    if (sugestao.descricaoSugerida) {
+      this.edOcDescricao.update(atual => atual ? atual : sugestao.descricaoSugerida!);
+    }
+    this.sugestaoIAPendente.set(null);
+    this.toastService.show('Sugestão aplicada. Revise antes de salvar.', 'success');
+  }
+
+  descartarSugestaoIA(): void {
+    this.sugestaoIAPendente.set(null);
   }
 
   async excluirOcorrencia(ambienteId: string, ocorrenciaId: string): Promise<void> {
