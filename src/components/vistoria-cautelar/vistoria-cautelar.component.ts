@@ -214,6 +214,7 @@ export interface LaudoCautelarEmitido {
   imports: [FormsModule],
 })
 export class VistoriaCautelarComponent implements OnInit {
+  readonly ELEMENTOS_CONSTRUTIVOS = ELEMENTOS_CONSTRUTIVOS;
   private dbService = inject(VistoriaDbService);
   private toastService = inject(ToastService);
 
@@ -302,6 +303,30 @@ export class VistoriaCautelarComponent implements OnInit {
   ambientesInicializados = signal(false);
   novoAmbienteNomeCustom = signal('');
   ambienteEmFocoId = signal<string | null>(null);
+
+  // ─── VC-6b-i: Modal de registro de ocorrência ───
+  modalOcorrenciaAberto = signal(false);
+  ambienteDaOcorrenciaId = signal<string | null>(null);
+  ocorrenciaEmEdicaoId = signal<string | null>(null); // null = nova ocorrência
+
+  edOcElementoConstrutivo = signal<ElementoConstrutivo>('Paredes');
+  edOcTipoConstatacao = signal<TipoConstatacaoCautelar>('ANOMALIA');
+  edOcUsaFamiliaAbertura = signal(true); // toggle: abertura em mm vs. outra manifestação
+  edOcAberturaMm = signal('');
+  edOcOutraManifestacao = signal<OutraManifestacao>('INFILTRACAO');
+  edOcOutraManifestacaoDescricao = signal('');
+  edOcDescricao = signal('');
+  edOcLocalizacaoNoAmbiente = signal('');
+  edOcFotos = signal<string[]>([]);
+  edOcTestemunhoInstalado = signal(false);
+  edOcFotoTestemunho = signal<string | null>(null);
+
+  // Classificação automática, recalculada a cada digitação de mm
+  edOcFamiliaCalculada = computed<FamiliaAbertura | null>(() => {
+    const mm = parseFloat(this.edOcAberturaMm());
+    if (isNaN(mm) || mm < 0) return null;
+    return classificarAbertura(mm);
+  });
 
   private comprimirImagem(dataUrl: string, maxWidth = 900, quality = 0.78): Promise<string> {
     return new Promise((resolve) => {
@@ -775,5 +800,159 @@ export class VistoriaCautelarComponent implements OnInit {
     const ambientes = this.ambientesDoImovel();
     const completos = ambientes.filter(a => this.ambienteTemFotoObrigatoria(a)).length;
     return `${completos} de ${ambientes.length} ambientes com foto registrada`;
+  }
+
+  abrirModalNovaOcorrencia(ambienteId: string): void {
+    this.ambienteDaOcorrenciaId.set(ambienteId);
+    this.ocorrenciaEmEdicaoId.set(null);
+    this.edOcElementoConstrutivo.set('Paredes');
+    this.edOcTipoConstatacao.set('ANOMALIA');
+    this.edOcUsaFamiliaAbertura.set(true);
+    this.edOcAberturaMm.set('');
+    this.edOcOutraManifestacao.set('INFILTRACAO');
+    this.edOcOutraManifestacaoDescricao.set('');
+    this.edOcDescricao.set('');
+    this.edOcLocalizacaoNoAmbiente.set('');
+    this.edOcFotos.set([]);
+    this.edOcTestemunhoInstalado.set(false);
+    this.edOcFotoTestemunho.set(null);
+    this.modalOcorrenciaAberto.set(true);
+  }
+
+  fecharModalOcorrencia(): void {
+    this.modalOcorrenciaAberto.set(false);
+  }
+
+  async onFotoOcorrenciaChange(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      const compressed = await this.comprimirImagem(dataUrl, 900, 0.78);
+      this.edOcFotos.update(arr => [...arr, compressed]);
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  removerFotoOcorrencia(index: number): void {
+    this.edOcFotos.update(arr => arr.filter((_, i) => i !== index));
+  }
+
+  async onFotoTestemunhoChange(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      const compressed = await this.comprimirImagem(dataUrl, 900, 0.78);
+      this.edOcFotoTestemunho.set(compressed);
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  podeSalvarOcorrencia(): boolean {
+    const temDescricaoOutro = this.edOcOutraManifestacao() !== 'OUTRO' || !!this.edOcOutraManifestacaoDescricao().trim();
+    return !!(this.edOcDescricao().trim() && this.edOcLocalizacaoNoAmbiente().trim()
+      && this.edOcFotos().length > 0 && temDescricaoOutro);
+  }
+
+  async salvarOcorrencia(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovel = this.imovelEmEdicao();
+    const ambienteId = this.ambienteDaOcorrenciaId();
+    if (!vistoria || !imovel || !ambienteId || !this.podeSalvarOcorrencia()) {
+      this.toastService.show('Preencha descrição, localização e ao menos uma foto.', 'error');
+      return;
+    }
+
+    const usaFamilia = this.edOcUsaFamiliaAbertura();
+    const mm = usaFamilia && this.edOcAberturaMm() ? parseFloat(this.edOcAberturaMm()) : undefined;
+
+    const novaOcorrencia: OcorrenciaCautelar = {
+      id: this.ocorrenciaEmEdicaoId() ?? crypto.randomUUID(),
+      elementoConstrutivo: this.edOcElementoConstrutivo(),
+      tipoConstatacao: this.edOcTipoConstatacao(),
+      familiaAbertura: usaFamilia && mm != null ? classificarAbertura(mm) : undefined,
+      aberturaMm: usaFamilia && mm != null ? mm : undefined,
+      outraManifestacao: !usaFamilia ? this.edOcOutraManifestacao() : undefined,
+      outraManifestacaoDescricao: !usaFamilia && this.edOcOutraManifestacao() === 'OUTRO'
+        ? this.edOcOutraManifestacaoDescricao() : undefined,
+      descricao: this.edOcDescricao(),
+      fotos: this.edOcFotos(),
+      localizacaoNoAmbiente: this.edOcLocalizacaoNoAmbiente(),
+      testemunhoInstalado: this.edOcTestemunhoInstalado(),
+      fotoTestemunho: this.edOcTestemunhoInstalado() ? (this.edOcFotoTestemunho() ?? undefined) : undefined,
+    };
+
+    const imoveisAtualizados = vistoria.imoveis.map(im => {
+      if (im.id !== imovel.id) return im;
+      const ambientesAtualizados = im.ambientes.map(amb => {
+        if (amb.id !== ambienteId) return amb;
+        const idEditando = this.ocorrenciaEmEdicaoId();
+        const ocorrenciasAtualizadas = idEditando
+          ? amb.ocorrencias.map(o => o.id === idEditando ? novaOcorrencia : o)
+          : [...amb.ocorrencias, novaOcorrencia];
+        return { ...amb, ocorrencias: ocorrenciasAtualizadas };
+      });
+      return { ...im, ambientes: ambientesAtualizados };
+    });
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+    this.modalOcorrenciaAberto.set(false);
+    this.toastService.show('Ocorrência registrada.', 'success');
+  }
+
+  async excluirOcorrencia(ambienteId: string, ocorrenciaId: string): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovel = this.imovelEmEdicao();
+    if (!vistoria || !imovel) return;
+    const imoveisAtualizados = vistoria.imoveis.map(im => {
+      if (im.id !== imovel.id) return im;
+      const ambientesAtualizados = im.ambientes.map(amb =>
+        amb.id === ambienteId ? { ...amb, ocorrencias: amb.ocorrencias.filter(o => o.id !== ocorrenciaId) } : amb
+      );
+      return { ...im, ambientes: ambientesAtualizados };
+    });
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+    this.toastService.show('Ocorrência removida.', 'info');
+  }
+
+  labelFamiliaAbertura(f: FamiliaAbertura | null): string {
+    switch (f) {
+      case 'FISSURA': return 'Fissura (≤ 0,50 mm)';
+      case 'TRINCA': return 'Trinca (0,50 a 1,00 mm)';
+      case 'RACHADURA': return 'Rachadura (1,00 a 5,00 mm)';
+      case 'FENDA': return 'Fenda (5,00 a 10,00 mm)';
+      case 'BRECHA': return 'Brecha (acima de 10,00 mm)';
+      default: return '—';
+    }
+  }
+
+  labelOutraManifestacao(m: OutraManifestacao): string {
+    switch (m) {
+      case 'INFILTRACAO': return 'Infiltração';
+      case 'UMIDADE': return 'Umidade';
+      case 'MOFO': return 'Mofo';
+      case 'DESCOLAMENTO': return 'Descolamento';
+      case 'OUTRO': return 'Outro';
+    }
   }
 }

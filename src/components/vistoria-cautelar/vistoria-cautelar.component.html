@@ -387,14 +387,28 @@
               </div>
             }
 
+            @if (amb.ocorrencias.length > 0) {
+              <div class="space-y-1.5 mb-2.5">
+                @for (oc of amb.ocorrencias; track oc.id) {
+                  <div class="flex items-center justify-between bg-amber-50/50 border border-amber-100 rounded-lg px-2.5 py-1.5">
+                    <span class="text-xs text-slate-700">
+                      <strong>{{ oc.elementoConstrutivo }}</strong> —
+                      {{ oc.familiaAbertura ? labelFamiliaAbertura(oc.familiaAbertura) : labelOutraManifestacao(oc.outraManifestacao!) }}
+                    </span>
+                    <button (click)="excluirOcorrencia(amb.id, oc.id)" class="text-slate-400 hover:text-red-500 text-xs">Remover</button>
+                  </div>
+                }
+              </div>
+            }
+
             <div class="flex items-center gap-2">
               <label class="text-xs font-bold text-sky-600 hover:underline cursor-pointer">
                 + Adicionar foto
                 <input type="file" accept="image/*" (change)="onFotoAmbienteChange($event, amb.id)" class="hidden">
               </label>
               <span class="text-slate-300">·</span>
-              <button class="text-xs font-bold text-slate-500 hover:text-slate-800">
-                Registrar ocorrência (disponível no próximo bloco)
+              <button (click)="abrirModalNovaOcorrencia(amb.id)" class="text-xs font-bold text-sky-600 hover:underline">
+                + Registrar ocorrência
               </button>
             </div>
           </div>
@@ -538,6 +552,132 @@
       <div class="flex gap-3 pt-2">
         <button (click)="fecharAutorizacaoAcesso()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">Cancelar</button>
         <button (click)="salvarAutorizacaoAcesso()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">Salvar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: REGISTRO DE OCORRÊNCIA -->
+@if (modalOcorrenciaAberto()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 my-8">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-800">Registrar Ocorrência</h3>
+        <button (click)="fecharModalOcorrencia()" class="text-slate-400 hover:text-slate-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="bg-red-50/50 border border-red-100 rounded-xl p-3 text-[11px] text-red-800">
+        Este registro constata o estado da edificação — tipo, localização e severidade
+        aparente. Não inclui causa, responsabilidade ou solução.
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Elemento construtivo</label>
+          <select [(ngModel)]="edOcElementoConstrutivo" name="ocElemento" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            @for (el of ELEMENTOS_CONSTRUTIVOS; track el) {
+              <option [value]="el">{{ el }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipo de constatação</label>
+          <select [(ngModel)]="edOcTipoConstatacao" name="ocTipo" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="ANOMALIA">Anomalia</option>
+            <option value="MANIFESTACAO_PATOLOGICA">Manifestação patológica</option>
+            <option value="FALHA">Falha</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Natureza da manifestação</label>
+        <div class="grid grid-cols-2 gap-2 mb-2.5">
+          <label [class]="'border rounded-lg p-2 text-center cursor-pointer text-xs font-bold transition-all ' + (edOcUsaFamiliaAbertura() ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-500')">
+            <input type="radio" name="ocNatureza" [value]="true" [(ngModel)]="edOcUsaFamiliaAbertura" class="sr-only">
+            Abertura medida (fissura/trinca/...)
+          </label>
+          <label [class]="'border rounded-lg p-2 text-center cursor-pointer text-xs font-bold transition-all ' + (!edOcUsaFamiliaAbertura() ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-500')">
+            <input type="radio" name="ocNatureza" [value]="false" [(ngModel)]="edOcUsaFamiliaAbertura" class="sr-only">
+            Outra manifestação
+          </label>
+        </div>
+
+        @if (edOcUsaFamiliaAbertura()) {
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1.5">Abertura medida (mm)</label>
+            <input type="number" step="0.01" min="0" [(ngModel)]="edOcAberturaMm" name="ocMm" placeholder="ex.: 0.85"
+                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            @if (edOcFamiliaCalculada()) {
+              <p class="text-xs font-bold text-sky-700 mt-1.5">Classificação: {{ labelFamiliaAbertura(edOcFamiliaCalculada()) }}</p>
+            }
+          </div>
+        } @else {
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipo</label>
+              <select [(ngModel)]="edOcOutraManifestacao" name="ocOutra" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                <option value="INFILTRACAO">Infiltração</option>
+                <option value="UMIDADE">Umidade</option>
+                <option value="MOFO">Mofo</option>
+                <option value="DESCOLAMENTO">Descolamento</option>
+                <option value="OUTRO">Outro</option>
+              </select>
+            </div>
+            @if (edOcOutraManifestacao() === 'OUTRO') {
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">Descreva a manifestação *</label>
+                <input type="text" [(ngModel)]="edOcOutraManifestacaoDescricao" name="ocOutraDesc" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Localização no ambiente *</label>
+        <input type="text" [(ngModel)]="edOcLocalizacaoNoAmbiente" name="ocLocal" placeholder="ex.: parede próxima ao box do banheiro"
+               class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Descrição *</label>
+        <textarea [(ngModel)]="edOcDescricao" name="ocDescricao" rows="3"
+                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Foto(s) *</label>
+        @if (edOcFotos().length > 0) {
+          <div class="flex flex-wrap gap-2 mb-2">
+            @for (foto of edOcFotos(); track $index) {
+              <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200">
+                <img [src]="foto" class="w-full h-full object-cover">
+                <button (click)="removerFotoOcorrencia($index)" class="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] leading-none">×</button>
+              </div>
+            }
+          </div>
+        }
+        <input type="file" accept="image/*" (change)="onFotoOcorrenciaChange($event)" class="w-full text-xs text-slate-600">
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <input type="checkbox" id="ocTestemunho" [(ngModel)]="edOcTestemunhoInstalado" name="ocTestemunho" class="rounded border-slate-300">
+        <label for="ocTestemunho" class="text-xs font-bold text-slate-600">Testemunho/selo instalado</label>
+      </div>
+      @if (edOcTestemunhoInstalado()) {
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Foto do testemunho (com data visível)</label>
+          <input type="file" accept="image/*" (change)="onFotoTestemunhoChange($event)" class="w-full text-xs text-slate-600">
+          @if (edOcFotoTestemunho()) { <p class="text-[11px] text-emerald-600 mt-1">✓ Foto carregada</p> }
+        </div>
+      }
+
+      <div class="flex gap-3 pt-2">
+        <button (click)="fecharModalOcorrencia()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">Cancelar</button>
+        <button (click)="salvarOcorrencia()" [disabled]="!podeSalvarOcorrencia()" class="flex-1 bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-sm transition-colors">Salvar</button>
       </div>
     </div>
   </div>
