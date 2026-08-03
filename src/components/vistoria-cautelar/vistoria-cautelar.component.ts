@@ -273,6 +273,7 @@ export class VistoriaCautelarComponent implements OnInit {
 
   // ─── VC-4: Painel de autorização de acesso (imóvel selecionado) ───
   imovelEmEdicaoId = signal<string | null>(null);
+  modalAutorizacaoAberto = signal(false);
   edAutorizacaoStatus = signal<StatusAutorizacao>('AUTORIZADO');
   edDataContatoPrevio = signal('');
   edMeioContato = signal<'TELEFONE' | 'EMAIL' | 'PESSOAL'>('TELEFONE');
@@ -471,10 +472,11 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edRecusaFormaNotificacao.set(auth.recusa?.formaNotificacao ?? 'CORREIOS');
     this.edRecusaAnexoComprovante.set(auth.recusa?.anexoComprovante ?? null);
     this.edRecusaFotoFachada.set(auth.recusa?.fotoFachadaExterna ?? null);
+    this.modalAutorizacaoAberto.set(true);
   }
 
   fecharAutorizacaoAcesso(): void {
-    this.imovelEmEdicaoId.set(null);
+    this.modalAutorizacaoAberto.set(false);
   }
 
   private async processarArquivoParaDataUrl(event: Event, destino: (v: string) => void): Promise<void> {
@@ -537,7 +539,7 @@ export class VistoriaCautelarComponent implements OnInit {
     await this.dbService.salvarVistoriaCautelar(atualizada);
     await this.carregarVistorias();
     this.vistoriaAtivaId.set(atualizada.id);
-    this.imovelEmEdicaoId.set(null);
+    this.modalAutorizacaoAberto.set(false);
     this.toastService.show('Autorização de acesso registrada.', 'success');
   }
 
