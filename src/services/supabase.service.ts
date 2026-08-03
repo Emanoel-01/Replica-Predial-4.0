@@ -29,38 +29,52 @@ export class SupabaseService {
   }
 
   async getProfissional(userId: string): Promise<any | null> {
-    const { data, error } = await this.client
-      .from('profissionais')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+    try {
+      const { data, error } = await this.client
+        .from('profissionais')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (error) {
-      console.error('Erro ao buscar profissional:', error);
+      if (error) {
+        console.warn('Aviso ao buscar profissional no Supabase:', error.message || error);
+        return null;
+      }
+      return data;
+    } catch (e: any) {
+      console.warn('Exceção ao buscar profissional no Supabase:', e?.message || e);
       return null;
     }
-    return data;
   }
 
   async upsertProfissional(userId: string, payload: Record<string, any>): Promise<{ error: Error | null }> {
-    const { error } = await this.client
-      .from('profissionais')
-      .upsert({ id: userId, ...payload }, { onConflict: 'id' });
+    try {
+      const { error } = await this.client
+        .from('profissionais')
+        .upsert({ id: userId, ...payload }, { onConflict: 'id' });
 
-    return { error };
+      return { error };
+    } catch (e: any) {
+      return { error: e };
+    }
   }
 
   async getAllProfissionais(): Promise<any[]> {
-    const { data, error } = await this.client
-      .from('profissionais')
-      .select('*')
-      .order('full_name', { ascending: true });
+    try {
+      const { data, error } = await this.client
+        .from('profissionais')
+        .select('*')
+        .order('full_name', { ascending: true });
 
-    if (error) {
-      console.error('Erro ao buscar profissionais:', error);
+      if (error) {
+        console.warn('Aviso ao buscar profissionais no Supabase (verifique RLS/autenticação):', error.message || error);
+        return [];
+      }
+      return data ?? [];
+    } catch (e: any) {
+      console.warn('Exceção ao buscar profissionais no Supabase:', e?.message || e);
       return [];
     }
-    return data ?? [];
   }
 
   async updateAtivoProfissional(userId: string, ativo: boolean): Promise<{ error: Error | null }> {
