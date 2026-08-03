@@ -298,6 +298,11 @@ export class VistoriaCautelarComponent implements OnInit {
   edImovelVedacoesVerticais = signal('');
   edImovelEstadoConservacao = signal<EstadoConservacaoCautelar>('BOM');
 
+  // ─── VC-6a: Checklist de ambientes ───
+  ambientesInicializados = signal(false);
+  novoAmbienteNomeCustom = signal('');
+  ambienteEmFocoId = signal<string | null>(null);
+
   private comprimirImagem(dataUrl: string, maxWidth = 900, quality = 0.78): Promise<string> {
     return new Promise((resolve) => {
       const img = new Image();
@@ -577,6 +582,7 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edImovelContencao.set(imovel.caracteristicasConstrutivas.contencao ?? '');
     this.edImovelVedacoesVerticais.set(imovel.caracteristicasConstrutivas.vedacoesVerticais ?? '');
     this.edImovelEstadoConservacao.set(imovel.estadoConservacao.classificacao);
+    this.garantirAmbientesPadrao();
     this.modoExibicao.set('DETALHE_IMOVEL');
   }
 
@@ -639,5 +645,135 @@ export class VistoriaCautelarComponent implements OnInit {
       case 'TRANSVERSAL_RAIO': return 'Transversal (raio)';
       default: return '—';
     }
+  }
+
+  ambientesDoImovel(): AmbienteCautelar[] {
+    return this.imovelEmEdicao()?.ambientes ?? [];
+  }
+
+  /**
+   * Garante que a lista de ambientes do imóvel em edição já tenha os ambientes
+   * padrão da tipologia carregados. Chamado ao entrar na tela de detalhe do
+   * imóvel (item 3 abaixo). Só popula uma vez — se o usuário já tiver ambientes
+   * salvos (inclusive customizados ou de sessão anterior), não sobrescreve.
+   */
+  async garantirAmbientesPadrao(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovel = this.imovelEmEdicao();
+    if (!vistoria || !imovel) return;
+    if (imovel.ambientes.length > 0) return; // já tem ambientes, não mexe
+
+    const tipologia = imovel.dadosImovel.tipologia;
+    const nomesPadrao = AMBIENTES_POR_TIPOLOGIA[tipologia] ?? [];
+    const novosAmbientes: AmbienteCautelar[] = nomesPadrao.map(nome => ({
+      id: crypto.randomUUID(),
+      nome,
+      fotos: [],
+      ocorrencias: [],
+    }));
+
+    const imoveisAtualizados = vistoria.imoveis.map(im =>
+      im.id === imovel.id ? { ...im, ambientes: novosAmbientes } : im
+    );
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+  }
+
+  async adicionarAmbienteCustomizado(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovel = this.imovelEmEdicao();
+    const nome = this.novoAmbienteNomeCustom().trim();
+    if (!vistoria || !imovel || !nome) return;
+
+    const novoAmbiente: AmbienteCautelar = {
+      id: crypto.randomUUID(),
+      nome,
+      fotos: [],
+      ocorrencias: [],
+    };
+    const imoveisAtualizados = vistoria.imoveis.map(im =>
+      im.id === imovel.id ? { ...im, ambientes: [...im.ambientes, novoAmbiente] } : im
+    );
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+    this.novoAmbienteNomeCustom.set('');
+  }
+
+  async onFotoAmbienteChange(event: Event, ambienteId: string): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      const compressed = await this.comprimirImagem(dataUrl, 900, 0.78);
+
+      const vistoria = this.vistoriaAtiva();
+      const imovel = this.imovelEmEdicao();
+      if (!vistoria || !imovel) return;
+
+      const imoveisAtualizados = vistoria.imoveis.map(im => {
+        if (im.id !== imovel.id) return im;
+        const ambientesAtualizados = im.ambientes.map(amb =>
+          amb.id === ambienteId ? { ...amb, fotos: [...amb.fotos, compressed] } : amb
+        );
+        return { ...im, ambientes: ambientesAtualizados };
+      });
+      const atualizada: VistoriaCautelar = {
+        ...vistoria,
+        imoveis: imoveisAtualizados,
+        dateUpdated: new Date().toISOString(),
+      };
+      await this.dbService.salvarVistoriaCautelar(atualizada);
+      await this.carregarVistorias();
+      this.vistoriaAtivaId.set(atualizada.id);
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  async removerFotoAmbiente(ambienteId: string, index: number): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovel = this.imovelEmEdicao();
+    if (!vistoria || !imovel) return;
+
+    const imoveisAtualizados = vistoria.imoveis.map(im => {
+      if (im.id !== imovel.id) return im;
+      const ambientesAtualizados = im.ambientes.map(amb =>
+        amb.id === ambienteId ? { ...amb, fotos: amb.fotos.filter((_, i) => i !== index) } : amb
+      );
+      return { ...im, ambientes: ambientesAtualizados };
+    });
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+  }
+
+  ambienteTemFotoObrigatoria(ambiente: AmbienteCautelar): boolean {
+    return ambiente.fotos.length > 0;
+  }
+
+  contadorAmbientesCompletos(): string {
+    const ambientes = this.ambientesDoImovel();
+    const completos = ambientes.filter(a => this.ambienteTemFotoObrigatoria(a)).length;
+    return `${completos} de ${ambientes.length} ambientes com foto registrada`;
   }
 }
