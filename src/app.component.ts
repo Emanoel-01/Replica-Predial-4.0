@@ -228,6 +228,11 @@ export class AppComponent implements OnInit {
     this.isLoggedIn.set(true);
     this.showLogin.set(false);
     this.activeView.set('visao-geral');
+    // AUDITORIA TEMPORÁRIA — libera visualização do Painel Admin sem passar
+    // pelo mecanismo real (removido por segurança, substituto via backend
+    // ainda não implementado). Remover esta linha junto com o resto do
+    // atalho de auditoria.
+    this.admAcessoLiberado.set(true);
   }
 
   showLoginRequiredToast(): void {
