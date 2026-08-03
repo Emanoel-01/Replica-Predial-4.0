@@ -500,6 +500,61 @@
       </div>
     </div>
 
+    <!-- SEÇÃO: ASSINATURAS -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+      <div>
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Assinaturas</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Este laudo é considerado documento provisório até assinatura física ou digital dos responsáveis, quando adquire plena validade técnica.</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <p class="text-xs font-bold text-slate-600">Vistoriador *</p>
+        <div class="grid sm:grid-cols-3 gap-2.5">
+          <input type="text" [(ngModel)]="edAssVistoriadorNome" name="assVistNome" placeholder="Nome completo"
+                 class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <input type="text" [(ngModel)]="edAssVistoriadorRegistro" name="assVistReg" placeholder="Registro (CAU/CREA)"
+                 class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <input type="text" [(ngModel)]="edAssVistoriadorArtRrt" name="assVistArt" placeholder="Nº da ART/RRT"
+                 class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+      </div>
+
+      @if (imovelExigeAssinaturaOcupante()) {
+        <div class="space-y-2.5">
+          <p class="text-xs font-bold text-slate-600">Ocupante</p>
+          <div class="grid sm:grid-cols-2 gap-2.5">
+            <input type="text" [(ngModel)]="edAssOcupanteNome" name="assOcupNome" placeholder="Nome completo"
+                   class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <input type="text" [(ngModel)]="edAssOcupanteDocumento" name="assOcupDoc" placeholder="CPF ou documento"
+                   class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          </div>
+        </div>
+      }
+
+      <div class="border-t border-slate-100 pt-3.5">
+        <label class="flex items-center gap-2 mb-2.5">
+          <input type="checkbox" [(ngModel)]="edAssTemCorresponsavel" name="assTemCorresp" class="rounded border-slate-300">
+          <span class="text-xs font-bold text-slate-600">Este laudo possui corresponsável técnico</span>
+        </label>
+        @if (edAssTemCorresponsavel()) {
+          <div class="space-y-2.5 bg-slate-50 rounded-xl p-3">
+            <div class="grid sm:grid-cols-3 gap-2.5">
+              <input type="text" [(ngModel)]="edAssCorresponsavelNome" name="assCorrNome" placeholder="Nome completo"
+                     class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
+              <input type="text" [(ngModel)]="edAssCorresponsavelRegistro" name="assCorrReg" placeholder="Registro (CAU/CREA)"
+                     class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
+              <input type="text" [(ngModel)]="edAssCorresponsavelArtRrt" name="assCorrArt" placeholder="Nº da ART/RRT"
+                     class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
+            </div>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" [(ngModel)]="edAssCorresponsavelRevisaoDocumentada" name="assCorrRevisao" class="rounded border-slate-300">
+              <span class="text-xs text-slate-600">Revisão individual deste laudo documentada pelo corresponsável</span>
+            </label>
+          </div>
+        }
+      </div>
+    </div>
+
     <div class="flex gap-3 pt-2">
       <button (click)="fecharDetalheImovel()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-sm transition-colors">Voltar</button>
       <button (click)="salvarDadosImovel()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">Salvar Dados do Imóvel</button>

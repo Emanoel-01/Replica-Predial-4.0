@@ -338,6 +338,20 @@ export class VistoriaCautelarComponent implements OnInit {
   edInstrumPinosRecalque = signal('');
   edInstrumInclinometros = signal('');
 
+  // ─── VC-8: Assinaturas ───
+  edAssVistoriadorNome = signal('');
+  edAssVistoriadorRegistro = signal('');
+  edAssVistoriadorArtRrt = signal('');
+
+  edAssOcupanteNome = signal('');
+  edAssOcupanteDocumento = signal('');
+
+  edAssTemCorresponsavel = signal(false);
+  edAssCorresponsavelNome = signal('');
+  edAssCorresponsavelRegistro = signal('');
+  edAssCorresponsavelArtRrt = signal('');
+  edAssCorresponsavelRevisaoDocumentada = signal(false);
+
   // ─── VC-6a: Checklist de ambientes ───
   ambientesInicializados = signal(false);
   novoAmbienteNomeCustom = signal('');
@@ -677,6 +691,18 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edInstrumPinosRecalque.set(instrum?.pinosRecalque ?? '');
     this.edInstrumInclinometros.set(instrum?.inclinometros ?? '');
 
+    const ass = imovel.assinaturas;
+    this.edAssVistoriadorNome.set(ass?.vistoriador?.nome ?? '');
+    this.edAssVistoriadorRegistro.set(ass?.vistoriador?.registro ?? '');
+    this.edAssVistoriadorArtRrt.set(ass?.vistoriador?.artRrt ?? '');
+    this.edAssOcupanteNome.set(ass?.ocupante?.nome ?? '');
+    this.edAssOcupanteDocumento.set(ass?.ocupante?.documento ?? '');
+    this.edAssTemCorresponsavel.set(!!ass?.corresponsavelTecnico);
+    this.edAssCorresponsavelNome.set(ass?.corresponsavelTecnico?.nome ?? '');
+    this.edAssCorresponsavelRegistro.set(ass?.corresponsavelTecnico?.registro ?? '');
+    this.edAssCorresponsavelArtRrt.set(ass?.corresponsavelTecnico?.artRrt ?? '');
+    this.edAssCorresponsavelRevisaoDocumentada.set(ass?.corresponsavelTecnico?.revisaoDocumentada ?? false);
+
     this.garantirAmbientesPadrao();
     this.modoExibicao.set('DETALHE_IMOVEL');
   }
@@ -688,6 +714,11 @@ export class VistoriaCautelarComponent implements OnInit {
 
   imovelEhNivel3(): boolean {
     return this.vistoriaAtiva()?.nivelVistoriaCautelar === '3';
+  }
+
+  imovelExigeAssinaturaOcupante(): boolean {
+    const status = this.imovelEmEdicao()?.autorizacaoAcesso.status;
+    return status === 'AUTORIZADO' || status === 'AUTORIZADO_PARCIAL';
   }
 
   async salvarDadosImovel(): Promise<void> {
@@ -737,6 +768,23 @@ export class VistoriaCautelarComponent implements OnInit {
           pinosRecalque: this.edInstrumPinosRecalque() || undefined,
           inclinometros: this.edInstrumInclinometros() || undefined,
         } : undefined,
+        assinaturas: {
+          vistoriador: {
+            nome: this.edAssVistoriadorNome(),
+            registro: this.edAssVistoriadorRegistro(),
+            artRrt: this.edAssVistoriadorArtRrt(),
+          },
+          ocupante: (this.edAssOcupanteNome() || this.edAssOcupanteDocumento()) ? {
+            nome: this.edAssOcupanteNome(),
+            documento: this.edAssOcupanteDocumento(),
+          } : undefined,
+          corresponsavelTecnico: this.edAssTemCorresponsavel() ? {
+            nome: this.edAssCorresponsavelNome(),
+            registro: this.edAssCorresponsavelRegistro(),
+            artRrt: this.edAssCorresponsavelArtRrt(),
+            revisaoDocumentada: this.edAssCorresponsavelRevisaoDocumentada(),
+          } : undefined,
+        },
       };
     });
     const atualizada: VistoriaCautelar = {
