@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { Vistoria, LaudoEmitido } from '../components/checklist-inspecao/checklist-inspecao.component';
+import { VistoriaCautelar, LaudoCautelarEmitido } from '../components/vistoria-cautelar/vistoria-cautelar.component';
 
 export interface Evidencia {
   id: string;            // uuid gerado na captura
@@ -35,10 +36,18 @@ interface Predial4DB extends DBSchema {
     key: string;       // LaudoEmitido.id
     value: LaudoEmitido;
   };
+  vistoriasCautelares: {
+    key: string;       // VistoriaCautelar.id
+    value: VistoriaCautelar;
+  };
+  laudosCautelaresEmitidos: {
+    key: string;       // LaudoCautelarEmitido.id
+    value: LaudoCautelarEmitido;
+  };
 }
 
 const DB_NAME = 'predial4-db';
-const DB_VERSION = 8;
+const DB_VERSION = 9;
 
 @Injectable({ providedIn: 'root' })
 export class VistoriaDbService {
@@ -81,6 +90,13 @@ export class VistoriaDbService {
         if (oldVersion < 8) {
           // v8: adiciona suporte a vistoria.cloudId (UUID do Supabase). Campo opcional,
           // não requer alteração de índices ou keyPath — apenas bump de versão por disciplina.
+        }
+        if (oldVersion < 9) {
+          // v9: cria os stores do módulo Vistoria Cautelar de Vizinhança.
+          // Reaproveita os stores 'evidencias' e 'anexos' já existentes para fotos/blobs —
+          // só os registros que guardam a estrutura do laudo em si são novos.
+          db.createObjectStore('vistoriasCautelares', { keyPath: 'id' });
+          db.createObjectStore('laudosCautelaresEmitidos', { keyPath: 'id' });
         }
       },
     });
@@ -177,5 +193,40 @@ export class VistoriaDbService {
       console.error('Falha ao migrar vistorias do localStorage para IndexedDB', e);
       // Em caso de erro, mantém o localStorage intacto (sem perda de dado).
     }
+  }
+
+  async salvarVistoriaCautelar(vistoria: VistoriaCautelar): Promise<void> {
+    const db = await this.dbPromise;
+    await db.put('vistoriasCautelares', vistoria);
+  }
+
+  async getAllVistoriasCautelares(): Promise<VistoriaCautelar[]> {
+    const db = await this.dbPromise;
+    return db.getAll('vistoriasCautelares');
+  }
+
+  async getVistoriaCautelar(id: string): Promise<VistoriaCautelar | undefined> {
+    const db = await this.dbPromise;
+    return db.get('vistoriasCautelares', id);
+  }
+
+  async deleteVistoriaCautelar(id: string): Promise<void> {
+    const db = await this.dbPromise;
+    await db.delete('vistoriasCautelares', id);
+  }
+
+  async salvarLaudoCautelarEmitido(laudo: LaudoCautelarEmitido): Promise<void> {
+    const db = await this.dbPromise;
+    await db.put('laudosCautelaresEmitidos', laudo);
+  }
+
+  async getAllLaudosCautelaresEmitidos(): Promise<LaudoCautelarEmitido[]> {
+    const db = await this.dbPromise;
+    return db.getAll('laudosCautelaresEmitidos');
+  }
+
+  async countLaudosCautelaresEmitidos(): Promise<number> {
+    const db = await this.dbPromise;
+    return db.count('laudosCautelaresEmitidos');
   }
 }
