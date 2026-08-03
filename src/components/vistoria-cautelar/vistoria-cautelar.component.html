@@ -214,7 +214,7 @@
     } @else {
       <div class="grid sm:grid-cols-2 gap-3">
         @for (im of imoveisFiltrados(); track im.id) {
-          <div (click)="abrirAutorizacaoAcesso(im.id)" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-sky-200 transition-all cursor-pointer">
+          <div (click)="abrirDetalheImovel(im.id)" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-sky-200 transition-all cursor-pointer">
             <div class="flex justify-between items-start gap-2 mb-1.5">
               <h4 class="font-bold text-slate-800 text-sm">{{ im.endereco }}</h4>
               <span [class]="'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ' + corStatusImovel(im.status)">
@@ -226,6 +226,135 @@
         }
       </div>
     }
+  </div>
+}
+
+@if (modoExibicao() === 'DETALHE_IMOVEL' && imovelEmEdicao()) {
+  <div class="space-y-6 animate-fade-in pb-16 max-w-3xl">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-bold text-sky-900">{{ imovelEmEdicao()!.endereco }}</h2>
+        <span [class]="'inline-block mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + corStatusImovel(imovelEmEdicao()!.status)">
+          {{ labelStatusImovel(imovelEmEdicao()!.status) }}
+        </span>
+      </div>
+      <button (click)="fecharDetalheImovel()" class="text-slate-400 hover:text-slate-700">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <!-- SEÇÃO: AUTORIZAÇÃO DE ACESSO (resumo + editar) -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Autorização de Acesso</h3>
+        <button (click)="abrirAutorizacaoAcesso(imovelEmEdicao()!.id)" class="text-xs font-bold text-sky-600 hover:underline">Editar</button>
+      </div>
+      <p class="text-sm text-slate-600">
+        Status: <strong>{{ labelStatusImovel(imovelEmEdicao()!.status) }}</strong>
+        @if (imovelEmEdicao()!.autorizacaoAcesso.status === 'AUTORIZADO_PARCIAL' && imovelEmEdicao()!.autorizacaoAcesso.ambientesRestritos) {
+          <br><span class="text-xs text-slate-500">Restrições: {{ imovelEmEdicao()!.autorizacaoAcesso.ambientesRestritos }}</span>
+        }
+      </p>
+    </div>
+
+    <!-- SEÇÃO: DADOS DO IMÓVEL -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+      <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Dados do Imóvel</h3>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Posição relativa à obra</label>
+          <select [(ngModel)]="edImovelPosicaoRelativa" name="posicao" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Selecione...</option>
+            <option value="CONFRONTANTE_LATERAL_DIREITA">Confrontante lateral direita</option>
+            <option value="CONFRONTANTE_LATERAL_ESQUERDA">Confrontante lateral esquerda</option>
+            <option value="CONFRONTANTE_FUNDOS">Confrontante de fundos</option>
+            <option value="CONFRONTANTE_FRENTE">Confrontante de frente</option>
+            <option value="TRANSVERSAL_RAIO">Transversal (raio)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Afastamento da divisa (metros)</label>
+          <input type="number" step="0.1" [(ngModel)]="edImovelAfastamentoDivisa" name="afastamento" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Ocupante identificado</label>
+          <input type="text" [(ngModel)]="edImovelOcupante" name="ocupante" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Idade estimada</label>
+          <input type="text" [(ngModel)]="edImovelIdadeEstimada" name="idade" placeholder="ex.: 30 anos" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Padrão construtivo</label>
+          <input type="text" [(ngModel)]="edImovelPadraoConstrutivo" name="padrao" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Nº de pavimentos</label>
+          <input type="number" [(ngModel)]="edImovelPavimentos" name="pavimentos" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Uso e ocupação</label>
+          <input type="text" [(ngModel)]="edImovelUsoOcupacao" name="uso" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO: CARACTERÍSTICAS CONSTRUTIVAS -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+      <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Características Construtivas (item 6.4.1-b)</h3>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Estrutura</label>
+          <input type="text" [(ngModel)]="edImovelEstrutura" name="estrutura" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Cobertura</label>
+          <input type="text" [(ngModel)]="edImovelCobertura" name="cobertura" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Contenção</label>
+          <input type="text" [(ngModel)]="edImovelContencao" name="contencao" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Vedações verticais</label>
+          <input type="text" [(ngModel)]="edImovelVedacoesVerticais" name="vedacoes" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO: ESTADO DE CONSERVAÇÃO -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+      <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Estado de Conservação</h3>
+      <div class="grid grid-cols-4 gap-2">
+        <label [class]="'border rounded-xl p-2.5 text-center cursor-pointer transition-all ' + (edImovelEstadoConservacao() === 'OTIMO' ? 'border-sky-500 bg-sky-50' : 'border-slate-200')">
+          <input type="radio" name="estado" value="OTIMO" [(ngModel)]="edImovelEstadoConservacao" class="sr-only">
+          <span class="block text-xs font-bold text-slate-700">Ótimo</span>
+        </label>
+        <label [class]="'border rounded-xl p-2.5 text-center cursor-pointer transition-all ' + (edImovelEstadoConservacao() === 'BOM' ? 'border-sky-500 bg-sky-50' : 'border-slate-200')">
+          <input type="radio" name="estado" value="BOM" [(ngModel)]="edImovelEstadoConservacao" class="sr-only">
+          <span class="block text-xs font-bold text-slate-700">Bom</span>
+        </label>
+        <label [class]="'border rounded-xl p-2.5 text-center cursor-pointer transition-all ' + (edImovelEstadoConservacao() === 'REGULAR' ? 'border-sky-500 bg-sky-50' : 'border-slate-200')">
+          <input type="radio" name="estado" value="REGULAR" [(ngModel)]="edImovelEstadoConservacao" class="sr-only">
+          <span class="block text-xs font-bold text-slate-700">Regular</span>
+        </label>
+        <label [class]="'border rounded-xl p-2.5 text-center cursor-pointer transition-all ' + (edImovelEstadoConservacao() === 'MAL_CONSERVADO' ? 'border-sky-500 bg-sky-50' : 'border-slate-200')">
+          <input type="radio" name="estado" value="MAL_CONSERVADO" [(ngModel)]="edImovelEstadoConservacao" class="sr-only">
+          <span class="block text-xs font-bold text-slate-700">Mal Conservado</span>
+        </label>
+      </div>
+      <p class="text-[11px] text-slate-400">Classificação conforme os estudos Valores de Edificações de Imóveis Urbanos (VEIU) e Índice de Unidades Padronizadas (IUP) do IBAPE/SP.</p>
+    </div>
+
+    <!-- SEÇÃO: AMBIENTES (placeholder até o VC-6) -->
+    <div class="bg-slate-100 border border-slate-200 rounded-2xl p-6 text-center text-slate-400 text-sm">
+      O checklist de ambientes e registro de ocorrências será implementado no próximo bloco (VC-6).
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button (click)="fecharDetalheImovel()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-sm transition-colors">Voltar</button>
+      <button (click)="salvarDadosImovel()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">Salvar Dados do Imóvel</button>
+    </div>
   </div>
 }
 

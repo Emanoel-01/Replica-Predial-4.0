@@ -217,7 +217,7 @@ export class VistoriaCautelarComponent implements OnInit {
   private dbService = inject(VistoriaDbService);
   private toastService = inject(ToastService);
 
-  modoExibicao = signal<'LISTA' | 'CRIACAO' | 'DETALHE'>('LISTA');
+  modoExibicao = signal<'LISTA' | 'CRIACAO' | 'DETALHE' | 'DETALHE_IMOVEL'>('LISTA');
   todasVistoriasCautelares = signal<VistoriaCautelar[]>([]);
   vistoriaAtivaId = signal<string | null>(null);
 
@@ -282,6 +282,20 @@ export class VistoriaCautelarComponent implements OnInit {
   edRecusaFormaNotificacao = signal<'CORREIOS' | 'CARTORIO'>('CORREIOS');
   edRecusaAnexoComprovante = signal<string | null>(null);
   edRecusaFotoFachada = signal<string | null>(null);
+
+  // ─── VC-5: Dados do imóvel ───
+  edImovelOcupante = signal('');
+  edImovelIdadeEstimada = signal('');
+  edImovelPadraoConstrutivo = signal('');
+  edImovelPavimentos = signal('');
+  edImovelUsoOcupacao = signal('');
+  edImovelPosicaoRelativa = signal<PosicaoRelativaObra | ''>('');
+  edImovelAfastamentoDivisa = signal('');
+  edImovelEstrutura = signal('');
+  edImovelCobertura = signal('');
+  edImovelContencao = signal('');
+  edImovelVedacoesVerticais = signal('');
+  edImovelEstadoConservacao = signal<EstadoConservacaoCautelar>('BOM');
 
   private comprimirImagem(dataUrl: string, maxWidth = 900, quality = 0.78): Promise<string> {
     return new Promise((resolve) => {
@@ -542,6 +556,86 @@ export class VistoriaCautelarComponent implements OnInit {
       case 'EM_ANDAMENTO': return 'Em andamento';
       case 'CONCLUIDO': return 'Concluído';
       case 'ACESSO_NEGADO': return 'Acesso negado';
+    }
+  }
+
+  abrirDetalheImovel(imovelId: string): void {
+    const imovel = this.vistoriaAtiva()?.imoveis.find(i => i.id === imovelId);
+    if (!imovel) return;
+    this.imovelEmEdicaoId.set(imovelId);
+    this.edImovelOcupante.set(imovel.dadosImovel.ocupante ?? '');
+    this.edImovelIdadeEstimada.set(imovel.dadosImovel.idadeEstimada ?? '');
+    this.edImovelPadraoConstrutivo.set(imovel.dadosImovel.padraoConstrutivo ?? '');
+    this.edImovelPavimentos.set(imovel.dadosImovel.pavimentos != null ? String(imovel.dadosImovel.pavimentos) : '');
+    this.edImovelUsoOcupacao.set(imovel.dadosImovel.usoOcupacao ?? '');
+    this.edImovelPosicaoRelativa.set(imovel.posicaoRelativaObra ?? '');
+    this.edImovelAfastamentoDivisa.set(imovel.afastamentoDivisaMetros != null ? String(imovel.afastamentoDivisaMetros) : '');
+    this.edImovelEstrutura.set(imovel.caracteristicasConstrutivas.estrutura ?? '');
+    this.edImovelCobertura.set(imovel.caracteristicasConstrutivas.cobertura ?? '');
+    this.edImovelContencao.set(imovel.caracteristicasConstrutivas.contencao ?? '');
+    this.edImovelVedacoesVerticais.set(imovel.caracteristicasConstrutivas.vedacoesVerticais ?? '');
+    this.edImovelEstadoConservacao.set(imovel.estadoConservacao.classificacao);
+    this.modoExibicao.set('DETALHE_IMOVEL');
+  }
+
+  fecharDetalheImovel(): void {
+    this.imovelEmEdicaoId.set(null);
+    this.modoExibicao.set('DETALHE');
+  }
+
+  async salvarDadosImovel(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovelId = this.imovelEmEdicaoId();
+    if (!vistoria || !imovelId) return;
+
+    const pavimentosNum = this.edImovelPavimentos() ? Number(this.edImovelPavimentos()) : undefined;
+    const afastamentoNum = this.edImovelAfastamentoDivisa() ? Number(this.edImovelAfastamentoDivisa()) : undefined;
+
+    const imoveisAtualizados = vistoria.imoveis.map(im => {
+      if (im.id !== imovelId) return im;
+      return {
+        ...im,
+        posicaoRelativaObra: this.edImovelPosicaoRelativa() || undefined,
+        afastamentoDivisaMetros: afastamentoNum,
+        dadosImovel: {
+          ...im.dadosImovel,
+          ocupante: this.edImovelOcupante() || undefined,
+          idadeEstimada: this.edImovelIdadeEstimada() || undefined,
+          padraoConstrutivo: this.edImovelPadraoConstrutivo() || undefined,
+          pavimentos: pavimentosNum,
+          usoOcupacao: this.edImovelUsoOcupacao() || undefined,
+        },
+        caracteristicasConstrutivas: {
+          estrutura: this.edImovelEstrutura() || undefined,
+          cobertura: this.edImovelCobertura() || undefined,
+          contencao: this.edImovelContencao() || undefined,
+          vedacoesVerticais: this.edImovelVedacoesVerticais() || undefined,
+        },
+        estadoConservacao: {
+          classificacao: this.edImovelEstadoConservacao(),
+          fonteNormativa: 'VEIU_IUP_IBAPE_SP' as const,
+        },
+      };
+    });
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+    this.toastService.show('Dados do imóvel salvos.', 'success');
+  }
+
+  labelPosicaoRelativa(pos: PosicaoRelativaObra | ''): string {
+    switch (pos) {
+      case 'CONFRONTANTE_LATERAL_DIREITA': return 'Confrontante lateral direita';
+      case 'CONFRONTANTE_LATERAL_ESQUERDA': return 'Confrontante lateral esquerda';
+      case 'CONFRONTANTE_FUNDOS': return 'Confrontante de fundos';
+      case 'CONFRONTANTE_FRENTE': return 'Confrontante de frente';
+      case 'TRANSVERSAL_RAIO': return 'Transversal (raio)';
+      default: return '—';
     }
   }
 }
