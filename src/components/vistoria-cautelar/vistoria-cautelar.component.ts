@@ -1,4 +1,7 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { VistoriaDbService } from '../../services/vistoria-db.service';
+import { ToastService } from '../../services/toast.service';
 
 // ═══════════════════════════════════════════════════════════════════
 // VISTORIA CAUTELAR DE VIZINHANÇA — MODELO DE DADOS
@@ -208,6 +211,144 @@ export interface LaudoCautelarEmitido {
   selector: 'app-vistoria-cautelar',
   templateUrl: './vistoria-cautelar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+  imports: [FormsModule],
 })
-export class VistoriaCautelarComponent {}
+export class VistoriaCautelarComponent implements OnInit {
+  private dbService = inject(VistoriaDbService);
+  private toastService = inject(ToastService);
+
+  modoExibicao = signal<'LISTA' | 'CRIACAO' | 'DETALHE'>('LISTA');
+  todasVistoriasCautelares = signal<VistoriaCautelar[]>([]);
+  vistoriaAtivaId = signal<string | null>(null);
+
+  // ─── Campos do formulário (Solicitante) ───
+  novoSolicitanteNome = signal('');
+  novoSolicitanteCnpjCpf = signal('');
+  novoSolicitanteEndereco = signal('');
+  novoSolicitanteResponsavelLegal = signal('');
+
+  // ─── Campos do formulário (Obra Geradora) ───
+  novaObraNome = signal('');
+  novaObraEndereco = signal('');
+  novaObraFundacao = signal('');
+  novaObraEstrutura = signal('');
+  novaObraLogisticaCanteiro = signal('');
+  novaObraImpactosVizinhanca = signal('');
+
+  // ─── Momento e nível ───
+  novoMomentoVistoria = signal<'PRE_DEMOLICAO' | 'PRE_MOVIMENTACAO_TERRA'>('PRE_MOVIMENTACAO_TERRA');
+  novoNivelVistoriaCautelar = signal<'1' | '2' | '3'>('2');
+
+  // ─── Área de influência ───
+  novaAreaRaio = signal('');
+  novaAreaMemorialJustificativo = signal('');
+  novaAreaEstudosPrevios = signal('');
+
+  // ─── Canteiro de obras (fotos) ───
+  novoCanteiroFotosExternas = signal<string[]>([]);
+  novoCanteiroFotosInternas = signal<string[]>([]);
+
+  // ─── Marco temporal ───
+  novoMarcoTemporal = signal<'ASSINATURA_DIGITAL' | 'REGISTRO_CARTORIO'>('ASSINATURA_DIGITAL');
+
+  async ngOnInit(): Promise<void> {
+    await this.carregarVistorias();
+  }
+
+  async carregarVistorias(): Promise<void> {
+    const todas = await this.dbService.getAllVistoriasCautelares();
+    this.todasVistoriasCautelares.set(
+      todas.sort((a, b) => new Date(b.dateUpdated).getTime() - new Date(a.dateUpdated).getTime())
+    );
+  }
+
+  abrirCriacao(): void {
+    this.novoSolicitanteNome.set('');
+    this.novoSolicitanteCnpjCpf.set('');
+    this.novoSolicitanteEndereco.set('');
+    this.novoSolicitanteResponsavelLegal.set('');
+    this.novaObraNome.set('');
+    this.novaObraEndereco.set('');
+    this.novaObraFundacao.set('');
+    this.novaObraEstrutura.set('');
+    this.novaObraLogisticaCanteiro.set('');
+    this.novaObraImpactosVizinhanca.set('');
+    this.novoMomentoVistoria.set('PRE_MOVIMENTACAO_TERRA');
+    this.novoNivelVistoriaCautelar.set('2');
+    this.novaAreaRaio.set('');
+    this.novaAreaMemorialJustificativo.set('');
+    this.novaAreaEstudosPrevios.set('');
+    this.novoCanteiroFotosExternas.set([]);
+    this.novoCanteiroFotosInternas.set([]);
+    this.novoMarcoTemporal.set('ASSINATURA_DIGITAL');
+    this.modoExibicao.set('CRIACAO');
+  }
+
+  cancelarCriacao(): void {
+    this.modoExibicao.set('LISTA');
+  }
+
+  podeSalvarObra(): boolean {
+    return !!(this.novoSolicitanteNome() && this.novoSolicitanteCnpjCpf()
+      && this.novaObraNome() && this.novaObraEndereco());
+  }
+
+  async salvarVistoriaCautelar(): Promise<void> {
+    if (!this.podeSalvarObra()) {
+      this.toastService.show('Preencha ao menos Solicitante e Obra Geradora antes de salvar.', 'error');
+      return;
+    }
+    const nowIso = new Date().toISOString();
+    const vistoria: VistoriaCautelar = {
+      id: crypto.randomUUID(),
+      solicitante: {
+        nome: this.novoSolicitanteNome(),
+        cnpjCpf: this.novoSolicitanteCnpjCpf(),
+        endereco: this.novoSolicitanteEndereco(),
+        responsavelLegal: this.novoSolicitanteResponsavelLegal() || undefined,
+      },
+      obraGeradora: {
+        nome: this.novaObraNome(),
+        endereco: this.novaObraEndereco(),
+        fundacao: this.novaObraFundacao() || undefined,
+        estrutura: this.novaObraEstrutura() || undefined,
+        logisticaCanteiro: this.novaObraLogisticaCanteiro() || undefined,
+        impactosVizinhanca: this.novaObraImpactosVizinhanca() || undefined,
+      },
+      momentoVistoria: this.novoMomentoVistoria(),
+      areaInfluencia: {
+        raio: this.novaAreaRaio() || undefined,
+        memorialJustificativo: this.novaAreaMemorialJustificativo() || undefined,
+        estudosPreviosConsiderados: this.novaAreaEstudosPrevios() || undefined,
+      },
+      nivelVistoriaCautelar: this.novoNivelVistoriaCautelar(),
+      canteiroObras: {
+        fotosExternas: this.novoCanteiroFotosExternas(),
+        fotosInternas: this.novoCanteiroFotosInternas(),
+      },
+      marcoTemporal: this.novoMarcoTemporal(),
+      imoveis: [],
+      dateCreated: nowIso,
+      dateUpdated: nowIso,
+    };
+    await this.dbService.salvarVistoriaCautelar(vistoria);
+    await this.carregarVistorias();
+    this.toastService.show('Vistoria Cautelar criada. Agora adicione os imóveis da área de influência.', 'success');
+    this.modoExibicao.set('LISTA');
+  }
+
+  abrirDetalhe(id: string): void {
+    this.vistoriaAtivaId.set(id);
+    this.modoExibicao.set('DETALHE');
+  }
+
+  vistoriaAtiva(): VistoriaCautelar | undefined {
+    return this.todasVistoriasCautelares().find(v => v.id === this.vistoriaAtivaId());
+  }
+
+  async excluirVistoriaCautelar(id: string): Promise<void> {
+    await this.dbService.deleteVistoriaCautelar(id);
+    await this.carregarVistorias();
+    this.toastService.show('Vistoria Cautelar excluída.', 'info');
+  }
+}
