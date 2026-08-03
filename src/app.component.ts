@@ -173,6 +173,13 @@ export class AppComponent implements OnInit {
 
     this.userProfile.set(profile);
 
+    // Liberação REAL do Admin — decidida pelo banco (coluna `role` em
+    // `profissionais`), nunca por comparação de credencial no navegador.
+    // Convive com o atalho de auditoria: qualquer um dos dois caminhos libera.
+    if (row.role === 'admin') {
+      this.admAcessoLiberado.set(true);
+    }
+
     // Perfil incompleto = falta o registro profissional (CAU/CREA/CFT), o dado
     // mínimo necessário para emitir laudos. Abre o modal automaticamente para
     // o usuário completar assim que loga.
