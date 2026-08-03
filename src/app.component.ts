@@ -10,6 +10,7 @@ import { ToastService } from './services/toast.service';
 import { ChecklistInspecaoComponent } from './components/checklist-inspecao/checklist-inspecao.component';
 import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
 import { OrcamentoRoadmapComponent } from './components/orcamento-roadmap/orcamento-roadmap.component';
+import { VistoriaCautelarComponent } from './components/vistoria-cautelar/vistoria-cautelar.component';
 import { NotificationService } from './services/notification.service';
 import { VistoriaDbService } from './services/vistoria-db.service';
 import { SupabaseService } from './services/supabase.service';
@@ -40,6 +41,7 @@ import { Vistoria } from './components/checklist-inspecao/checklist-inspecao.com
     ToastComponent,
     LoginComponent,
     ChecklistInspecaoComponent,
+    VistoriaCautelarComponent,
     AdminPanelComponent,
     OrcamentoRoadmapComponent,
   ],
@@ -73,6 +75,7 @@ export class AppComponent implements OnInit {
   navItems = [
     { id: 'visao-geral', label: 'Visão Geral', icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10' },
     { id: 'checklist', label: 'Check-up', pageTitle: 'Laudo Técnico de Inspeção Predial', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z' },
+    { id: 'cautelar', label: 'Cautelar', pageTitle: 'Vistoria Cautelar de Vizinhança', icon: 'M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z' },
     { id: 'orcamento', label: 'Orçamento', pageTitle: 'Módulo de Orçamento e Planejamento', icon: 'M9 14l6-6m-5.5.5h.01M15 15v-3.5a1.5 1.5 0 00-3 0V15M3 9v10a1 1 0 001 1h16a1 1 0 001-1V9M3 9l9-6 9 6' },
     { id: 'admin', label: 'Ferramentas Admin', icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z' },
   ];
