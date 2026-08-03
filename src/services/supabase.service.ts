@@ -49,4 +49,26 @@ export class SupabaseService {
 
     return { error };
   }
+
+  async getAllProfissionais(): Promise<any[]> {
+    const { data, error } = await this.client
+      .from('profissionais')
+      .select('*')
+      .order('full_name', { ascending: true });
+
+    if (error) {
+      console.error('Erro ao buscar profissionais:', error);
+      return [];
+    }
+    return data ?? [];
+  }
+
+  async updateAtivoProfissional(userId: string, ativo: boolean): Promise<{ error: Error | null }> {
+    const { error } = await this.client
+      .from('profissionais')
+      .update({ ativo })
+      .eq('id', userId);
+
+    return { error };
+  }
 }

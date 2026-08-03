@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, signal, inject, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
 import { LeadService } from '../../services/lead.service';
 import { ToastService } from '../../services/toast.service';
+import { SupabaseService } from '../../services/supabase.service';
 
 interface UserItem {
   id: string;
@@ -26,10 +27,13 @@ interface InviteCodeItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
 })
-export class AdminPanelComponent {
+export class AdminPanelComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private leadService = inject(LeadService);
   private toastService = inject(ToastService);
+  private supabaseService = inject(SupabaseService);
+
+  carregandoUsuarios = signal(false);
 
   // Tabs structure
   tabs = [
@@ -58,45 +62,35 @@ export class AdminPanelComponent {
   // Notifications computed from shared NotificationService
   notifications = computed(() => this.notificationService.notifications());
 
-  // Local state for users list
-  users = signal<UserItem[]>([
-    {
-      id: 'U1',
-      name: 'Emanoel Amorim',
-      initials: 'EA',
-      title: 'Arquiteto e Urbanista',
-      company: 'AmorimTech',
-      role: 'Administrador',
-      active: true,
-    },
-    {
-      id: 'U2',
-      name: 'João da Silva',
-      initials: 'JS',
-      title: 'Engenheiro Civil',
-      company: 'AmorimTech',
-      role: 'Engenheiro Pleno',
-      active: true,
-    },
-    {
-      id: 'U3',
-      name: 'Carla Vasconcelos',
-      initials: 'CV',
-      title: 'Técnica de Edificações',
-      company: 'Facility Solutions',
-      role: 'Técnico de Campo',
-      active: true,
-    },
-    {
-      id: 'U4',
-      name: 'Cláudio Mendes',
-      initials: 'CM',
-      title: 'Estagiário de Engenharia',
-      company: 'AmorimTech',
-      role: 'Estagiário',
-      active: false,
-    },
-  ]);
+  users = signal<UserItem[]>([]);
+
+  async ngOnInit(): Promise<void> {
+    await this.carregarUsuarios();
+  }
+
+  async carregarUsuarios(): Promise<void> {
+    this.carregandoUsuarios.set(true);
+    const rows = await this.supabaseService.getAllProfissionais();
+    const mapeados: UserItem[] = rows.map(row => ({
+      id: row.id,
+      name: row.full_name || '(sem nome cadastrado)',
+      initials: this.iniciaisDoNome(row.full_name),
+      title: row.professional_title || '—',
+      company: row.company_name || '—',
+      role: row.role === 'admin' ? 'Administrador' : (row.professional_title || 'Usuário'),
+      active: row.ativo !== false,
+    }));
+    this.users.set(mapeados);
+    this.carregandoUsuarios.set(false);
+  }
+
+  private iniciaisDoNome(nome: string | null | undefined): string {
+    if (!nome || !nome.trim()) return '?';
+    const partes = nome.trim().split(/\s+/);
+    const primeira = partes[0]?.[0] ?? '';
+    const ultima = partes.length > 1 ? partes[partes.length - 1][0] : '';
+    return (primeira + ultima).toUpperCase();
+  }
 
   // Invite codes signals
   inviteCodes = signal<InviteCodeItem[]>([
@@ -162,19 +156,26 @@ export class AdminPanelComponent {
   }
 
   // User actions
-  toggleUserActive(id: string): void {
-    this.users.update(prev => 
-      prev.map(u => {
-        if (u.id === id) {
-          const nextActive = !u.active;
-          this.toastService.show(
-            `Usuário "${u.name}" foi ${nextActive ? 'ativado' : 'bloqueado'} com sucesso.`,
-            nextActive ? 'success' : 'info'
-          );
-          return { ...u, active: nextActive };
-        }
-        return u;
-      })
+  async toggleUserActive(id: string): Promise<void> {
+    const user = this.users().find(u => u.id === id);
+    if (!user) return;
+
+    const nextActive = !user.active;
+    const { error } = await this.supabaseService.updateAtivoProfissional(id, nextActive);
+
+    if (error) {
+      console.error('Erro ao atualizar status do usuário:', error);
+      this.toastService.show('Erro ao atualizar status do usuário no banco de dados.', 'error');
+      return;
+    }
+
+    this.users.update(prev =>
+      prev.map(u => (u.id === id ? { ...u, active: nextActive } : u))
+    );
+
+    this.toastService.show(
+      `Usuário "${user.name}" foi ${nextActive ? 'ativado' : 'bloqueado'} com sucesso.`,
+      nextActive ? 'success' : 'info'
     );
   }
 
