@@ -369,11 +369,16 @@
                 }
                 <span class="font-bold text-sm text-slate-800">{{ amb.nome }}</span>
               </div>
-              @if (amb.ocorrencias.length > 0) {
-                <span class="text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
-                  {{ amb.ocorrencias.length }} ocorrência{{ amb.ocorrencias.length > 1 ? 's' : '' }}
-                </span>
-              }
+              <div class="flex items-center gap-2">
+                @if (amb.ocorrencias.length > 0) {
+                  <span class="text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
+                    {{ amb.ocorrencias.length }} ocorrência{{ amb.ocorrencias.length > 1 ? 's' : '' }}
+                  </span>
+                }
+                <button (click)="excluirAmbiente(amb.id)" class="text-slate-300 hover:text-red-500 transition-colors" title="Remover ambiente">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
             </div>
 
             @if (amb.fotos.length > 0) {
@@ -576,14 +581,14 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Elemento construtivo</label>
-          <select [(ngModel)]="edOcElementoConstrutivo" name="ocElemento" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <select [(ngModel)]="edOcElementoConstrutivo" (ngModelChange)="onElementoConstrutivoChange()" name="ocElemento" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
             @for (el of ELEMENTOS_CONSTRUTIVOS; track el) {
               <option [value]="el">{{ el }}</option>
             }
           </select>
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipo de constatação</label>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Natureza da Constatação</label>
           <select [(ngModel)]="edOcTipoConstatacao" name="ocTipo" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
             <option value="ANOMALIA">Anomalia</option>
             <option value="MANIFESTACAO_PATOLOGICA">Manifestação patológica</option>
@@ -619,11 +624,9 @@
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipo</label>
               <select [(ngModel)]="edOcOutraManifestacao" name="ocOutra" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-                <option value="INFILTRACAO">Infiltração</option>
-                <option value="UMIDADE">Umidade</option>
-                <option value="MOFO">Mofo</option>
-                <option value="DESCOLAMENTO">Descolamento</option>
-                <option value="OUTRO">Outro</option>
+                @for (m of manifestacoesDisponiveis(); track m) {
+                  <option [value]="m">{{ labelOutraManifestacao(m) }}</option>
+                }
               </select>
             </div>
             @if (edOcOutraManifestacao() === 'OUTRO') {

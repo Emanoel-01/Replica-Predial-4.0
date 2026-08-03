@@ -67,7 +67,29 @@ export function classificarAbertura(mm: number): FamiliaAbertura {
   return 'BRECHA';
 }
 
-export type OutraManifestacao = 'INFILTRACAO' | 'UMIDADE' | 'MOFO' | 'DESCOLAMENTO' | 'OUTRO';
+export type OutraManifestacao =
+  'INFILTRACAO' | 'UMIDADE' | 'MOFO_BOLOR' | 'DESCOLAMENTO' | 'EFLORESCENCIA'
+  | 'CORROSAO_OXIDACAO' | 'DESGASTE_DETERIORACAO' | 'EMPENAMENTO_DEFORMACAO'
+  | 'DESPLACAMENTO' | 'MAU_FUNCIONAMENTO' | 'OBSTRUCAO' | 'OUTRO';
+
+/**
+ * Manifestações cabíveis por elemento construtivo. Usado para restringir as
+ * opções do select "Outra manifestação" no formulário de ocorrência, conforme
+ * o elemento construtivo selecionado — evita listar, por exemplo, "Infiltração"
+ * como opção para "Instalações Elétricas".
+ */
+export const MANIFESTACOES_POR_ELEMENTO: Record<ElementoConstrutivo, OutraManifestacao[]> = {
+  'Piso': ['DESCOLAMENTO', 'DESGASTE_DETERIORACAO', 'EMPENAMENTO_DEFORMACAO', 'UMIDADE', 'OUTRO'],
+  'Paredes': ['INFILTRACAO', 'UMIDADE', 'MOFO_BOLOR', 'EFLORESCENCIA', 'DESCOLAMENTO', 'DESPLACAMENTO', 'DESGASTE_DETERIORACAO', 'OUTRO'],
+  'Forros': ['INFILTRACAO', 'UMIDADE', 'MOFO_BOLOR', 'DESCOLAMENTO', 'DESPLACAMENTO', 'EMPENAMENTO_DEFORMACAO', 'OUTRO'],
+  'Portas': ['EMPENAMENTO_DEFORMACAO', 'DESGASTE_DETERIORACAO', 'CORROSAO_OXIDACAO', 'MAU_FUNCIONAMENTO', 'OUTRO'],
+  'Janelas': ['EMPENAMENTO_DEFORMACAO', 'DESGASTE_DETERIORACAO', 'CORROSAO_OXIDACAO', 'MAU_FUNCIONAMENTO', 'INFILTRACAO', 'OUTRO'],
+  'Pinturas': ['DESCOLAMENTO', 'DESPLACAMENTO', 'DESGASTE_DETERIORACAO', 'MOFO_BOLOR', 'UMIDADE', 'OUTRO'],
+  'Cobertas': ['INFILTRACAO', 'UMIDADE', 'DESGASTE_DETERIORACAO', 'CORROSAO_OXIDACAO', 'OBSTRUCAO', 'OUTRO'],
+  'Instalações Elétricas': ['MAU_FUNCIONAMENTO', 'CORROSAO_OXIDACAO', 'DESGASTE_DETERIORACAO', 'OUTRO'],
+  'Instalações Sanitárias': ['INFILTRACAO', 'UMIDADE', 'MAU_FUNCIONAMENTO', 'OBSTRUCAO', 'CORROSAO_OXIDACAO', 'OUTRO'],
+  'Instalações Especiais': ['MAU_FUNCIONAMENTO', 'DESGASTE_DETERIORACAO', 'CORROSAO_OXIDACAO', 'OUTRO'],
+};
 
 export type TipoConstatacaoCautelar = 'ANOMALIA' | 'MANIFESTACAO_PATOLOGICA' | 'FALHA';
 
@@ -950,9 +972,46 @@ export class VistoriaCautelarComponent implements OnInit {
     switch (m) {
       case 'INFILTRACAO': return 'Infiltração';
       case 'UMIDADE': return 'Umidade';
-      case 'MOFO': return 'Mofo';
+      case 'MOFO_BOLOR': return 'Mofo/Bolor';
       case 'DESCOLAMENTO': return 'Descolamento';
+      case 'EFLORESCENCIA': return 'Eflorescência';
+      case 'CORROSAO_OXIDACAO': return 'Corrosão/Oxidação';
+      case 'DESGASTE_DETERIORACAO': return 'Desgaste/Deterioração superficial';
+      case 'EMPENAMENTO_DEFORMACAO': return 'Empenamento/Deformação';
+      case 'DESPLACAMENTO': return 'Desplacamento';
+      case 'MAU_FUNCIONAMENTO': return 'Mau funcionamento';
+      case 'OBSTRUCAO': return 'Obstrução';
       case 'OUTRO': return 'Outro';
     }
+  }
+
+  /** Lista de manifestações cabíveis para o elemento construtivo selecionado no momento. */
+  manifestacoesDisponiveis(): OutraManifestacao[] {
+    return MANIFESTACOES_POR_ELEMENTO[this.edOcElementoConstrutivo()] ?? [];
+  }
+
+  onElementoConstrutivoChange(): void {
+    const disponiveis = this.manifestacoesDisponiveis();
+    if (!disponiveis.includes(this.edOcOutraManifestacao())) {
+      this.edOcOutraManifestacao.set(disponiveis[0] ?? 'OUTRO');
+    }
+  }
+
+  async excluirAmbiente(ambienteId: string): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovel = this.imovelEmEdicao();
+    if (!vistoria || !imovel) return;
+    const imoveisAtualizados = vistoria.imoveis.map(im =>
+      im.id === imovel.id ? { ...im, ambientes: im.ambientes.filter(a => a.id !== ambienteId) } : im
+    );
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+    this.toastService.show('Ambiente removido do checklist.', 'info');
   }
 }
