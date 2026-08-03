@@ -913,13 +913,14 @@
         consolidação ({{ resumoStatusImoveis().concluidos }} concluídos,
         {{ resumoStatusImoveis().negados }} com acesso negado registrado).
       </p>
-      <div class="bg-slate-50 rounded-xl p-3 text-xs text-slate-500">
-        A geração do PDF final, com a estrutura completa dos 14 itens da Norma IBAPE/SP
-        2025, será implementada no próximo bloco (VC-9b).
+      <div class="flex gap-3">
+        <button (click)="fecharModalConsolidacao()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">
+          Fechar
+        </button>
+        <button (click)="gerarConsolidacaoPDF()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">
+          Gerar PDF
+        </button>
       </div>
-      <button (click)="fecharModalConsolidacao()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">
-        Fechar
-      </button>
     </div>
   </div>
 }

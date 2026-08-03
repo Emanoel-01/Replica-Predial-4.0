@@ -1339,4 +1339,423 @@ sem inventar conteúdo.`;
   fecharModalConsolidacao(): void {
     this.modalConsolidacaoAberto.set(false);
   }
+
+  async gerarConsolidacaoPDF(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return;
+    if (!this.imoveisProntosParaConsolidar()) {
+      this.toastService.show('Todos os imóveis precisam estar concluídos ou com acesso negado antes de gerar o PDF.', 'error');
+      return;
+    }
+
+    const novaJanela = window.open('', '_blank');
+    if (!novaJanela) {
+      this.toastService.show('Popup bloqueado. Permita popups para este site e tente novamente.', 'error');
+      return;
+    }
+    novaJanela.document.write('<html><body style="font-family:sans-serif;padding:20px">Gerando laudo, aguarde…</body></html>');
+
+    const dataFormatada = new Date().toLocaleDateString('pt-BR');
+
+    // ─── CAPA ───
+    const capaHtml = `
+      <div class="capa">
+        <div>
+          <div class="capa-logo">Amorim<span>Tech</span></div>
+          <div class="capa-logo-sub">Ecossistema 4.0</div>
+          <div class="capa-rule"></div>
+        </div>
+        <div>
+          <div class="capa-kicker">Predial 4.0 · Módulo Cautelar</div>
+          <div class="capa-titulo">Laudo de Vistoria<br>Cautelar de Vizinhança</div>
+          <div class="capa-norma">
+            Elaborado em conformidade com a <b>Norma de Vistoria Cautelar de Vizinhança do
+            IBAPE/SP — 2025</b> (Procedimentos Básicos Executivos), vigente desde 09/04/2025,
+            e com a <b>ABNT NBR 13752:2024</b> — Perícias de engenharia na construção civil,
+            item 7.3.3.2 (Vistoria Cautelar de Vizinhança).
+          </div>
+        </div>
+        <div>
+          <div class="capa-meta">
+            <div><b>Obra Geradora</b>${vistoria.obraGeradora.nome}</div>
+            <div><b>Nível de Vistoria</b>Nível ${vistoria.nivelVistoriaCautelar}</div>
+            <div><b>Endereço da Obra</b>${vistoria.obraGeradora.endereco}</div>
+            <div><b>Nº de Imóveis</b>${vistoria.imoveis.length}</div>
+            <div><b>Solicitante</b>${vistoria.solicitante.nome}</div>
+            <div><b>Data de Consolidação</b>${dataFormatada}</div>
+          </div>
+        </div>
+      </div>`;
+
+    // ─── SUMÁRIO ───
+    const sumarioItens: [string, string][] = [
+      ['1.0', 'Identificação do Solicitante'],
+      ['2.0', 'Identificação do Objeto da Vistoria'],
+      ['3.0', 'Objetivo e Finalidade'],
+      ['4.0', 'Nível de Vistoria'],
+      ['5.0', 'Pressupostos, Ressalvas e Condições Limitantes'],
+      ['6.0', 'Identificação da Obra Geradora'],
+      ['7.0', 'Área de Influência'],
+      ['8.0', 'Datas e Registro Fotográfico do Canteiro de Obras'],
+    ];
+    vistoria.imoveis.forEach((im, i) => {
+      sumarioItens.push([`9.${i + 1}`, `Imóvel — ${im.endereco}`]);
+    });
+    const sumarioHtml = `
+      <h2 class="sec-h"><span class="sn">§</span>Sumário</h2>
+      ${sumarioItens.map(([n, t]) => `<div class="toc-row"><span class="toc-num">${n}</span><span>${t}</span></div>`).join('')}
+      <div class="box">
+        <b>Estrutura normativa.</b> As seções deste laudo seguem os 14 itens mínimos
+        estabelecidos no item 7 da Norma IBAPE/SP 2025.
+      </div>`;
+
+    // ─── SEÇÕES 1-8 (DA OBRA, UMA VEZ) ───
+    const momentoLabel = vistoria.momentoVistoria === 'PRE_DEMOLICAO'
+      ? 'Período prévio à demolição dos imóveis no futuro canteiro de obras'
+      : 'Período prévio à movimentação de terra, execução de fundação e contenção';
+
+    const secoesObraHtml = `
+      <h2 class="sec-h"><span class="sn">1.0</span>Identificação do Solicitante</h2>
+      <table class="dt">
+        <tr><td class="lbl">Nome / Razão Social</td><td>${vistoria.solicitante.nome}</td></tr>
+        <tr><td class="lbl">CNPJ/CPF</td><td>${vistoria.solicitante.cnpjCpf}</td></tr>
+        <tr><td class="lbl">Endereço</td><td>${vistoria.solicitante.endereco || '—'}</td></tr>
+        <tr><td class="lbl">Responsável Legal</td><td>${vistoria.solicitante.responsavelLegal || '—'}</td></tr>
+      </table>
+
+      <h2 class="sec-h"><span class="sn">2.0</span>Identificação do Objeto da Vistoria</h2>
+      <p>O objeto da presente vistoria compreende os ${vistoria.imoveis.length} imóveis
+      identificados na área de influência da obra geradora, detalhados individualmente
+      nas seções 9.1 a 9.${vistoria.imoveis.length} deste laudo.</p>
+
+      <h2 class="sec-h"><span class="sn">3.0</span>Objetivo e Finalidade</h2>
+      <p>A presente Vistoria Cautelar de Vizinhança tem por objetivo perpetuar a memória
+      do estado de conservação dos imóveis situados na área de influência da obra
+      geradora, nos termos do item 4 da Norma IBAPE/SP 2025.</p>
+      <div class="box box-alert">
+        <b>Delimitação de escopo — item 7.3.3.2 da ABNT NBR 13752:2024.</b> Por se tratar
+        de modalidade de Vistoria de Constatação, este laudo registra exclusivamente o
+        estado existente na data da vistoria. Não há determinação de causas, atribuição
+        de responsabilidades ou indicação de soluções para as ocorrências registradas.
+      </div>
+
+      <h2 class="sec-h"><span class="sn">4.0</span>Nível de Vistoria</h2>
+      <p>Adotou-se o <b>Nível ${vistoria.nivelVistoriaCautelar}</b>, conforme item 5 da
+      Norma IBAPE/SP 2025.</p>
+
+      <h2 class="sec-h"><span class="sn">5.0</span>Pressupostos, Ressalvas e Condições Limitantes</h2>
+      <ul>
+        <li>A vistoria foi realizada por constatação visual desarmada, sem ensaios
+        destrutivos, prospecções ou aberturas de revestimento.</li>
+        <li>A definição dos imóveis vistoriados decorre de escolha baseada em risco,
+        que pode ser minimizado, porém nunca anulado (item 6.2 da Norma IBAPE/SP 2025).</li>
+        <li>Os dados pessoais dos ocupantes foram tratados observando-se a Lei
+        nº 13.709/2018 (LGPD).</li>
+        <li>O marco temporal das constatações é estabelecido por
+        ${vistoria.marcoTemporal === 'ASSINATURA_DIGITAL' ? 'assinatura digital' : 'registro em cartório'}.</li>
+      </ul>
+
+      <h2 class="sec-h"><span class="sn">6.0</span>Identificação da Obra Geradora</h2>
+      <table class="dt">
+        <tr><td class="lbl">Denominação</td><td>${vistoria.obraGeradora.nome}</td></tr>
+        <tr><td class="lbl">Endereço</td><td>${vistoria.obraGeradora.endereco}</td></tr>
+        <tr><td class="lbl">Momento da vistoria</td><td>${momentoLabel}</td></tr>
+        <tr><td class="lbl">Sistema de fundação</td><td>${vistoria.obraGeradora.fundacao || '—'}</td></tr>
+        <tr><td class="lbl">Sistema estrutural</td><td>${vistoria.obraGeradora.estrutura || '—'}</td></tr>
+        <tr><td class="lbl">Logística do canteiro</td><td>${vistoria.obraGeradora.logisticaCanteiro || '—'}</td></tr>
+        <tr><td class="lbl">Impactos previstos à vizinhança</td><td>${vistoria.obraGeradora.impactosVizinhanca || '—'}</td></tr>
+      </table>
+
+      <h2 class="sec-h"><span class="sn">7.0</span>Área de Influência</h2>
+      <table class="dt">
+        <tr><td class="lbl">Raio considerado</td><td>${vistoria.areaInfluencia.raio || '—'}</td></tr>
+        <tr><td class="lbl">Memorial justificativo</td><td>${vistoria.areaInfluencia.memorialJustificativo || '—'}</td></tr>
+        <tr><td class="lbl">Estudos prévios considerados</td><td>${vistoria.areaInfluencia.estudosPreviosConsiderados || '—'}</td></tr>
+      </table>
+
+      <h2 class="sec-h"><span class="sn">8.0</span>Registro Fotográfico do Canteiro de Obras</h2>
+      <p>Registro realizado a partir da via pública, nos termos do item 6.4.2 da Norma
+      IBAPE/SP 2025.</p>
+      ${vistoria.canteiroObras.fotosExternas.length > 0 || vistoria.canteiroObras.fotosInternas.length > 0 ? `
+        <div class="foto-grid">
+          ${vistoria.canteiroObras.fotosExternas.map((f, i) => `
+            <figure><img src="${f}"><figcaption><b>Externa ${i + 1}</b> — Vista do canteiro a partir da via pública.</figcaption></figure>
+          `).join('')}
+          ${vistoria.canteiroObras.fotosInternas.map((f, i) => `
+            <figure><img src="${f}"><figcaption><b>Interna ${i + 1}</b> — Registro interno do canteiro.</figcaption></figure>
+          `).join('')}
+        </div>` : '<p class="text-slate-400">Nenhuma foto do canteiro registrada.</p>'}
+    `;
+
+    // ─── BLOCO POR IMÓVEL (9.1 a 9.N) ───
+    const blocosImoveisHtml = vistoria.imoveis.map((im, idx) => {
+      const numSecao = `9.${idx + 1}`;
+      const auth = im.autorizacaoAcesso;
+      const statusAcessoLabel = auth.status === 'AUTORIZADO' ? 'Autorizado'
+        : auth.status === 'AUTORIZADO_PARCIAL' ? 'Autorizado com restrições' : 'Negado';
+
+      // Regra: ambiente só entra no PDF se tiver ao menos 1 foto
+      const ambientesComFoto = im.ambientes.filter(a => a.fotos.length > 0);
+
+      const fichasHtml = ambientesComFoto.map(amb => {
+        const ocorrenciasHtml = amb.ocorrencias.length > 0
+          ? amb.ocorrencias.map(oc => {
+              const natureza = oc.tipoConstatacao === 'ANOMALIA' ? 'Anomalia'
+                : oc.tipoConstatacao === 'FALHA' ? 'Falha' : 'Manifestação patológica';
+              const manifestacaoTexto = oc.familiaAbertura
+                ? `${oc.familiaAbertura} (${oc.aberturaMm} mm)`
+                : (oc.outraManifestacao === 'OUTRO' ? oc.outraManifestacaoDescricao : oc.outraManifestacao);
+              return `
+                <div class="nc-card">
+                  <div class="nc-header">
+                    <span class="chip chip-${oc.tipoConstatacao === 'ANOMALIA' ? 'anom' : oc.tipoConstatacao === 'FALHA' ? 'falha' : 'mp'}">${natureza}</span>
+                    <span class="s9-title">${oc.elementoConstrutivo} — ${manifestacaoTexto}</span>
+                  </div>
+                  <p>${oc.descricao}</p>
+                  <p class="text-xs"><b>Localização:</b> ${oc.localizacaoNoAmbiente}</p>
+                  ${oc.testemunhoInstalado ? '<p class="text-xs"><b>Testemunho/selo instalado.</b></p>' : ''}
+                  ${oc.fotos.length > 0 ? `<div class="foto-grid">${oc.fotos.map(f => `<figure><img src="${f}"></figure>`).join('')}</div>` : ''}
+                </div>`;
+            }).join('')
+          : '<p class="text-xs text-slate-400">Ambiente vistoriado sem ocorrências constatadas.</p>';
+
+        return `
+          <div class="f-card">
+            <div class="f-head"><span class="f-id">${amb.nome}</span></div>
+            <div class="f-body">
+              <div class="foto-grid tri">
+                ${amb.fotos.map(f => `<figure><img src="${f}"></figure>`).join('')}
+              </div>
+              ${ocorrenciasHtml}
+            </div>
+          </div>`;
+      }).join('');
+
+      const elementosNivel3Html = im.elementosNivel3 ? `
+        <div class="box">
+          <b>Elementos do Nível 3 caracterizados:</b>
+          ${[
+            im.elementosNivel3.fachadas && 'Fachadas',
+            im.elementosNivel3.coberturas && 'Coberturas',
+            im.elementosNivel3.telhados && 'Telhados',
+            im.elementosNivel3.captacaoAguasPluviais && 'Captação de águas pluviais',
+            im.elementosNivel3.pisosExternos && 'Pisos externos',
+            im.elementosNivel3.vegetacaoCursosDagua && "Vegetação e cursos d'água",
+          ].filter(Boolean).join(' · ') || 'Nenhum elemento marcado'}
+          ${im.elementosNivel3.observacoes ? `<br>${im.elementosNivel3.observacoes}` : ''}
+        </div>` : '';
+
+      return `
+        <div class="pg"></div>
+        <h2 class="sec-h"><span class="sn">${numSecao}</span>Imóvel — ${im.endereco}</h2>
+
+        <table class="dt">
+          <tr><td class="lbl">Status da autorização de acesso</td><td>${statusAcessoLabel}</td></tr>
+          ${auth.status === 'AUTORIZADO_PARCIAL' ? `<tr><td class="lbl">Ambientes restritos</td><td>${auth.ambientesRestritos || '—'}</td></tr>` : ''}
+          ${auth.status === 'NEGADO' ? `<tr><td class="lbl">Data da recusa</td><td>${auth.recusa?.data || '—'}</td></tr>
+          <tr><td class="lbl">Forma de notificação</td><td>${auth.recusa?.formaNotificacao === 'CORREIOS' ? 'Correios' : 'Cartório'}</td></tr>` : ''}
+          <tr><td class="lbl">Tipologia</td><td>${im.dadosImovel.tipologia}</td></tr>
+          <tr><td class="lbl">Ocupante</td><td>${im.dadosImovel.ocupante || '—'}</td></tr>
+          <tr><td class="lbl">Idade estimada</td><td>${im.dadosImovel.idadeEstimada || '—'}</td></tr>
+          <tr><td class="lbl">Posição relativa à obra</td><td>${this.labelPosicaoRelativa(im.posicaoRelativaObra || '')}</td></tr>
+          <tr><td class="lbl">Afastamento da divisa</td><td>${im.afastamentoDivisaMetros != null ? im.afastamentoDivisaMetros + ' m' : '—'}</td></tr>
+        </table>
+
+        ${auth.status === 'NEGADO' && auth.recusa?.fotoFachadaExterna ? `
+          <div class="box-alert box">
+            <b>Acesso negado — registro externo.</b>
+            <figure><img src="${auth.recusa.fotoFachadaExterna}"><figcaption>Fachada externa, vista da via pública.</figcaption></figure>
+          </div>` : ''}
+
+        ${auth.status !== 'NEGADO' ? `
+          <div class="ec-bar">
+            ${['OTIMO', 'BOM', 'REGULAR', 'MAL_CONSERVADO'].map(e => `
+              <div class="ec-cell ${im.estadoConservacao.classificacao === e ? 'on' : ''}">${
+                e === 'OTIMO' ? 'Ótimo' : e === 'BOM' ? 'Bom' : e === 'REGULAR' ? 'Regular' : 'Mal Conservado'
+              }</div>`).join('')}
+          </div>
+          ${elementosNivel3Html}
+          <div class="sub-h">Fichas de Constatação por Ambiente</div>
+          ${fichasHtml || '<p class="text-slate-400 text-sm">Nenhum ambiente com foto registrada.</p>'}
+        ` : ''}
+
+        <div class="ass-grid">
+          <div class="ass">
+            <div class="ass-line"></div>
+            <div class="ass-nome">${im.assinaturas.vistoriador.nome || '—'}</div>
+            <div class="ass-reg">${im.assinaturas.vistoriador.registro || '—'} · ART/RRT ${im.assinaturas.vistoriador.artRrt || '—'}</div>
+            <div class="ass-papel">Responsável Técnico pela Vistoria</div>
+          </div>
+          ${im.assinaturas.ocupante ? `
+          <div class="ass">
+            <div class="ass-line"></div>
+            <div class="ass-nome">${im.assinaturas.ocupante.nome}</div>
+            <div class="ass-reg">${im.assinaturas.ocupante.documento}</div>
+            <div class="ass-papel">Ocupante do Imóvel</div>
+          </div>` : ''}
+          ${im.assinaturas.corresponsavelTecnico ? `
+          <div class="ass">
+            <div class="ass-line"></div>
+            <div class="ass-nome">${im.assinaturas.corresponsavelTecnico.nome}</div>
+            <div class="ass-reg">${im.assinaturas.corresponsavelTecnico.registro} · ART/RRT ${im.assinaturas.corresponsavelTecnico.artRrt}</div>
+            <div class="ass-papel">Corresponsável Técnico</div>
+          </div>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="utf-8">
+        <title>Laudo de Vistoria Cautelar de Vizinhança — ${vistoria.obraGeradora.nome}</title>
+        <style>${this.cssLaudoCautelar()}</style>
+      </head>
+      <body>
+        ${capaHtml}
+        <table class="print-table">
+          <thead><tr><td class="print-thead-td">${this.headerLaudoCautelar()}</td></tr></thead>
+          <tfoot><tr><td class="print-tfoot-td">${this.footerLaudoCautelar(vistoria)}</td></tr></tfoot>
+          <tbody><tr><td class="print-tbody-td">
+            ${sumarioHtml}
+            <div class="pg"></div>
+            ${secoesObraHtml}
+            ${blocosImoveisHtml}
+          </td></tr></tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    novaJanela.document.open();
+    novaJanela.document.write(htmlContent);
+    novaJanela.document.close();
+    setTimeout(() => novaJanela.print(), 1500);
+  }
+
+  private headerLaudoCautelar(): string {
+    return `<div class="rh-wrap">
+      <div>
+        <div class="rh-brand">Amorim<span>Tech</span></div>
+        <div class="rh-sub">Ecossistema 4.0 · Predial 4.0</div>
+      </div>
+    </div>`;
+  }
+
+  private footerLaudoCautelar(vistoria: VistoriaCautelar): string {
+    return `<div class="rf-wrap">
+      <span class="rf-doc">Vistoria Cautelar de Vizinhança</span>
+      <span>${vistoria.obraGeradora.nome}</span>
+    </div>`;
+  }
+
+  private cssLaudoCautelar(): string {
+    return `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
+      :root{
+        --p4-navy:#132A41; --p4-copper:#B5642A; --p4-copper-l:#E8B27E;
+        --p4-bg:#FFFFFF; --p4-ink:#1A2A38; --p4-soft:#4A5A66; --p4-faint:#8A949C;
+        --p4-rule:#D8D0C6; --p4-green:#2E7D5B; --p4-green-l:#E8F5EE;
+        --p4-red:#C75D45; --p4-red-l:#FDECEA; --p4-blue:#2C5AA0; --p4-blue-l:#EBF0FA;
+        --p4-amber:#E07B39; --p4-amber-l:#FDF0E6; --p4-pend-l:#F5F2EC;
+      }
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Inter','Segoe UI',Arial,sans-serif;font-size:9.5pt;line-height:1.5;
+           color:var(--p4-ink);background:#fff}
+      @page{size:A4 portrait;margin:8mm 16mm 12mm 16mm;
+        @bottom-right{content:"Pág. " counter(page) " / " counter(pages);
+          font-family:'Inter',sans-serif;font-size:7pt;color:#8A949C}}
+      .no-break{break-inside:avoid;page-break-inside:avoid}
+      tr{page-break-inside:avoid}
+      thead{display:table-header-group}
+      .print-table{width:100%;border-collapse:collapse;table-layout:fixed}
+      .print-thead-td{height:13mm;padding:0;background:#fff}
+      .print-tfoot-td{height:9mm;padding:0;background:#fff}
+      .print-tbody-td{padding:0;vertical-align:top}
+      .rh-wrap{display:flex;justify-content:space-between;align-items:flex-end;
+        border-bottom:1.6pt solid var(--p4-copper);padding-bottom:1.6mm;margin-bottom:3mm}
+      .rh-brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:10.5pt;
+        color:var(--p4-navy);letter-spacing:-.02em}
+      .rh-brand span{color:var(--p4-copper)}
+      .rh-sub{font-size:6.4pt;letter-spacing:.19em;text-transform:uppercase;color:var(--p4-faint);margin-top:.4mm}
+      .rf-wrap{display:flex;justify-content:space-between;align-items:center;
+        border-top:.6pt solid var(--p4-rule);padding-top:1.5mm;margin-top:4mm;
+        font-size:6.6pt;color:var(--p4-faint)}
+      .rf-doc{font-weight:600;color:var(--p4-soft)}
+      .capa{height:246mm;display:flex;flex-direction:column;justify-content:space-between;
+        page-break-after:always;padding:6mm 0 0}
+      .capa-logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:19pt;
+        color:var(--p4-navy);letter-spacing:-.02em;line-height:1}
+      .capa-logo span{color:var(--p4-copper)}
+      .capa-logo-sub{font-size:7pt;letter-spacing:.28em;text-transform:uppercase;
+        color:var(--p4-faint);margin-top:1.6mm}
+      .capa-rule{height:2.6pt;background:var(--p4-copper);width:34mm;margin:7mm 0 0}
+      .capa-kicker{font-size:8pt;letter-spacing:.2em;text-transform:uppercase;
+        color:var(--p4-copper);font-weight:700;margin-bottom:3mm}
+      .capa-titulo{font-family:'Poppins',sans-serif;font-weight:700;font-size:27pt;
+        line-height:1.14;color:var(--p4-navy);letter-spacing:-.02em}
+      .capa-norma{margin-top:6mm;font-size:8.4pt;color:var(--p4-soft);line-height:1.65;
+        max-width:132mm;border-left:2.4pt solid var(--p4-copper-l);padding-left:5mm}
+      .capa-meta{border-top:.8pt solid var(--p4-rule);padding-top:5mm;
+        display:grid;grid-template-columns:1fr 1fr;gap:3.4mm 9mm}
+      .capa-meta div{font-size:8.4pt}
+      .capa-meta b{display:block;font-size:6.6pt;letter-spacing:.15em;text-transform:uppercase;
+        color:var(--p4-faint);font-weight:600;margin-bottom:.7mm}
+      .sec-h{font-family:'Poppins',sans-serif;font-weight:700;font-size:12pt;color:var(--p4-navy);
+        border-bottom:1.1pt solid var(--p4-copper);padding-bottom:1.6mm;margin:9mm 0 4mm;
+        display:flex;align-items:baseline;gap:3mm;break-after:avoid}
+      .sec-h .sn{background:var(--p4-navy);color:#fff;font-size:8pt;padding:.8mm 2.4mm;
+        border-radius:1.4mm;font-weight:700;letter-spacing:.02em}
+      .sub-h{font-family:'Poppins',sans-serif;font-weight:600;font-size:9.6pt;color:var(--p4-navy);
+        margin:5mm 0 2.2mm;break-after:avoid}
+      p{margin-bottom:2.6mm;text-align:justify}
+      ul{margin:0 0 3mm 5mm}
+      li{margin-bottom:1.2mm}
+      .toc-row{display:flex;align-items:baseline;gap:2.4mm;padding:1.5mm 0;
+        border-bottom:.4pt dotted var(--p4-rule);font-size:9pt}
+      .toc-num{font-weight:700;color:var(--p4-copper);min-width:11mm}
+      table.dt{width:100%;border-collapse:collapse;margin:2.5mm 0 4mm;font-size:8.4pt}
+      table.dt th{background:var(--p4-navy);color:#fff;text-align:left;padding:2mm 2.6mm;
+        font-size:7.2pt;letter-spacing:.09em;text-transform:uppercase;font-weight:600}
+      table.dt td{padding:2mm 2.6mm;border-bottom:.5pt solid var(--p4-rule);vertical-align:top}
+      table.dt tr:nth-child(even) td{background:#FAF8F4}
+      table.dt td.lbl{font-weight:600;color:var(--p4-soft);width:38%}
+      .f-card{border:.8pt solid var(--p4-rule);border-radius:2mm;margin:0 0 5mm;
+        overflow:hidden;break-inside:avoid}
+      .f-head{background:var(--p4-navy);color:#fff;padding:2.4mm 3.4mm}
+      .f-id{font-family:'Poppins',sans-serif;font-weight:700;font-size:9pt;letter-spacing:.03em}
+      .f-body{padding:3.4mm}
+      .chip{display:inline-block;font-size:6.8pt;font-weight:700;letter-spacing:.08em;
+        text-transform:uppercase;padding:.7mm 2.2mm;border-radius:1.2mm;margin-right:1.4mm}
+      .chip-anom{background:var(--p4-amber-l);color:var(--p4-amber)}
+      .chip-falha{background:var(--p4-blue-l);color:var(--p4-blue)}
+      .chip-mp{background:var(--p4-red-l);color:var(--p4-red)}
+      .foto-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin:2mm 0}
+      .foto-grid.tri{grid-template-columns:1fr 1fr 1fr}
+      figure{border:.6pt solid var(--p4-rule);border-radius:1.6mm;overflow:hidden;break-inside:avoid}
+      figure img{width:100%;height:40mm;object-fit:cover;display:block}
+      figcaption{font-size:6.8pt;color:var(--p4-soft);padding:1.6mm 2.4mm;background:#FAF8F4;
+        border-top:.5pt solid var(--p4-rule)}
+      .ec-bar{display:flex;gap:1.4mm;margin:2mm 0 3mm}
+      .ec-cell{flex:1;text-align:center;font-size:7pt;font-weight:600;padding:1.8mm .5mm;
+        border-radius:1.2mm;background:#F2EFE9;color:var(--p4-faint);letter-spacing:.04em}
+      .ec-cell.on{background:var(--p4-copper);color:#fff}
+      .box{border:.8pt solid var(--p4-rule);border-left:2.6pt solid var(--p4-copper);
+        background:#FAF8F4;padding:3mm 4mm;margin:3mm 0;font-size:8.4pt;color:var(--p4-soft)}
+      .box b{color:var(--p4-navy)}
+      .box-alert{border-left-color:var(--p4-red);background:var(--p4-red-l)}
+      .nc-card{border:.6pt solid var(--p4-rule);border-radius:1.6mm;padding:2.6mm;margin-bottom:2.4mm}
+      .nc-header{display:flex;align-items:center;gap:2mm;margin-bottom:1.2mm}
+      .s9-title{font-weight:600;font-size:8.6pt;color:var(--p4-ink)}
+      .ass-grid{display:grid;grid-template-columns:1fr 1fr;gap:8mm 10mm;margin-top:10mm}
+      .ass{text-align:center;break-inside:avoid}
+      .ass-line{border-top:.8pt solid var(--p4-ink);margin-bottom:1.6mm}
+      .ass-nome{font-size:8.6pt;font-weight:600;color:var(--p4-navy)}
+      .ass-reg{font-size:7.4pt;color:var(--p4-soft)}
+      .ass-papel{font-size:6.6pt;letter-spacing:.14em;text-transform:uppercase;
+        color:var(--p4-faint);margin-top:.8mm}
+      .pg{page-break-before:always}
+    `;
+  }
 }
