@@ -352,6 +352,28 @@ export class VistoriaCautelarComponent implements OnInit {
   edAssCorresponsavelArtRrt = signal('');
   edAssCorresponsavelRevisaoDocumentada = signal(false);
 
+  // ─── VC-9a: Painel de consolidação ───
+  modalConsolidacaoAberto = signal(false);
+
+  imoveisProntosParaConsolidar = computed(() => {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return false;
+    if (vistoria.imoveis.length === 0) return false;
+    return vistoria.imoveis.every(im => im.status === 'CONCLUIDO' || im.status === 'ACESSO_NEGADO');
+  });
+
+  resumoStatusImoveis = computed(() => {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return { total: 0, concluidos: 0, negados: 0, pendentes: 0 };
+    const imoveis = vistoria.imoveis;
+    return {
+      total: imoveis.length,
+      concluidos: imoveis.filter(i => i.status === 'CONCLUIDO').length,
+      negados: imoveis.filter(i => i.status === 'ACESSO_NEGADO').length,
+      pendentes: imoveis.filter(i => i.status === 'A_AGENDAR' || i.status === 'EM_ANDAMENTO').length,
+    };
+  });
+
   // ─── VC-6a: Checklist de ambientes ───
   ambientesInicializados = signal(false);
   novoAmbienteNomeCustom = signal('');
@@ -1288,5 +1310,33 @@ sem inventar conteúdo.`;
     await this.carregarVistorias();
     this.vistoriaAtivaId.set(atualizada.id);
     this.toastService.show('Ambiente removido do checklist.', 'info');
+  }
+
+  async marcarImovelConcluido(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovelId = this.imovelEmEdicaoId();
+    if (!vistoria || !imovelId) return;
+    const imoveisAtualizados = vistoria.imoveis.map(im =>
+      im.id === imovelId && im.status === 'EM_ANDAMENTO' ? { ...im, status: 'CONCLUIDO' as const } : im
+    );
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+    this.toastService.show('Imóvel marcado como concluído.', 'success');
+    this.fecharDetalheImovel();
+  }
+
+  abrirModalConsolidacao(): void {
+    if (!this.imoveisProntosParaConsolidar()) return;
+    this.modalConsolidacaoAberto.set(true);
+  }
+
+  fecharModalConsolidacao(): void {
+    this.modalConsolidacaoAberto.set(false);
   }
 }

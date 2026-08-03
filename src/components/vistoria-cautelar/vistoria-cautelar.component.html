@@ -183,6 +183,39 @@
       </button>
     </div>
 
+    <!-- PAINEL DE STATUS DA OBRA -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex flex-wrap gap-4">
+          <div>
+            <p class="text-2xl font-black text-slate-800">{{ resumoStatusImoveis().total }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total de imóveis</p>
+          </div>
+          <div>
+            <p class="text-2xl font-black text-emerald-600">{{ resumoStatusImoveis().concluidos }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Concluídos</p>
+          </div>
+          <div>
+            <p class="text-2xl font-black text-red-500">{{ resumoStatusImoveis().negados }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Acesso negado</p>
+          </div>
+          <div>
+            <p class="text-2xl font-black text-amber-600">{{ resumoStatusImoveis().pendentes }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pendentes</p>
+          </div>
+        </div>
+        <button (click)="abrirModalConsolidacao()" [disabled]="!imoveisProntosParaConsolidar()"
+                class="bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-all shadow-sm whitespace-nowrap">
+          Consolidar Laudo Completo
+        </button>
+      </div>
+      @if (!imoveisProntosParaConsolidar() && resumoStatusImoveis().total > 0) {
+        <p class="text-[11px] text-slate-400 mt-3">
+          Todos os imóveis precisam estar concluídos ou com acesso negado registrado antes da consolidação.
+        </p>
+      }
+    </div>
+
     <!-- BUSCA + FILTRO + ADICIONAR -->
     <div class="flex flex-col sm:flex-row gap-3">
       <input type="text" [(ngModel)]="filtroImovelTexto" name="filtroTexto" placeholder="Buscar por endereço..."
@@ -559,6 +592,11 @@
       <button (click)="fecharDetalheImovel()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-sm transition-colors">Voltar</button>
       <button (click)="salvarDadosImovel()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">Salvar Dados do Imóvel</button>
     </div>
+    @if (imovelEmEdicao()!.status === 'EM_ANDAMENTO') {
+      <button (click)="marcarImovelConcluido()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">
+        Marcar Imóvel como Concluído
+      </button>
+    }
   </div>
 }
 
@@ -855,6 +893,33 @@
         <button (click)="fecharModalOcorrencia()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">Cancelar</button>
         <button (click)="salvarOcorrencia()" [disabled]="!podeSalvarOcorrencia()" class="flex-1 bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-sm transition-colors">Salvar</button>
       </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: CONSOLIDAÇÃO (pré-visualização simples — o PDF real é o VC-9b) -->
+@if (modalConsolidacaoAberto()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 my-8">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-800">Consolidação da Obra</h3>
+        <button (click)="fecharModalConsolidacao()" class="text-slate-400 hover:text-slate-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <p class="text-sm text-slate-600">
+        Todos os {{ resumoStatusImoveis().total }} imóveis da obra
+        <strong>{{ vistoriaAtiva()!.obraGeradora.nome }}</strong> estão prontos para
+        consolidação ({{ resumoStatusImoveis().concluidos }} concluídos,
+        {{ resumoStatusImoveis().negados }} com acesso negado registrado).
+      </p>
+      <div class="bg-slate-50 rounded-xl p-3 text-xs text-slate-500">
+        A geração do PDF final, com a estrutura completa dos 14 itens da Norma IBAPE/SP
+        2025, será implementada no próximo bloco (VC-9b).
+      </div>
+      <button (click)="fecharModalConsolidacao()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">
+        Fechar
+      </button>
     </div>
   </div>
 }
