@@ -80,7 +80,7 @@ export class NotificationService {
 
   async checarAvisosExternos(): Promise<void> {
     try {
-      const resp = await fetch('https://raw.githubusercontent.com/Emanoel-01/Inspe-o-predial/main/avisos.json', { cache: 'no-store' });
+      const resp = await fetch('https://raw.githubusercontent.com/Emanoel-01/Replica-Predial-4.0/main/avisos.json', { cache: 'no-store' });
       if (!resp.ok) return;
       const avisos: { id: string; title: string; message: string; date: string }[] = await resp.json();
       const lidas = this.carregarLidas();
