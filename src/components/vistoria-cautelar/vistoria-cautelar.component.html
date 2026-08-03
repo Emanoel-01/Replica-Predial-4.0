@@ -346,6 +346,76 @@
       <p class="text-[11px] text-slate-400">Classificação conforme os estudos Valores de Edificações de Imóveis Urbanos (VEIU) e Índice de Unidades Padronizadas (IUP) do IBAPE/SP.</p>
     </div>
 
+    <!-- SEÇÃO: ELEMENTOS DO NÍVEL 3 (condicional) -->
+    @if (imovelEhNivel3()) {
+      <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div>
+          <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Elementos do Nível 3 (item 5.3)</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Caracterização completa exigida para vistorias de Nível 3, além dos elementos já cobertos no checklist de ambientes.</p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-2.5 cursor-pointer hover:border-sky-200">
+            <input type="checkbox" [(ngModel)]="edNivel3Fachadas" name="n3Fachadas" class="rounded border-slate-300">
+            <span class="text-xs font-bold text-slate-700">Fachadas</span>
+          </label>
+          <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-2.5 cursor-pointer hover:border-sky-200">
+            <input type="checkbox" [(ngModel)]="edNivel3Coberturas" name="n3Coberturas" class="rounded border-slate-300">
+            <span class="text-xs font-bold text-slate-700">Coberturas</span>
+          </label>
+          <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-2.5 cursor-pointer hover:border-sky-200">
+            <input type="checkbox" [(ngModel)]="edNivel3Telhados" name="n3Telhados" class="rounded border-slate-300">
+            <span class="text-xs font-bold text-slate-700">Telhados</span>
+          </label>
+          <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-2.5 cursor-pointer hover:border-sky-200">
+            <input type="checkbox" [(ngModel)]="edNivel3CaptacaoAguasPluviais" name="n3Captacao" class="rounded border-slate-300">
+            <span class="text-xs font-bold text-slate-700">Captação de águas pluviais</span>
+          </label>
+          <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-2.5 cursor-pointer hover:border-sky-200">
+            <input type="checkbox" [(ngModel)]="edNivel3PisosExternos" name="n3Pisos" class="rounded border-slate-300">
+            <span class="text-xs font-bold text-slate-700">Pisos externos</span>
+          </label>
+          <label class="flex items-center gap-2 border border-slate-200 rounded-lg p-2.5 cursor-pointer hover:border-sky-200">
+            <input type="checkbox" [(ngModel)]="edNivel3VegetacaoCursosDagua" name="n3Vegetacao" class="rounded border-slate-300">
+            <span class="text-xs font-bold text-slate-700">Vegetação e cursos d'água</span>
+          </label>
+        </div>
+        <label class="flex items-center gap-2 pt-1">
+          <input type="checkbox" [(ngModel)]="edNivel3UsoRPA" name="n3RPA" class="rounded border-slate-300">
+          <span class="text-xs font-bold text-slate-700">Uso de RPA (drone) homologado nesta vistoria</span>
+        </label>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Observações</label>
+          <textarea [(ngModel)]="edNivel3Observacoes" name="n3Obs" rows="2"
+                    class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+        </div>
+      </div>
+    }
+
+    <!-- SEÇÃO: INSTRUMENTAÇÃO COMPLEMENTAR (opcional, extra-normativo) -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+      <div>
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Instrumentação Complementar</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Campo opcional e complementar — não integra o rol normativo da Norma IBAPE/SP 2025. Preencha apenas se houver instrumentação de monitoramento instalada por decisão própria.</p>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Fissurômetros</label>
+          <input type="text" [(ngModel)]="edInstrumFissurometros" name="instrumFiss" placeholder="ex.: 2 unidades instaladas"
+                 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Pinos de recalque</label>
+          <input type="text" [(ngModel)]="edInstrumPinosRecalque" name="instrumPinos" placeholder="ex.: não aplicável"
+                 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Inclinômetros</label>
+          <input type="text" [(ngModel)]="edInstrumInclinometros" name="instrumInclin" placeholder="ex.: não aplicável"
+                 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+      </div>
+    </div>
+
     <!-- SEÇÃO: CHECKLIST DE AMBIENTES -->
     <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
       <div class="flex items-center justify-between">

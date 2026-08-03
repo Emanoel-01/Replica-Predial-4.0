@@ -323,6 +323,21 @@ export class VistoriaCautelarComponent implements OnInit {
   edImovelVedacoesVerticais = signal('');
   edImovelEstadoConservacao = signal<EstadoConservacaoCautelar>('BOM');
 
+  // ─── VC-7: Elementos do Nível 3 ───
+  edNivel3Fachadas = signal(false);
+  edNivel3Coberturas = signal(false);
+  edNivel3Telhados = signal(false);
+  edNivel3CaptacaoAguasPluviais = signal(false);
+  edNivel3PisosExternos = signal(false);
+  edNivel3VegetacaoCursosDagua = signal(false);
+  edNivel3UsoRPA = signal(false);
+  edNivel3Observacoes = signal('');
+
+  // ─── VC-7: Instrumentação complementar (opcional) ───
+  edInstrumFissurometros = signal('');
+  edInstrumPinosRecalque = signal('');
+  edInstrumInclinometros = signal('');
+
   // ─── VC-6a: Checklist de ambientes ───
   ambientesInicializados = signal(false);
   novoAmbienteNomeCustom = signal('');
@@ -646,6 +661,22 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edImovelContencao.set(imovel.caracteristicasConstrutivas.contencao ?? '');
     this.edImovelVedacoesVerticais.set(imovel.caracteristicasConstrutivas.vedacoesVerticais ?? '');
     this.edImovelEstadoConservacao.set(imovel.estadoConservacao.classificacao);
+
+    const nivel3 = imovel.elementosNivel3;
+    this.edNivel3Fachadas.set(nivel3?.fachadas ?? false);
+    this.edNivel3Coberturas.set(nivel3?.coberturas ?? false);
+    this.edNivel3Telhados.set(nivel3?.telhados ?? false);
+    this.edNivel3CaptacaoAguasPluviais.set(nivel3?.captacaoAguasPluviais ?? false);
+    this.edNivel3PisosExternos.set(nivel3?.pisosExternos ?? false);
+    this.edNivel3VegetacaoCursosDagua.set(nivel3?.vegetacaoCursosDagua ?? false);
+    this.edNivel3UsoRPA.set(nivel3?.usoRPA ?? false);
+    this.edNivel3Observacoes.set(nivel3?.observacoes ?? '');
+
+    const instrum = imovel.instrumentacaoComplementar;
+    this.edInstrumFissurometros.set(instrum?.fissurometros ?? '');
+    this.edInstrumPinosRecalque.set(instrum?.pinosRecalque ?? '');
+    this.edInstrumInclinometros.set(instrum?.inclinometros ?? '');
+
     this.garantirAmbientesPadrao();
     this.modoExibicao.set('DETALHE_IMOVEL');
   }
@@ -653,6 +684,10 @@ export class VistoriaCautelarComponent implements OnInit {
   fecharDetalheImovel(): void {
     this.imovelEmEdicaoId.set(null);
     this.modoExibicao.set('DETALHE');
+  }
+
+  imovelEhNivel3(): boolean {
+    return this.vistoriaAtiva()?.nivelVistoriaCautelar === '3';
   }
 
   async salvarDadosImovel(): Promise<void> {
@@ -687,6 +722,21 @@ export class VistoriaCautelarComponent implements OnInit {
           classificacao: this.edImovelEstadoConservacao(),
           fonteNormativa: 'VEIU_IUP_IBAPE_SP' as const,
         },
+        elementosNivel3: this.imovelEhNivel3() ? {
+          fachadas: this.edNivel3Fachadas(),
+          coberturas: this.edNivel3Coberturas(),
+          telhados: this.edNivel3Telhados(),
+          captacaoAguasPluviais: this.edNivel3CaptacaoAguasPluviais(),
+          pisosExternos: this.edNivel3PisosExternos(),
+          vegetacaoCursosDagua: this.edNivel3VegetacaoCursosDagua(),
+          usoRPA: this.edNivel3UsoRPA(),
+          observacoes: this.edNivel3Observacoes() || undefined,
+        } : undefined,
+        instrumentacaoComplementar: (this.edInstrumFissurometros() || this.edInstrumPinosRecalque() || this.edInstrumInclinometros()) ? {
+          fissurometros: this.edInstrumFissurometros() || undefined,
+          pinosRecalque: this.edInstrumPinosRecalque() || undefined,
+          inclinometros: this.edInstrumInclinometros() || undefined,
+        } : undefined,
       };
     });
     const atualizada: VistoriaCautelar = {
