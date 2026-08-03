@@ -112,10 +112,10 @@
                 class="w-full sm:w-auto font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
                 [class.bg-green-600]="saveState() === 'saved'"
                 [class.text-white]="saveState() === 'saved' || saveState() === 'saving' || saveState() === 'idle'"
-                [class.bg-sky-700]="saveState() === 'saving'"
+                [class.bg-slate-700]="saveState() === 'saving'"
                 [class.cursor-wait]="saveState() === 'saving'"
-                [class.bg-sky-800]="saveState() === 'idle'"
-                [class.hover:bg-sky-900]="saveState() === 'idle'">
+                [class.bg-slate-900]="saveState() === 'idle'"
+                [class.hover:bg-sky-600]="saveState() === 'idle'">
           @switch (saveState()) {
             @case ('idle') { <span>Salvar</span> }
             @case ('saving') { <span>Salvando...</span> }
