@@ -219,6 +219,17 @@ export class AppComponent implements OnInit {
     this.admAcessoLiberado.set(false);
   }
 
+  // AUDITORIA TEMPORÁRIA — atalho visual para revisar o re-skin no preview
+  // do AI Studio sem depender de e-mail/magic-link ou do deploy do Netlify.
+  // Não cria sessão no Supabase. Remover este método e o botão associado em
+  // login.component.html/.ts assim que o re-skin visual estiver concluído.
+  handleAuditAccess(): void {
+    this.userName.set('Auditoria');
+    this.isLoggedIn.set(true);
+    this.showLogin.set(false);
+    this.activeView.set('visao-geral');
+  }
+
   showLoginRequiredToast(): void {
     this.toastService.show('Faça login para acessar esta funcionalidade.', 'info');
   }

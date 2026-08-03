@@ -11,6 +11,8 @@ import { SupabaseService } from '../../services/supabase.service';
 })
 export class LoginComponent {
   loginAsGuest = output<void>();
+  // AUDITORIA TEMPORÁRIA
+  loginAsAudit = output<void>();
 
   email = signal('');
   loading = signal(false);
@@ -44,6 +46,11 @@ export class LoginComponent {
 
   handleGuestAccess(): void {
     this.loginAsGuest.emit();
+  }
+
+  // AUDITORIA TEMPORÁRIA
+  handleAuditAccess(): void {
+    this.loginAsAudit.emit();
   }
 
   resetForm(): void {
