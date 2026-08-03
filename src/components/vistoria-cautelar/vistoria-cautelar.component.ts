@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
@@ -251,6 +251,58 @@ export class VistoriaCautelarComponent implements OnInit {
   // ─── Marco temporal ───
   novoMarcoTemporal = signal<'ASSINATURA_DIGITAL' | 'REGISTRO_CARTORIO'>('ASSINATURA_DIGITAL');
 
+  // ─── VC-4: Lista de imóveis + busca/filtro ───
+  filtroImovelTexto = signal('');
+  filtroImovelStatus = signal<'TODOS' | StatusImovelCautelar>('TODOS');
+  imoveisFiltrados = computed(() => {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return [];
+    const texto = this.filtroImovelTexto().toLowerCase().trim();
+    const status = this.filtroImovelStatus();
+    return vistoria.imoveis.filter(im => {
+      const matchTexto = !texto || im.endereco.toLowerCase().includes(texto);
+      const matchStatus = status === 'TODOS' || im.status === status;
+      return matchTexto && matchStatus;
+    });
+  });
+
+  // ─── VC-4: Modal de adicionar imóvel ───
+  modalAdicionarImovelAberto = signal(false);
+  novoImovelEndereco = signal('');
+  novoImovelTipologia = signal<TipologiaCautelar>('Residencial');
+
+  // ─── VC-4: Painel de autorização de acesso (imóvel selecionado) ───
+  imovelEmEdicaoId = signal<string | null>(null);
+  edAutorizacaoStatus = signal<StatusAutorizacao>('AUTORIZADO');
+  edDataContatoPrevio = signal('');
+  edMeioContato = signal<'TELEFONE' | 'EMAIL' | 'PESSOAL'>('TELEFONE');
+  edAnexoTermo = signal<string | null>(null);
+  edAmbientesRestritos = signal('');
+  edRecusaData = signal('');
+  edRecusaFormaNotificacao = signal<'CORREIOS' | 'CARTORIO'>('CORREIOS');
+  edRecusaAnexoComprovante = signal<string | null>(null);
+  edRecusaFotoFachada = signal<string | null>(null);
+
+  private comprimirImagem(dataUrl: string, maxWidth = 900, quality = 0.78): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width;
+        let h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(dataUrl); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
   async ngOnInit(): Promise<void> {
     await this.carregarVistorias();
   }
@@ -350,5 +402,146 @@ export class VistoriaCautelarComponent implements OnInit {
     await this.dbService.deleteVistoriaCautelar(id);
     await this.carregarVistorias();
     this.toastService.show('Vistoria Cautelar excluída.', 'info');
+  }
+
+  imovelEmEdicao(): LaudoImovelVizinho | undefined {
+    return this.vistoriaAtiva()?.imoveis.find(i => i.id === this.imovelEmEdicaoId());
+  }
+
+  abrirModalAdicionarImovel(): void {
+    this.novoImovelEndereco.set('');
+    this.novoImovelTipologia.set('Residencial');
+    this.modalAdicionarImovelAberto.set(true);
+  }
+
+  async confirmarAdicionarImovel(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria || !this.novoImovelEndereco().trim()) {
+      this.toastService.show('Informe o endereço do imóvel.', 'error');
+      return;
+    }
+    const novoImovel: LaudoImovelVizinho = {
+      id: crypto.randomUUID(),
+      status: 'A_AGENDAR',
+      endereco: this.novoImovelEndereco().trim(),
+      autorizacaoAcesso: { status: 'AUTORIZADO' },
+      dadosImovel: { tipologia: this.novoImovelTipologia() },
+      caracteristicasConstrutivas: {},
+      estadoConservacao: { classificacao: 'BOM', fonteNormativa: 'VEIU_IUP_IBAPE_SP' },
+      ambientes: [],
+      assinaturas: { vistoriador: { nome: '', registro: '', artRrt: '' } },
+    };
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: [...vistoria.imoveis, novoImovel],
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+    this.modalAdicionarImovelAberto.set(false);
+    this.toastService.show('Imóvel adicionado à obra.', 'success');
+  }
+
+  abrirAutorizacaoAcesso(imovelId: string): void {
+    const imovel = this.vistoriaAtiva()?.imoveis.find(i => i.id === imovelId);
+    if (!imovel) return;
+    this.imovelEmEdicaoId.set(imovelId);
+    const auth = imovel.autorizacaoAcesso;
+    this.edAutorizacaoStatus.set(auth.status);
+    this.edDataContatoPrevio.set(auth.dataContatoPrevio ?? '');
+    this.edMeioContato.set(auth.meioContato ?? 'TELEFONE');
+    this.edAnexoTermo.set(auth.anexoTermo ?? null);
+    this.edAmbientesRestritos.set(auth.ambientesRestritos ?? '');
+    this.edRecusaData.set(auth.recusa?.data ?? '');
+    this.edRecusaFormaNotificacao.set(auth.recusa?.formaNotificacao ?? 'CORREIOS');
+    this.edRecusaAnexoComprovante.set(auth.recusa?.anexoComprovante ?? null);
+    this.edRecusaFotoFachada.set(auth.recusa?.fotoFachadaExterna ?? null);
+  }
+
+  fecharAutorizacaoAcesso(): void {
+    this.imovelEmEdicaoId.set(null);
+  }
+
+  private async processarArquivoParaDataUrl(event: Event, destino: (v: string) => void): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      const compressed = await this.comprimirImagem(dataUrl, 900, 0.78);
+      destino(compressed);
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  onAnexoTermoChange(event: Event): void {
+    this.processarArquivoParaDataUrl(event, v => this.edAnexoTermo.set(v));
+  }
+
+  onRecusaComprovanteChange(event: Event): void {
+    this.processarArquivoParaDataUrl(event, v => this.edRecusaAnexoComprovante.set(v));
+  }
+
+  onRecusaFotoFachadaChange(event: Event): void {
+    this.processarArquivoParaDataUrl(event, v => this.edRecusaFotoFachada.set(v));
+  }
+
+  async salvarAutorizacaoAcesso(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    const imovelId = this.imovelEmEdicaoId();
+    if (!vistoria || !imovelId) return;
+
+    const status = this.edAutorizacaoStatus();
+    const autorizacaoAcesso: AutorizacaoAcesso = {
+      status,
+      dataContatoPrevio: this.edDataContatoPrevio() || undefined,
+      meioContato: this.edMeioContato(),
+      anexoTermo: status !== 'NEGADO' ? (this.edAnexoTermo() ?? undefined) : undefined,
+      ambientesRestritos: status === 'AUTORIZADO_PARCIAL' ? this.edAmbientesRestritos() : undefined,
+      recusa: status === 'NEGADO' ? {
+        data: this.edRecusaData(),
+        formaNotificacao: this.edRecusaFormaNotificacao(),
+        anexoComprovante: this.edRecusaAnexoComprovante() ?? undefined,
+        fotoFachadaExterna: this.edRecusaFotoFachada() ?? undefined,
+      } : undefined,
+    };
+
+    const novoStatusImovel: StatusImovelCautelar =
+      status === 'NEGADO' ? 'ACESSO_NEGADO' : 'EM_ANDAMENTO';
+
+    const imoveisAtualizados = vistoria.imoveis.map(im =>
+      im.id === imovelId ? { ...im, autorizacaoAcesso, status: novoStatusImovel } : im
+    );
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.vistoriaAtivaId.set(atualizada.id);
+    this.imovelEmEdicaoId.set(null);
+    this.toastService.show('Autorização de acesso registrada.', 'success');
+  }
+
+  corStatusImovel(status: StatusImovelCautelar): string {
+    switch (status) {
+      case 'A_AGENDAR': return 'bg-slate-100 text-slate-600';
+      case 'EM_ANDAMENTO': return 'bg-amber-50 text-amber-700';
+      case 'CONCLUIDO': return 'bg-emerald-50 text-emerald-700';
+      case 'ACESSO_NEGADO': return 'bg-red-50 text-red-700';
+    }
+  }
+
+  labelStatusImovel(status: StatusImovelCautelar): string {
+    switch (status) {
+      case 'A_AGENDAR': return 'A agendar';
+      case 'EM_ANDAMENTO': return 'Em andamento';
+      case 'CONCLUIDO': return 'Concluído';
+      case 'ACESSO_NEGADO': return 'Acesso negado';
+    }
   }
 }

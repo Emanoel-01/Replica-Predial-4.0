@@ -182,8 +182,174 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
-    <div class="bg-white p-6 rounded-2xl border border-slate-100 text-center text-slate-400 text-sm">
-      A lista de imóveis desta obra será implementada no próximo bloco (VC-4).
+
+    <!-- BUSCA + FILTRO + ADICIONAR -->
+    <div class="flex flex-col sm:flex-row gap-3">
+      <input type="text" [(ngModel)]="filtroImovelTexto" name="filtroTexto" placeholder="Buscar por endereço..."
+             class="flex-1 px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+      <select [(ngModel)]="filtroImovelStatus" name="filtroStatus" class="px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        <option value="TODOS">Todos os status</option>
+        <option value="A_AGENDAR">A agendar</option>
+        <option value="EM_ANDAMENTO">Em andamento</option>
+        <option value="CONCLUIDO">Concluído</option>
+        <option value="ACESSO_NEGADO">Acesso negado</option>
+      </select>
+      <button (click)="abrirModalAdicionarImovel()" class="flex items-center justify-center gap-2 bg-slate-900 hover:bg-sky-600 text-white font-bold px-4 py-2.5 rounded-lg text-sm transition-all shadow-sm whitespace-nowrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>Adicionar Imóvel</span>
+      </button>
+    </div>
+
+    <!-- LISTA DE IMÓVEIS -->
+    @if (imoveisFiltrados().length === 0) {
+      <div class="bg-white border border-slate-100 rounded-3xl p-10 text-center">
+        <p class="text-slate-500 text-sm">
+          @if (vistoriaAtiva()!.imoveis.length === 0) {
+            Nenhum imóvel adicionado ainda. Clique em "Adicionar Imóvel" para começar.
+          } @else {
+            Nenhum imóvel corresponde à busca/filtro atual.
+          }
+        </p>
+      </div>
+    } @else {
+      <div class="grid sm:grid-cols-2 gap-3">
+        @for (im of imoveisFiltrados(); track im.id) {
+          <div (click)="abrirAutorizacaoAcesso(im.id)" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-sky-200 transition-all cursor-pointer">
+            <div class="flex justify-between items-start gap-2 mb-1.5">
+              <h4 class="font-bold text-slate-800 text-sm">{{ im.endereco }}</h4>
+              <span [class]="'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ' + corStatusImovel(im.status)">
+                {{ labelStatusImovel(im.status) }}
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">{{ im.dadosImovel.tipologia }}</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
+
+<!-- MODAL: ADICIONAR IMÓVEL -->
+@if (modalAdicionarImovelAberto()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4">
+      <h3 class="text-lg font-bold text-slate-800">Adicionar Imóvel</h3>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Endereço *</label>
+        <input type="text" [(ngModel)]="novoImovelEndereco" name="imEndereco" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipologia</label>
+        <select [(ngModel)]="novoImovelTipologia" name="imTipologia" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <option value="Residencial">Residencial</option>
+          <option value="Comercial">Comercial</option>
+          <option value="Industrial">Industrial</option>
+          <option value="Hospitalar">Hospitalar</option>
+          <option value="Educacional">Educacional</option>
+        </select>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button (click)="modalAdicionarImovelAberto.set(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">Cancelar</button>
+        <button (click)="confirmarAdicionarImovel()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">Adicionar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: AUTORIZAÇÃO DE ACESSO -->
+@if (imovelEmEdicao()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 my-8">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-800">Autorização de Acesso</h3>
+        <button (click)="fecharAutorizacaoAcesso()" class="text-slate-400 hover:text-slate-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <p class="text-sm text-slate-500">{{ imovelEmEdicao()!.endereco }}</p>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Data do contato prévio</label>
+          <input type="date" [(ngModel)]="edDataContatoPrevio" name="edData" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Meio de contato</label>
+          <select [(ngModel)]="edMeioContato" name="edMeio" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="TELEFONE">Telefone</option>
+            <option value="EMAIL">E-mail</option>
+            <option value="PESSOAL">Pessoal</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Status de acesso</label>
+        <div class="grid grid-cols-3 gap-2">
+          <label [class]="'border rounded-xl p-2.5 text-center cursor-pointer transition-all ' + (edAutorizacaoStatus() === 'AUTORIZADO' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200')">
+            <input type="radio" name="edStatus" value="AUTORIZADO" [(ngModel)]="edAutorizacaoStatus" class="sr-only">
+            <span class="block text-xs font-bold text-slate-700">Autorizado</span>
+          </label>
+          <label [class]="'border rounded-xl p-2.5 text-center cursor-pointer transition-all ' + (edAutorizacaoStatus() === 'AUTORIZADO_PARCIAL' ? 'border-amber-500 bg-amber-50' : 'border-slate-200')">
+            <input type="radio" name="edStatus" value="AUTORIZADO_PARCIAL" [(ngModel)]="edAutorizacaoStatus" class="sr-only">
+            <span class="block text-xs font-bold text-slate-700">Com restrições</span>
+          </label>
+          <label [class]="'border rounded-xl p-2.5 text-center cursor-pointer transition-all ' + (edAutorizacaoStatus() === 'NEGADO' ? 'border-red-500 bg-red-50' : 'border-slate-200')">
+            <input type="radio" name="edStatus" value="NEGADO" [(ngModel)]="edAutorizacaoStatus" class="sr-only">
+            <span class="block text-xs font-bold text-slate-700">Negado</span>
+          </label>
+        </div>
+      </div>
+
+      @if (edAutorizacaoStatus() === 'AUTORIZADO' || edAutorizacaoStatus() === 'AUTORIZADO_PARCIAL') {
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Anexo do termo assinado</label>
+          <input type="file" accept="image/*" (change)="onAnexoTermoChange($event)" class="w-full text-xs text-slate-600">
+          @if (edAnexoTermo()) { <p class="text-[11px] text-emerald-600 mt-1">✓ Anexo carregado</p> }
+        </div>
+      }
+
+      @if (edAutorizacaoStatus() === 'AUTORIZADO_PARCIAL') {
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Ambientes restritos</label>
+          <textarea [(ngModel)]="edAmbientesRestritos" name="edRestricoes" rows="2" placeholder="ex.: autorizado fotografar garagem e quintal; quartos não liberados"
+                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+        </div>
+      }
+
+      @if (edAutorizacaoStatus() === 'NEGADO') {
+        <div class="space-y-3 bg-red-50/50 border border-red-100 rounded-xl p-3.5">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1.5">Data da recusa</label>
+              <input type="date" [(ngModel)]="edRecusaData" name="edRecusaData" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1.5">Forma de notificação</label>
+              <select [(ngModel)]="edRecusaFormaNotificacao" name="edForma" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                <option value="CORREIOS">Correios</option>
+                <option value="CARTORIO">Cartório</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1.5">Anexo do comprovante</label>
+            <input type="file" accept="image/*" (change)="onRecusaComprovanteChange($event)" class="w-full text-xs text-slate-600">
+            @if (edRecusaAnexoComprovante()) { <p class="text-[11px] text-emerald-600 mt-1">✓ Anexo carregado</p> }
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1.5">Foto da fachada externa</label>
+            <p class="text-[11px] text-slate-500 mb-1.5">Registro externo, tirado da via pública — não depende de autorização do ocupante.</p>
+            <input type="file" accept="image/*" (change)="onRecusaFotoFachadaChange($event)" class="w-full text-xs text-slate-600">
+            @if (edRecusaFotoFachada()) { <p class="text-[11px] text-emerald-600 mt-1">✓ Foto carregada</p> }
+          </div>
+        </div>
+      }
+
+      <div class="flex gap-3 pt-2">
+        <button (click)="fecharAutorizacaoAcesso()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">Cancelar</button>
+        <button (click)="salvarAutorizacaoAcesso()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">Salvar</button>
+      </div>
     </div>
   </div>
 }
