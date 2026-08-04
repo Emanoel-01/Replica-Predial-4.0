@@ -1549,7 +1549,8 @@ sem inventar conteúdo.`;
     vistoria.imoveis.forEach((im, i) => {
       sumarioItens.push([`9.${i + 1}`, `Imóvel — ${im.endereco}`, `sec-9-${i + 1}`]);
     });
-    sumarioItens.push(['12.0', 'Local, Data e Assinaturas', 'sec-12']);
+    const numeroSecaoEncerramento = 9 + vistoria.imoveis.length;
+    sumarioItens.push([`${numeroSecaoEncerramento}.0`, 'Local, Data e Assinaturas', 'sec-12']);
     const temAnexoArt = vistoria.imoveis.some(im => (im.assinaturas.vistoriador as any).anexoArtRrt);
     if (temAnexoArt) {
       sumarioItens.push(['A-I', 'Anexo — Comprovantes de ART/RRT', 'sec-anexo-art']);
@@ -1788,7 +1789,7 @@ sem inventar conteúdo.`;
 
     const encerramentoHtml = `
       <div class="pg"></div>
-      <h2 class="sec-h" id="sec-12"><span class="sn">12.0</span>Local, Data e Assinaturas</h2>
+      <h2 class="sec-h" id="sec-12"><span class="sn">${9 + vistoria.imoveis.length}.0</span>Local, Data e Assinaturas</h2>
       <p>Nada mais havendo a consignar, encerra-se o presente Laudo de Vistoria
       Cautelar de Vizinhança, composto pela obra geradora e ${vistoria.imoveis.length}
       imóvel(is) vistoriado(s), elaborado em conformidade com a Norma de Vistoria
