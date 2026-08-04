@@ -1481,22 +1481,33 @@ sem inventar conteúdo.`;
       </div>`;
 
     // ─── SUMÁRIO ───
-    const sumarioItens: [string, string][] = [
-      ['1.0', 'Identificação do Solicitante'],
-      ['2.0', 'Identificação do Objeto da Vistoria'],
-      ['3.0', 'Objetivo e Finalidade'],
-      ['4.0', 'Nível de Vistoria'],
-      ['5.0', 'Pressupostos, Ressalvas e Condições Limitantes'],
-      ['6.0', 'Identificação da Obra Geradora'],
-      ['7.0', 'Área de Influência'],
-      ['8.0', 'Datas e Registro Fotográfico do Canteiro de Obras'],
+    const sumarioItens: [string, string, string][] = [
+      ['1.0', 'Identificação do Solicitante', 'sec-1'],
+      ['2.0', 'Identificação do Objeto da Vistoria', 'sec-2'],
+      ['3.0', 'Objetivo e Finalidade', 'sec-3'],
+      ['4.0', 'Nível de Vistoria', 'sec-4'],
+      ['5.0', 'Pressupostos, Ressalvas e Condições Limitantes', 'sec-5'],
+      ['6.0', 'Identificação da Obra Geradora', 'sec-6'],
+      ['7.0', 'Área de Influência', 'sec-7'],
+      ['8.0', 'Registro Fotográfico do Canteiro de Obras', 'sec-8'],
     ];
     vistoria.imoveis.forEach((im, i) => {
-      sumarioItens.push([`9.${i + 1}`, `Imóvel — ${im.endereco}`]);
+      sumarioItens.push([`9.${i + 1}`, `Imóvel — ${im.endereco}`, `sec-9-${i + 1}`]);
     });
+    sumarioItens.push(['12.0', 'Local, Data e Assinaturas', 'sec-12']);
+    const temAnexoArt = vistoria.imoveis.some(im => (im.assinaturas.vistoriador as any).anexoArtRrt);
+    if (temAnexoArt) {
+      sumarioItens.push(['A-I', 'Anexo — Comprovantes de ART/RRT', 'sec-anexo-art']);
+    }
     const sumarioHtml = `
-      <h2 class="sec-h"><span class="sn">§</span>Sumário</h2>
-      ${sumarioItens.map(([n, t]) => `<div class="toc-row"><span class="toc-num">${n}</span><span>${t}</span></div>`).join('')}
+      <h2 class="sec-h">§ Sumário</h2>
+      ${sumarioItens.map(([n, t, href]) => `
+        <div class="toc-row">
+          <a href="#${href}" style="display:flex;justify-content:space-between;align-items:baseline;width:100%;text-decoration:none;color:inherit">
+            <span><span class="toc-num">${n}</span>${t}</span>
+            <span style="color:var(--p4-copper);font-size:8pt">→</span>
+          </a>
+        </div>`).join('')}
       <div class="box">
         <b>Estrutura normativa.</b> As seções deste laudo seguem os 14 itens mínimos
         estabelecidos no item 7 da Norma IBAPE/SP 2025.
@@ -1508,7 +1519,7 @@ sem inventar conteúdo.`;
       : 'Período prévio à movimentação de terra, execução de fundação e contenção';
 
     const secoesObraHtml = `
-      <h2 class="sec-h"><span class="sn">1.0</span>Identificação do Solicitante</h2>
+      <h2 class="sec-h" id="sec-1"><span class="sn">1.0</span>Identificação do Solicitante</h2>
       <table class="dt">
         <tr><td class="lbl">Nome / Razão Social</td><td>${vistoria.solicitante.nome}</td></tr>
         <tr><td class="lbl">CNPJ/CPF</td><td>${vistoria.solicitante.cnpjCpf}</td></tr>
@@ -1516,12 +1527,12 @@ sem inventar conteúdo.`;
         <tr><td class="lbl">Responsável Legal</td><td>${vistoria.solicitante.responsavelLegal || '—'}</td></tr>
       </table>
 
-      <h2 class="sec-h"><span class="sn">2.0</span>Identificação do Objeto da Vistoria</h2>
+      <h2 class="sec-h" id="sec-2"><span class="sn">2.0</span>Identificação do Objeto da Vistoria</h2>
       <p>${vistoria.imoveis.length === 1
         ? 'O objeto da presente vistoria compreende o imóvel identificado na área de influência da obra geradora, detalhado individualmente na seção 9.1 deste laudo.'
         : `O objeto da presente vistoria compreende os ${vistoria.imoveis.length} imóveis identificados na área de influência da obra geradora, detalhados individualmente nas seções 9.1 a 9.${vistoria.imoveis.length} deste laudo.`}</p>
 
-      <h2 class="sec-h"><span class="sn">3.0</span>Objetivo e Finalidade</h2>
+      <h2 class="sec-h" id="sec-3"><span class="sn">3.0</span>Objetivo e Finalidade</h2>
       <p>A presente Vistoria Cautelar de Vizinhança tem por objetivo perpetuar a memória
       do estado de conservação dos imóveis situados na área de influência da obra
       geradora, nos termos do item 4 da Norma IBAPE/SP 2025.</p>
@@ -1532,11 +1543,11 @@ sem inventar conteúdo.`;
         de responsabilidades ou indicação de soluções para as ocorrências registradas.
       </div>
 
-      <h2 class="sec-h"><span class="sn">4.0</span>Nível de Vistoria</h2>
+      <h2 class="sec-h" id="sec-4"><span class="sn">4.0</span>Nível de Vistoria</h2>
       <p>Adotou-se o <b>Nível ${vistoria.nivelVistoriaCautelar}</b>, conforme item 5 da
       Norma IBAPE/SP 2025.</p>
 
-      <h2 class="sec-h"><span class="sn">5.0</span>Pressupostos, Ressalvas e Condições Limitantes</h2>
+      <h2 class="sec-h" id="sec-5"><span class="sn">5.0</span>Pressupostos, Ressalvas e Condições Limitantes</h2>
       <ul>
         <li>A vistoria foi realizada por constatação visual desarmada, sem ensaios
         destrutivos, prospecções ou aberturas de revestimento.</li>
@@ -1548,7 +1559,7 @@ sem inventar conteúdo.`;
         ${vistoria.marcoTemporal === 'ASSINATURA_DIGITAL' ? 'assinatura digital' : 'registro em cartório'}.</li>
       </ul>
 
-      <h2 class="sec-h"><span class="sn">6.0</span>Identificação da Obra Geradora</h2>
+      <h2 class="sec-h" id="sec-6"><span class="sn">6.0</span>Identificação da Obra Geradora</h2>
       <table class="dt">
         <tr><td class="lbl">Denominação</td><td>${vistoria.obraGeradora.nome}</td></tr>
         <tr><td class="lbl">Endereço</td><td>${vistoria.obraGeradora.endereco}</td></tr>
@@ -1559,14 +1570,14 @@ sem inventar conteúdo.`;
         <tr><td class="lbl">Impactos previstos à vizinhança</td><td>${vistoria.obraGeradora.impactosVizinhanca || '—'}</td></tr>
       </table>
 
-      <h2 class="sec-h"><span class="sn">7.0</span>Área de Influência</h2>
+      <h2 class="sec-h" id="sec-7"><span class="sn">7.0</span>Área de Influência</h2>
       <table class="dt">
         <tr><td class="lbl">Raio considerado</td><td>${vistoria.areaInfluencia.raio || '—'}</td></tr>
         <tr><td class="lbl">Memorial justificativo</td><td>${vistoria.areaInfluencia.memorialJustificativo || '—'}</td></tr>
         <tr><td class="lbl">Estudos prévios considerados</td><td>${vistoria.areaInfluencia.estudosPreviosConsiderados || '—'}</td></tr>
       </table>
 
-      <h2 class="sec-h"><span class="sn">8.0</span>Registro Fotográfico do Canteiro de Obras</h2>
+      <h2 class="sec-h" id="sec-8"><span class="sn">8.0</span>Registro Fotográfico do Canteiro de Obras</h2>
       <p>Registro realizado a partir da via pública, nos termos do item 6.4.2 da Norma
       IBAPE/SP 2025.</p>
       ${vistoria.canteiroObras.fotosExternas.length > 0 || vistoria.canteiroObras.fotosInternas.length > 0 ? `
@@ -1645,7 +1656,7 @@ sem inventar conteúdo.`;
 
       return `
         <div class="pg"></div>
-        <h2 class="sec-h"><span class="sn">${numSecao}</span>Imóvel — ${im.endereco}</h2>
+        <h2 class="sec-h" id="sec-9-${idx + 1}"><span class="sn">${numSecao}</span>Imóvel — ${im.endereco}</h2>
 
         <table class="dt">
           <tr><td class="lbl">Status da autorização de acesso</td><td>${statusAcessoLabel}</td></tr>
@@ -1709,7 +1720,7 @@ sem inventar conteúdo.`;
 
     const anexoArtHtml = vistoria.imoveis.some(im => (im.assinaturas.vistoriador as any).anexoArtRrt) ? `
       <div class="pg"></div>
-      <h2 class="sec-h"><span class="sn">A-I</span>Anexo — Comprovantes de ART/RRT</h2>
+      <h2 class="sec-h" id="sec-anexo-art"><span class="sn">A-I</span>Anexo — Comprovantes de ART/RRT</h2>
       ${vistoria.imoveis
         .filter(im => (im.assinaturas.vistoriador as any).anexoArtRrt)
         .map(im => `
@@ -1719,6 +1730,34 @@ sem inventar conteúdo.`;
           <figure><img src="${(im.assinaturas.vistoriador as any).anexoArtRrt}"></figure>
         `).join('')}
     ` : '';
+
+    const encerramentoHtml = `
+      <div class="pg"></div>
+      <h2 class="sec-h" id="sec-12"><span class="sn">12.0</span>Local, Data e Assinaturas</h2>
+      <p>Nada mais havendo a consignar, encerra-se o presente Laudo de Vistoria
+      Cautelar de Vizinhança, composto pela obra geradora e ${vistoria.imoveis.length}
+      imóvel(is) vistoriado(s), elaborado em conformidade com a Norma de Vistoria
+      Cautelar de Vizinhança do IBAPE/SP — 2025 e com a ABNT NBR 13752:2024.</p>
+      <p style="margin-top:5mm"><b>Recife/PE, ${dataFormatada}.</b></p>
+      <div class="ass-grid">
+        <div class="ass">
+          <div class="ass-line"></div>
+          <div class="ass-nome">${vistoria.imoveis[0]?.assinaturas.vistoriador.nome || '&nbsp;'}</div>
+          <div class="ass-reg">${
+            vistoria.imoveis[0]?.assinaturas.vistoriador.registro
+              ? `${vistoria.imoveis[0].assinaturas.vistoriador.registro}${vistoria.imoveis[0].assinaturas.vistoriador.artRrt ? ` · ART/RRT ${vistoria.imoveis[0].assinaturas.vistoriador.artRrt}` : ''}`
+              : '&nbsp;'
+          }</div>
+          <div class="ass-papel">Responsável Técnico pela Vistoria</div>
+        </div>
+      </div>
+      <div class="box" style="margin-top:10mm">
+        <b>Marco temporal.</b> O presente documento é ${
+          vistoria.marcoTemporal === 'ASSINATURA_DIGITAL'
+            ? 'assinado digitalmente, estabelecendo o marco temporal das constatações nele descritas'
+            : 'registrado em cartório, estabelecendo o marco temporal das constatações nele descritas'
+        }, conforme item 6.7 da Norma IBAPE/SP 2025.
+      </div>`;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -1739,6 +1778,7 @@ sem inventar conteúdo.`;
             ${secoesObraHtml}
             ${blocosImoveisHtml}
             ${anexoArtHtml}
+            ${encerramentoHtml}
           </td></tr></tbody>
         </table>
       </body>
