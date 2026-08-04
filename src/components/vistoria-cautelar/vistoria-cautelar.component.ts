@@ -155,7 +155,7 @@ export interface AutorizacaoAcesso {
 }
 
 export interface AssinaturasCautelar {
-  vistoriador: { nome: string; registro: string; artRrt: string; imagemAssinatura?: string };
+  vistoriador: { nome: string; registro: string; artRrt: string; anexoArtRrt?: string; imagemAssinatura?: string };
   ocupante?: { nome: string; documento: string; imagemAssinatura?: string };
   corresponsavelTecnico?: {                    // GENÉRICO — não vinculado ao Programa Anjo
     nome: string; registro: string; artRrt: string;
@@ -317,6 +317,7 @@ export class VistoriaCautelarComponent implements OnInit {
   edImovelUsoOcupacao = signal('');
   edImovelPosicaoRelativa = signal<PosicaoRelativaObra | ''>('');
   edImovelAfastamentoDivisa = signal('');
+  edImovelDataVistoria = signal('');
   edImovelEstrutura = signal('');
   edImovelCobertura = signal('');
   edImovelContencao = signal('');
@@ -342,6 +343,7 @@ export class VistoriaCautelarComponent implements OnInit {
   edAssVistoriadorNome = signal('');
   edAssVistoriadorRegistro = signal('');
   edAssVistoriadorArtRrt = signal('');
+  edAnexoArtRrt = signal<string | null>(null);
 
   edAssOcupanteNome = signal('');
   edAssOcupanteDocumento = signal('');
@@ -354,12 +356,24 @@ export class VistoriaCautelarComponent implements OnInit {
 
   // ─── VC-9a: Painel de consolidação ───
   modalConsolidacaoAberto = signal(false);
+  modalRevisaoCamposAberto = signal(false);
+  camposCurtosParaRevisao = signal<string[]>([]);
+
+  pendenciasFotoDaObra = computed(() => {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return [];
+    return vistoria.imoveis
+      .map(im => ({ endereco: im.endereco, ambientesSemFoto: this.ambientesSemFotoDoImovel(im) }))
+      .filter(p => p.ambientesSemFoto.length > 0);
+  });
 
   imoveisProntosParaConsolidar = computed(() => {
     const vistoria = this.vistoriaAtiva();
     if (!vistoria) return false;
     if (vistoria.imoveis.length === 0) return false;
-    return vistoria.imoveis.every(im => im.status === 'CONCLUIDO' || im.status === 'ACESSO_NEGADO');
+    const statusOk = vistoria.imoveis.every(im => im.status === 'CONCLUIDO' || im.status === 'ACESSO_NEGADO');
+    if (!statusOk) return false;
+    return this.pendenciasFotoDaObra().length === 0;
   });
 
   resumoStatusImoveis = computed(() => {
@@ -625,6 +639,24 @@ export class VistoriaCautelarComponent implements OnInit {
     this.processarArquivoParaDataUrl(event, v => this.edRecusaFotoFachada.set(v));
   }
 
+  async onAnexoArtRrtChange(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      if (file.type.startsWith('image/')) {
+        const compressed = await this.comprimirImagem(dataUrl, 1200, 0.85);
+        this.edAnexoArtRrt.set(compressed);
+      } else {
+        this.edAnexoArtRrt.set(dataUrl);
+      }
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
   async salvarAutorizacaoAcesso(): Promise<void> {
     const vistoria = this.vistoriaAtiva();
     const imovelId = this.imovelEmEdicaoId();
@@ -692,6 +724,7 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edImovelUsoOcupacao.set(imovel.dadosImovel.usoOcupacao ?? '');
     this.edImovelPosicaoRelativa.set(imovel.posicaoRelativaObra ?? '');
     this.edImovelAfastamentoDivisa.set(imovel.afastamentoDivisaMetros != null ? String(imovel.afastamentoDivisaMetros) : '');
+    this.edImovelDataVistoria.set(imovel.dataVistoria ?? '');
     this.edImovelEstrutura.set(imovel.caracteristicasConstrutivas.estrutura ?? '');
     this.edImovelCobertura.set(imovel.caracteristicasConstrutivas.cobertura ?? '');
     this.edImovelContencao.set(imovel.caracteristicasConstrutivas.contencao ?? '');
@@ -717,6 +750,7 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edAssVistoriadorNome.set(ass?.vistoriador?.nome ?? '');
     this.edAssVistoriadorRegistro.set(ass?.vistoriador?.registro ?? '');
     this.edAssVistoriadorArtRrt.set(ass?.vistoriador?.artRrt ?? '');
+    this.edAnexoArtRrt.set((ass as any)?.vistoriador?.anexoArtRrt ?? null);
     this.edAssOcupanteNome.set(ass?.ocupante?.nome ?? '');
     this.edAssOcupanteDocumento.set(ass?.ocupante?.documento ?? '');
     this.edAssTemCorresponsavel.set(!!ass?.corresponsavelTecnico);
@@ -757,6 +791,7 @@ export class VistoriaCautelarComponent implements OnInit {
         ...im,
         posicaoRelativaObra: this.edImovelPosicaoRelativa() || undefined,
         afastamentoDivisaMetros: afastamentoNum,
+        dataVistoria: this.edImovelDataVistoria() || undefined,
         dadosImovel: {
           ...im.dadosImovel,
           ocupante: this.edImovelOcupante() || undefined,
@@ -795,6 +830,7 @@ export class VistoriaCautelarComponent implements OnInit {
             nome: this.edAssVistoriadorNome(),
             registro: this.edAssVistoriadorRegistro(),
             artRrt: this.edAssVistoriadorArtRrt(),
+            anexoArtRrt: this.edAnexoArtRrt() || undefined,
           },
           ocupante: (this.edAssOcupanteNome() || this.edAssOcupanteDocumento()) ? {
             nome: this.edAssOcupanteNome(),
@@ -949,6 +985,12 @@ export class VistoriaCautelarComponent implements OnInit {
     await this.dbService.salvarVistoriaCautelar(atualizada);
     await this.carregarVistorias();
     this.vistoriaAtivaId.set(atualizada.id);
+  }
+
+  ambientesSemFotoDoImovel(imovel: LaudoImovelVizinho): string[] {
+    return imovel.ambientes
+      .filter(a => a.fotos.length === 0)
+      .map(a => a.nome);
   }
 
   ambienteTemFotoObrigatoria(ambiente: AmbienteCautelar): boolean {
@@ -1316,6 +1358,18 @@ sem inventar conteúdo.`;
     const vistoria = this.vistoriaAtiva();
     const imovelId = this.imovelEmEdicaoId();
     if (!vistoria || !imovelId) return;
+
+    const imovel = vistoria.imoveis.find(im => im.id === imovelId);
+    if (!imovel) return;
+    const pendentes = this.ambientesSemFotoDoImovel(imovel);
+    if (pendentes.length > 0) {
+      this.toastService.show(
+        `Não é possível concluir: ${pendentes.length} ambiente(s) sem foto — ${pendentes.join(', ')}.`,
+        'error'
+      );
+      return;
+    }
+
     const imoveisAtualizados = vistoria.imoveis.map(im =>
       im.id === imovelId && im.status === 'EM_ANDAMENTO' ? { ...im, status: 'CONCLUIDO' as const } : im
     );
@@ -1340,13 +1394,52 @@ sem inventar conteúdo.`;
     this.modalConsolidacaoAberto.set(false);
   }
 
-  async gerarConsolidacaoPDF(): Promise<void> {
+  private detectarCamposCurtos(vistoria: VistoriaCautelar): string[] {
+    const camposCurtos: string[] = [];
+    if (vistoria.obraGeradora.nome.trim().length < 4) camposCurtos.push('Nome da obra geradora');
+    if (vistoria.solicitante.nome.trim().length < 4) camposCurtos.push('Nome do solicitante');
+    vistoria.imoveis.forEach(im => {
+      im.ambientes.forEach(amb => {
+        amb.ocorrencias.forEach(oc => {
+          if (oc.descricao.trim().length < 10) {
+            camposCurtos.push(`Descrição de ocorrência em "${amb.nome}" (${im.endereco})`);
+          }
+        });
+      });
+    });
+    return camposCurtos;
+  }
+
+  iniciarGeracaoPDF(): void {
     const vistoria = this.vistoriaAtiva();
     if (!vistoria) return;
     if (!this.imoveisProntosParaConsolidar()) {
       this.toastService.show('Todos os imóveis precisam estar concluídos ou com acesso negado antes de gerar o PDF.', 'error');
       return;
     }
+
+    const camposCurtos = this.detectarCamposCurtos(vistoria);
+    if (camposCurtos.length > 0) {
+      this.camposCurtosParaRevisao.set(camposCurtos);
+      this.modalRevisaoCamposAberto.set(true);
+      return;
+    }
+
+    void this.gerarConsolidacaoPDF();
+  }
+
+  confirmarGeracaoComRessalvas(): void {
+    this.modalRevisaoCamposAberto.set(false);
+    void this.gerarConsolidacaoPDF();
+  }
+
+  cancelarRevisaoCampos(): void {
+    this.modalRevisaoCamposAberto.set(false);
+  }
+
+  async gerarConsolidacaoPDF(): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return;
 
     const novaJanela = window.open('', '_blank');
     if (!novaJanela) {
@@ -1564,6 +1657,7 @@ sem inventar conteúdo.`;
           <tr><td class="lbl">Idade estimada</td><td>${im.dadosImovel.idadeEstimada || '—'}</td></tr>
           <tr><td class="lbl">Posição relativa à obra</td><td>${this.labelPosicaoRelativa(im.posicaoRelativaObra || '')}</td></tr>
           <tr><td class="lbl">Afastamento da divisa</td><td>${im.afastamentoDivisaMetros != null ? im.afastamentoDivisaMetros + ' m' : '—'}</td></tr>
+          <tr><td class="lbl">Data da vistoria</td><td>${im.dataVistoria ? new Date(im.dataVistoria + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}</td></tr>
         </table>
 
         ${auth.status === 'NEGADO' && auth.recusa?.fotoFachadaExterna ? `
@@ -1613,6 +1707,19 @@ sem inventar conteúdo.`;
       `;
     }).join('');
 
+    const anexoArtHtml = vistoria.imoveis.some(im => (im.assinaturas.vistoriador as any).anexoArtRrt) ? `
+      <div class="pg"></div>
+      <h2 class="sec-h"><span class="sn">A-I</span>Anexo — Comprovantes de ART/RRT</h2>
+      ${vistoria.imoveis
+        .filter(im => (im.assinaturas.vistoriador as any).anexoArtRrt)
+        .map(im => `
+          <div class="box">
+            <b>${im.endereco}</b> — ART/RRT nº ${im.assinaturas.vistoriador.artRrt || '—'}
+          </div>
+          <figure><img src="${(im.assinaturas.vistoriador as any).anexoArtRrt}"></figure>
+        `).join('')}
+    ` : '';
+
     const htmlContent = `
       <!DOCTYPE html>
       <html lang="pt-BR">
@@ -1631,6 +1738,7 @@ sem inventar conteúdo.`;
             <div class="pg"></div>
             ${secoesObraHtml}
             ${blocosImoveisHtml}
+            ${anexoArtHtml}
           </td></tr></tbody>
         </table>
       </body>

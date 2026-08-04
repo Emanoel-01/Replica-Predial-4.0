@@ -2414,7 +2414,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       <html lang="pt-BR">
       <head>
           <meta charset="utf-8">
-          <title>Relatório de Vistoria de Campo - ${form.buildingName}</title>
+          <title>Laudo Técnico de Inspeção Predial - ${form.buildingName}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
             /* === TOKENS P4 === */

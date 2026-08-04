@@ -213,6 +213,18 @@
         <p class="text-[11px] text-slate-400 mt-3">
           Todos os imóveis precisam estar concluídos ou com acesso negado registrado antes da consolidação.
         </p>
+        @if (pendenciasFotoDaObra().length > 0) {
+          <div class="mt-2 bg-red-50 border border-red-100 rounded-lg p-3 space-y-1.5">
+            <p class="text-xs font-bold text-red-700">
+              ❌ Não é possível consolidar — ambientes sem foto obrigatória:
+            </p>
+            @for (p of pendenciasFotoDaObra(); track p.endereco) {
+              <p class="text-xs text-red-600 pl-2">
+                <strong>{{ p.endereco }}:</strong> {{ p.ambientesSemFoto.join(', ') }}
+              </p>
+            }
+          </div>
+        }
       }
     </div>
 
@@ -307,7 +319,14 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Afastamento da divisa (metros)</label>
-          <input type="number" step="0.1" [(ngModel)]="edImovelAfastamentoDivisa" name="afastamento" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <input type="number" step="0.1" min="0" max="500" [(ngModel)]="edImovelAfastamentoDivisa" name="afastamento" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          @if (edImovelAfastamentoDivisa() && +edImovelAfastamentoDivisa() > 200) {
+            <p class="text-[11px] text-amber-600 mt-1">⚠ Valor acima de 200 m é incomum para um imóvel confrontante — confirme se está correto.</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Data da vistoria</label>
+          <input type="date" [(ngModel)]="edImovelDataVistoria" name="dataVistoria" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Ocupante identificado</label>
@@ -550,6 +569,11 @@
           <input type="text" [(ngModel)]="edAssVistoriadorArtRrt" name="assVistArt" placeholder="Nº da ART/RRT"
                  class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
         </div>
+        <div class="mt-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Comprovante da ART/RRT (opcional)</label>
+          <input type="file" accept="image/*,application/pdf" (change)="onAnexoArtRrtChange($event)" class="w-full text-xs text-slate-600">
+          @if (edAnexoArtRrt()) { <p class="text-[11px] text-emerald-600 mt-1">✓ Comprovante anexado</p> }
+        </div>
       </div>
 
       @if (imovelExigeAssinaturaOcupante()) {
@@ -593,7 +617,9 @@
       <button (click)="salvarDadosImovel()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">Salvar Dados do Imóvel</button>
     </div>
     @if (imovelEmEdicao()!.status === 'EM_ANDAMENTO') {
-      <button (click)="marcarImovelConcluido()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">
+      <button (click)="marcarImovelConcluido()"
+              title="Todos os ambientes precisam de ao menos 1 foto (item 7 da Norma IBAPE/SP 2025)"
+              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">
         Marcar Imóvel como Concluído
       </button>
     }
@@ -917,8 +943,41 @@
         <button (click)="fecharModalConsolidacao()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">
           Fechar
         </button>
-        <button (click)="gerarConsolidacaoPDF()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">
+        <button (click)="iniciarGeracaoPDF()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">
           Gerar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: REVISÃO DE CAMPOS CURTOS ANTES DO PDF -->
+@if (modalRevisaoCamposAberto()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 my-8">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-800">Revisar antes de gerar</h3>
+        <button (click)="cancelarRevisaoCampos()" class="text-slate-400 hover:text-slate-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+        Alguns campos parecem muito curtos para um laudo técnico real. Confira antes de gerar:
+      </div>
+      <ul class="text-sm text-slate-600 space-y-1.5 max-h-64 overflow-y-auto">
+        @for (campo of camposCurtosParaRevisao(); track campo) {
+          <li class="flex items-start gap-2">
+            <span class="text-amber-500 mt-0.5">•</span>
+            <span>{{ campo }}</span>
+          </li>
+        }
+      </ul>
+      <div class="flex gap-3 pt-2">
+        <button (click)="cancelarRevisaoCampos()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">
+          Revisar antes
+        </button>
+        <button (click)="confirmarGeracaoComRessalvas()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">
+          Gerar mesmo assim
         </button>
       </div>
     </div>
