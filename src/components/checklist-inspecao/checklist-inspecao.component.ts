@@ -2447,7 +2447,10 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
               color: #1A2A38;
               background: #fff;
               padding: 20mm;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             @page {
               size: A4 portrait;
               margin: 8mm 20mm 12mm 20mm;

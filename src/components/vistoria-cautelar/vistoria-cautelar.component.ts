@@ -1424,9 +1424,9 @@ sem inventar conteúdo.`;
       </table>
 
       <h2 class="sec-h"><span class="sn">2.0</span>Identificação do Objeto da Vistoria</h2>
-      <p>O objeto da presente vistoria compreende os ${vistoria.imoveis.length} imóveis
-      identificados na área de influência da obra geradora, detalhados individualmente
-      nas seções 9.1 a 9.${vistoria.imoveis.length} deste laudo.</p>
+      <p>${vistoria.imoveis.length === 1
+        ? 'O objeto da presente vistoria compreende o imóvel identificado na área de influência da obra geradora, detalhado individualmente na seção 9.1 deste laudo.'
+        : `O objeto da presente vistoria compreende os ${vistoria.imoveis.length} imóveis identificados na área de influência da obra geradora, detalhados individualmente nas seções 9.1 a 9.${vistoria.imoveis.length} deste laudo.`}</p>
 
       <h2 class="sec-h"><span class="sn">3.0</span>Objetivo e Finalidade</h2>
       <p>A presente Vistoria Cautelar de Vizinhança tem por objetivo perpetuar a memória
@@ -1502,9 +1502,14 @@ sem inventar conteúdo.`;
           ? amb.ocorrencias.map(oc => {
               const natureza = oc.tipoConstatacao === 'ANOMALIA' ? 'Anomalia'
                 : oc.tipoConstatacao === 'FALHA' ? 'Falha' : 'Manifestação patológica';
+              const familiaLabel = oc.familiaAbertura
+                ? this.labelFamiliaAbertura(oc.familiaAbertura).replace(/\s*\(.*\)$/, '')
+                : '';
               const manifestacaoTexto = oc.familiaAbertura
-                ? `${oc.familiaAbertura} (${oc.aberturaMm} mm)`
-                : (oc.outraManifestacao === 'OUTRO' ? oc.outraManifestacaoDescricao : oc.outraManifestacao);
+                ? `${familiaLabel} — abertura de ${oc.aberturaMm} mm`
+                : (oc.outraManifestacao === 'OUTRO'
+                    ? oc.outraManifestacaoDescricao
+                    : this.labelOutraManifestacao(oc.outraManifestacao!));
               return `
                 <div class="nc-card">
                   <div class="nc-header">
@@ -1582,8 +1587,12 @@ sem inventar conteúdo.`;
         <div class="ass-grid">
           <div class="ass">
             <div class="ass-line"></div>
-            <div class="ass-nome">${im.assinaturas.vistoriador.nome || '—'}</div>
-            <div class="ass-reg">${im.assinaturas.vistoriador.registro || '—'} · ART/RRT ${im.assinaturas.vistoriador.artRrt || '—'}</div>
+            <div class="ass-nome">${im.assinaturas.vistoriador.nome || '&nbsp;'}</div>
+            <div class="ass-reg">${
+              im.assinaturas.vistoriador.registro || im.assinaturas.vistoriador.artRrt
+                ? `${im.assinaturas.vistoriador.registro}${im.assinaturas.vistoriador.artRrt ? ` · ART/RRT ${im.assinaturas.vistoriador.artRrt}` : ''}`
+                : '&nbsp;'
+            }</div>
             <div class="ass-papel">Responsável Técnico pela Vistoria</div>
           </div>
           ${im.assinaturas.ocupante ? `
@@ -1635,11 +1644,33 @@ sem inventar conteúdo.`;
   }
 
   private headerLaudoCautelar(): string {
+    let rtNome = '';
+    let rtRegistro = '';
+    let empresa = '';
+    try {
+      const saved = localStorage.getItem('user_profile');
+      if (saved) {
+        const p = JSON.parse(saved);
+        rtNome = p.fullName || '';
+        rtRegistro = p.professionalId || '';
+        empresa = p.companyName || '';
+        if (p.companyCnpj) empresa += ` · CNPJ: ${p.companyCnpj}`;
+      }
+    } catch { /* perfil ausente: cabeçalho cai para a versão institucional */ }
+
+    const blocoRT = rtNome
+      ? `<div class="rh-right">
+           <div class="rh-rt">${rtNome}${rtRegistro ? ` — ${rtRegistro}` : ''}</div>
+           <div class="rh-company">${empresa}</div>
+         </div>`
+      : '';
+
     return `<div class="rh-wrap">
       <div>
         <div class="rh-brand">Amorim<span>Tech</span></div>
         <div class="rh-sub">Ecossistema 4.0 · Predial 4.0</div>
       </div>
+      ${blocoRT}
     </div>`;
   }
 
@@ -1662,7 +1693,9 @@ sem inventar conteúdo.`;
       }
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
       body{font-family:'Inter','Segoe UI',Arial,sans-serif;font-size:9.5pt;line-height:1.5;
-           color:var(--p4-ink);background:#fff}
+           color:var(--p4-ink);background:#fff;
+           -webkit-print-color-adjust:exact;print-color-adjust:exact}
+      *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
       @page{size:A4 portrait;margin:8mm 16mm 12mm 16mm;
         @bottom-right{content:"Pág. " counter(page) " / " counter(pages);
           font-family:'Inter',sans-serif;font-size:7pt;color:#8A949C}}
@@ -1679,6 +1712,9 @@ sem inventar conteúdo.`;
         color:var(--p4-navy);letter-spacing:-.02em}
       .rh-brand span{color:var(--p4-copper)}
       .rh-sub{font-size:6.4pt;letter-spacing:.19em;text-transform:uppercase;color:var(--p4-faint);margin-top:.4mm}
+      .rh-right{text-align:right}
+      .rh-rt{font-size:7.4pt;font-weight:600;color:var(--p4-navy)}
+      .rh-company{font-size:6.6pt;color:var(--p4-faint)}
       .rf-wrap{display:flex;justify-content:space-between;align-items:center;
         border-top:.6pt solid var(--p4-rule);padding-top:1.5mm;margin-top:4mm;
         font-size:6.6pt;color:var(--p4-faint)}
