@@ -354,6 +354,23 @@ export class VistoriaCautelarComponent implements OnInit {
   edAssCorresponsavelArtRrt = signal('');
   edAssCorresponsavelRevisaoDocumentada = signal(false);
 
+  private gerarInstrucoesUsoHtml(): string {
+    return `
+      <h2 class="sec-h" id="sec-5"><span class="sn">5.0</span>Instruções e Recomendações de Uso do Laudo</h2>
+      <p>A Vistoria Cautelar de Vizinhança e o presente Relatório constituem peças fundamentais
+      para salvaguardar os interesses dos ocupantes — proprietários, inquilinos ou possuidores —
+      dos imóveis situados na área de influência da obra geradora, assim como dos incorporadores
+      e construtores responsáveis pelo empreendimento.</p>
+      <p>Recomenda-se a entrega de uma via do presente Relatório ao responsável por cada imóvel
+      vistoriado, mediante assinatura de recibo de recebimento, mantendo-se cópia em poder do
+      responsável técnico e do responsável pela obra geradora.</p>
+      <p>É de suma importância que os ocupantes dos imóveis vistoriados sejam orientados a
+      comunicar aos responsáveis técnicos ou legais do empreendimento o eventual surgimento de
+      novas ocorrências no decorrer da execução da obra, de modo a permitir o devido
+      acompanhamento e a atualização do histórico do imóvel.</p>
+    `;
+  }
+
   // ─── VC-9a: Painel de consolidação ───
   modalConsolidacaoAberto = signal(false);
   modalRevisaoCamposAberto = signal(false);
@@ -1541,15 +1558,16 @@ sem inventar conteúdo.`;
       ['2.0', 'Identificação do Objeto da Vistoria', 'sec-2'],
       ['3.0', 'Objetivo e Finalidade', 'sec-3'],
       ['4.0', 'Nível de Vistoria', 'sec-4'],
-      ['5.0', 'Pressupostos, Ressalvas e Condições Limitantes', 'sec-5'],
-      ['6.0', 'Identificação da Obra Geradora', 'sec-6'],
-      ['7.0', 'Área de Influência', 'sec-7'],
-      ['8.0', 'Registro Fotográfico do Canteiro de Obras', 'sec-8'],
+      ['5.0', 'Instruções e Recomendações de Uso do Laudo', 'sec-5'],
+      ['6.0', 'Pressupostos, Ressalvas e Condições Limitantes', 'sec-6'],
+      ['7.0', 'Identificação da Obra Geradora', 'sec-7'],
+      ['8.0', 'Área de Influência', 'sec-8'],
+      ['9.0', 'Registro Fotográfico do Canteiro de Obras', 'sec-9'],
     ];
     vistoria.imoveis.forEach((im, i) => {
-      sumarioItens.push([`9.${i + 1}`, `Imóvel — ${im.endereco}`, `sec-9-${i + 1}`]);
+      sumarioItens.push([`10.${i + 1}`, `Imóvel — ${im.endereco}`, `sec-10-${i + 1}`]);
     });
-    const numeroSecaoEncerramento = 9 + vistoria.imoveis.length;
+    const numeroSecaoEncerramento = 10 + vistoria.imoveis.length;
     sumarioItens.push([`${numeroSecaoEncerramento}.0`, 'Local, Data e Assinaturas', 'sec-12']);
     const temAnexoArt = vistoria.imoveis.some(im => (im.assinaturas.vistoriador as any).anexoArtRrt);
     if (temAnexoArt) {
@@ -1569,7 +1587,7 @@ sem inventar conteúdo.`;
         estabelecidos no item 7 da Norma IBAPE/SP 2025.
       </div>`;
 
-    // ─── SEÇÕES 1-8 (DA OBRA, UMA VEZ) ───
+    // ─── SEÇÕES 1-9 (DA OBRA, UMA VEZ) ───
     const momentoLabel = vistoria.momentoVistoria === 'PRE_DEMOLICAO'
       ? 'Período prévio à demolição dos imóveis no futuro canteiro de obras'
       : 'Período prévio à movimentação de terra, execução de fundação e contenção';
@@ -1585,25 +1603,32 @@ sem inventar conteúdo.`;
 
       <h2 class="sec-h" id="sec-2"><span class="sn">2.0</span>Identificação do Objeto da Vistoria</h2>
       <p>${vistoria.imoveis.length === 1
-        ? 'O objeto da presente vistoria compreende o imóvel identificado na área de influência da obra geradora, detalhado individualmente na seção 9.1 deste laudo.'
-        : `O objeto da presente vistoria compreende os ${vistoria.imoveis.length} imóveis identificados na área de influência da obra geradora, detalhados individualmente nas seções 9.1 a 9.${vistoria.imoveis.length} deste laudo.`}</p>
+        ? 'O objeto da presente vistoria compreende o imóvel identificado na área de influência da obra geradora, detalhado individualmente na seção 10.1 deste laudo.'
+        : `O objeto da presente vistoria compreende os ${vistoria.imoveis.length} imóveis identificados na área de influência da obra geradora, detalhados individualmente nas seções 10.1 a 10.${vistoria.imoveis.length} deste laudo.`}</p>
 
       <h2 class="sec-h" id="sec-3"><span class="sn">3.0</span>Objetivo e Finalidade</h2>
-      <p>A presente Vistoria Cautelar de Vizinhança tem por objetivo perpetuar a memória
-      do estado de conservação dos imóveis situados na área de influência da obra
-      geradora, nos termos do item 4 da Norma IBAPE/SP 2025.</p>
+      <p>A presente Vistoria Cautelar de Vizinhança tem por objetivo perpetuar a memória do estado
+      de conservação dos imóveis situados na área de influência da obra geradora, nos termos do
+      item 4 da Norma IBAPE/SP 2025.</p>
+      <p>Este instrumento tem, ainda, a finalidade de apurar e registrar o estado de conservação
+      dos imóveis lindeiros e do entorno previamente ao início das atividades construtivas,
+      constituindo prova testemunhal de constatação inicial apta a subsidiar, se necessário,
+      eventual esclarecimento sobre reclamações de danos formuladas por terceiros no decorrer ou
+      após a execução da obra.</p>
       <div class="box box-alert">
-        <b>Delimitação de escopo — item 7.3.3.2 da ABNT NBR 13752:2024.</b> Por se tratar
-        de modalidade de Vistoria de Constatação, este laudo registra exclusivamente o
-        estado existente na data da vistoria. Não há determinação de causas, atribuição
-        de responsabilidades ou indicação de soluções para as ocorrências registradas.
+        <b>Delimitação de escopo — item 7.3.3.2 da ABNT NBR 13752:2024.</b> Por se tratar de
+        modalidade de Vistoria de Constatação, este laudo registra exclusivamente o estado
+        existente na data da vistoria. Não há determinação de causas, atribuição de
+        responsabilidades ou indicação de soluções para as ocorrências registradas.
       </div>
 
       <h2 class="sec-h" id="sec-4"><span class="sn">4.0</span>Nível de Vistoria</h2>
       <p>Adotou-se o <b>Nível ${vistoria.nivelVistoriaCautelar}</b>, conforme item 5 da
       Norma IBAPE/SP 2025.</p>
 
-      <h2 class="sec-h" id="sec-5"><span class="sn">5.0</span>Pressupostos, Ressalvas e Condições Limitantes</h2>
+      ${this.gerarInstrucoesUsoHtml()}
+
+      <h2 class="sec-h" id="sec-6"><span class="sn">6.0</span>Pressupostos, Ressalvas e Condições Limitantes</h2>
       <ul>
         <li>A vistoria foi realizada por constatação visual desarmada, sem ensaios
         destrutivos, prospecções ou aberturas de revestimento.</li>
@@ -1615,7 +1640,7 @@ sem inventar conteúdo.`;
         ${vistoria.marcoTemporal === 'ASSINATURA_DIGITAL' ? 'assinatura digital' : 'registro em cartório'}.</li>
       </ul>
 
-      <h2 class="sec-h" id="sec-6"><span class="sn">6.0</span>Identificação da Obra Geradora</h2>
+      <h2 class="sec-h" id="sec-7"><span class="sn">7.0</span>Identificação da Obra Geradora</h2>
       <table class="dt">
         <tr><td class="lbl">Denominação</td><td>${vistoria.obraGeradora.nome}</td></tr>
         <tr><td class="lbl">Endereço</td><td>${vistoria.obraGeradora.endereco}</td></tr>
@@ -1626,14 +1651,14 @@ sem inventar conteúdo.`;
         <tr><td class="lbl">Impactos previstos à vizinhança</td><td>${vistoria.obraGeradora.impactosVizinhanca || '—'}</td></tr>
       </table>
 
-      <h2 class="sec-h" id="sec-7"><span class="sn">7.0</span>Área de Influência</h2>
+      <h2 class="sec-h" id="sec-8"><span class="sn">8.0</span>Área de Influência</h2>
       <table class="dt">
         <tr><td class="lbl">Raio considerado</td><td>${vistoria.areaInfluencia.raio || '—'}</td></tr>
         <tr><td class="lbl">Memorial justificativo</td><td>${vistoria.areaInfluencia.memorialJustificativo || '—'}</td></tr>
         <tr><td class="lbl">Estudos prévios considerados</td><td>${vistoria.areaInfluencia.estudosPreviosConsiderados || '—'}</td></tr>
       </table>
 
-      <h2 class="sec-h" id="sec-8"><span class="sn">8.0</span>Registro Fotográfico do Canteiro de Obras</h2>
+      <h2 class="sec-h" id="sec-9"><span class="sn">9.0</span>Registro Fotográfico do Canteiro de Obras</h2>
       <p>Registro realizado a partir da via pública, nos termos do item 6.4.2 da Norma
       IBAPE/SP 2025.</p>
       ${vistoria.canteiroObras.fotosExternas.length > 0 || vistoria.canteiroObras.fotosInternas.length > 0 ? `
@@ -1647,9 +1672,9 @@ sem inventar conteúdo.`;
         </div>` : '<p class="text-slate-400">Nenhuma foto do canteiro registrada.</p>'}
     `;
 
-    // ─── BLOCO POR IMÓVEL (9.1 a 9.N) ───
+    // ─── BLOCO POR IMÓVEL (10.1 a 10.N) ───
     const blocosImoveisHtml = vistoria.imoveis.map((im, idx) => {
-      const numSecao = `9.${idx + 1}`;
+      const numSecao = `10.${idx + 1}`;
       const auth = im.autorizacaoAcesso;
       const statusAcessoLabel = auth.status === 'AUTORIZADO' ? 'Autorizado'
         : auth.status === 'AUTORIZADO_PARCIAL' ? 'Autorizado com restrições' : 'Negado';
@@ -1712,7 +1737,7 @@ sem inventar conteúdo.`;
 
       return `
         <div class="pg"></div>
-        <h2 class="sec-h" id="sec-9-${idx + 1}"><span class="sn">${numSecao}</span>Imóvel — ${im.endereco}</h2>
+        <h2 class="sec-h" id="sec-10-${idx + 1}"><span class="sn">${numSecao}</span>Imóvel — ${im.endereco}</h2>
 
         <table class="dt">
           <tr><td class="lbl">Status da autorização de acesso</td><td>${statusAcessoLabel}</td></tr>
@@ -1789,7 +1814,7 @@ sem inventar conteúdo.`;
 
     const encerramentoHtml = `
       <div class="pg"></div>
-      <h2 class="sec-h" id="sec-12"><span class="sn">${9 + vistoria.imoveis.length}.0</span>Local, Data e Assinaturas</h2>
+      <h2 class="sec-h" id="sec-12"><span class="sn">${10 + vistoria.imoveis.length}.0</span>Local, Data e Assinaturas</h2>
       <p>Nada mais havendo a consignar, encerra-se o presente Laudo de Vistoria
       Cautelar de Vizinhança, composto pela obra geradora e ${vistoria.imoveis.length}
       imóvel(is) vistoriado(s), elaborado em conformidade com a Norma de Vistoria
