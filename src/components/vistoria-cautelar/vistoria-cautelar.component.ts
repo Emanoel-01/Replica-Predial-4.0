@@ -1450,6 +1450,49 @@ sem inventar conteúdo.`;
 
     const dataFormatada = new Date().toLocaleDateString('pt-BR');
 
+    // Registro imutável da emissão — snapshot congelado, nunca editado depois.
+    // Mesmo padrão do módulo de Inspeção Predial (exportarRelatorioPDF).
+    // Sem cálculo de taxa — decisão já tomada, mesmo padrão dos dois módulos.
+    let numeroDocumentoFormatado = '';
+    const anoAtual = new Date().getFullYear();
+    let numeroEmissao = 1;
+    try {
+      numeroEmissao = (await this.dbService.countLaudosCautelaresEmitidos()) + 1;
+      numeroDocumentoFormatado = `P4-VCV-nº${String(numeroEmissao).padStart(3, '0')}/${anoAtual}`;
+      const novoLaudo: LaudoCautelarEmitido = {
+        id: crypto.randomUUID(),
+        numeroEmissao,
+        snapshotVistoria: JSON.parse(JSON.stringify(vistoria)),
+        snapshotProfile: (() => {
+          try {
+            const saved = localStorage.getItem('user_profile');
+            return saved ? JSON.parse(saved) : null;
+          } catch { return null; }
+        })(),
+        taxaCalculada: 0,
+        dataEmissao: new Date().toISOString(),
+      };
+      await this.dbService.salvarLaudoCautelarEmitido(novoLaudo);
+    } catch (e) {
+      console.warn('Falha ao registrar emissão do laudo (o PDF ainda será gerado normalmente):', e);
+      // Falha no registro NÃO deve impedir a geração do PDF em si.
+    }
+
+    if (!numeroDocumentoFormatado) {
+      numeroDocumentoFormatado = `P4-VCV-nº${String(numeroEmissao).padStart(3, '0')}/${anoAtual}`;
+    }
+
+    // Documento só recebe número oficial se o RT tem registro completo —
+    // mesma regra do Check-up. Verifica no primeiro imóvel (mesmo
+    // vistoriador em toda a obra, via de regra).
+    const vistoriadorRef = vistoria.imoveis[0]?.assinaturas.vistoriador;
+    const documentoRegistrado = !!(
+      vistoriadorRef?.registro?.trim() &&
+      vistoriadorRef?.artRrt?.trim() &&
+      (vistoriadorRef as any)?.anexoArtRrt
+    );
+    const numeroOuProvisorio = documentoRegistrado ? numeroDocumentoFormatado : '⚠ Documento Provisório';
+
     // ─── CAPA ───
     const capaHtml = `
       <div class="capa">
@@ -1469,6 +1512,9 @@ sem inventar conteúdo.`;
           </div>
         </div>
         <div>
+          <div style="margin-bottom:4mm;font-size:8.4pt;font-weight:700;color:${documentoRegistrado ? 'var(--p4-copper)' : '#C75D45'}">
+            ${numeroOuProvisorio}
+          </div>
           <div class="capa-meta">
             <div><b>Obra Geradora</b>${vistoria.obraGeradora.nome}</div>
             <div><b>Nível de Vistoria</b>Nível ${vistoria.nivelVistoriaCautelar}</div>
@@ -1478,6 +1524,15 @@ sem inventar conteúdo.`;
             <div><b>Data de Consolidação</b>${dataFormatada}</div>
           </div>
         </div>
+        ${!documentoRegistrado ? `
+          <div class="box box-alert" style="margin-top:6mm">
+            <b>Documento provisório.</b> Este laudo ainda não possui registro
+            completo do responsável técnico (registro profissional, número de
+            ART/RRT e comprovante anexado) em ao menos um dos imóveis. Adquire
+            numeração oficial e validade técnica plena assim que o responsável
+            técnico completar esses dados na Seção "Assinaturas" de cada
+            imóvel.
+          </div>` : ''}
       </div>`;
 
     // ─── SUMÁRIO ───
@@ -1771,7 +1826,7 @@ sem inventar conteúdo.`;
         ${capaHtml}
         <table class="print-table">
           <thead><tr><td class="print-thead-td">${this.headerLaudoCautelar()}</td></tr></thead>
-          <tfoot><tr><td class="print-tfoot-td">${this.footerLaudoCautelar(vistoria)}</td></tr></tfoot>
+          <tfoot><tr><td class="print-tfoot-td">${this.footerLaudoCautelar(vistoria, numeroOuProvisorio)}</td></tr></tfoot>
           <tbody><tr><td class="print-tbody-td">
             ${sumarioHtml}
             <div class="pg"></div>
@@ -1822,9 +1877,9 @@ sem inventar conteúdo.`;
     </div>`;
   }
 
-  private footerLaudoCautelar(vistoria: VistoriaCautelar): string {
+  private footerLaudoCautelar(vistoria: VistoriaCautelar, numeroOuProvisorio: string): string {
     return `<div class="rf-wrap">
-      <span class="rf-doc">Vistoria Cautelar de Vizinhança</span>
+      <span class="rf-doc">${numeroOuProvisorio}</span>
       <span>${vistoria.obraGeradora.nome}</span>
     </div>`;
   }
