@@ -204,10 +204,20 @@
             <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pendentes</p>
           </div>
         </div>
-        <button (click)="abrirModalConsolidacao()" [disabled]="!imoveisProntosParaConsolidar()"
-                class="bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-all shadow-sm whitespace-nowrap">
-          Consolidar Laudo Completo
-        </button>
+        <div class="flex flex-wrap items-center gap-2">
+          @if (pdfPreviewHtmlContent()) {
+            <button (click)="modalPreviewPdfAberto.set(true)"
+                    class="bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold px-4 py-2.5 rounded-lg text-sm transition-all shadow-sm flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              Ver Pré-visualização PDF
+            </button>
+          }
+          <button (click)="abrirModalConsolidacao()" [disabled]="!imoveisProntosParaConsolidar()"
+                  class="bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-all shadow-sm whitespace-nowrap flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            Consolidar Laudo Completo
+          </button>
+        </div>
       </div>
       @if (!imoveisProntosParaConsolidar() && resumoStatusImoveis().total > 0) {
         <p class="text-[11px] text-slate-400 mt-3">
@@ -980,6 +990,188 @@
           Gerar mesmo assim
         </button>
       </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: PRÉ-VISUALIZAÇÃO LADO A LADO DO LAUDO PDF -->
+@if (modalPreviewPdfAberto()) {
+  <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex flex-col p-2 sm:p-4 md:p-6 overflow-hidden animate-fade-in">
+    <div class="bg-white rounded-2xl flex flex-col w-full max-w-7xl mx-auto h-full shadow-2xl overflow-hidden border border-slate-200/80">
+      
+      <!-- CABEÇALHO DO MODAL PREVIEW -->
+      <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between shrink-0 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-sky-500/20 rounded-lg text-sky-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold tracking-wide text-white flex items-center gap-2">
+              Pré-visualização do Laudo Cautelar
+              <span [class]="'text-[11px] px-2.5 py-0.5 rounded-full font-bold ' + (pdfPreviewDocumentoRegistrado() ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30')">
+                {{ pdfPreviewNumeroDocumento() }}
+              </span>
+            </h3>
+            <p class="text-xs text-slate-400">Exibição em lado a lado do documento compilado em conformidade com IBAPE/SP 2025</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="imprimirPDFDoPreview()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Imprimir / Salvar PDF
+          </button>
+          <button (click)="fecharPreviewPDF()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- CORPO DO MODAL — GRID LADO A LADO -->
+      <div class="flex-1 grid lg:grid-cols-12 overflow-hidden bg-slate-100">
+        
+        <!-- PAINEL ESQUERDO: CONTROLES & RESUMO DA VISTORIA (COL 4) -->
+        <div class="lg:col-span-4 border-r border-slate-200 bg-white p-5 overflow-y-auto space-y-5 flex flex-col justify-between">
+          <div class="space-y-5">
+            
+            <!-- CARD 1: DADOS GERAIS -->
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200/80 space-y-2.5">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                Resumo da Obra
+              </h4>
+              <div class="space-y-1 text-xs">
+                <p class="font-bold text-slate-800 text-sm">{{ vistoriaAtiva()?.obraGeradora?.nome }}</p>
+                <p class="text-slate-600">{{ vistoriaAtiva()?.obraGeradora?.endereco }}</p>
+              </div>
+              <div class="pt-2 border-t border-slate-200/60 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">Solicitante</span>
+                  <span class="font-bold text-slate-700 truncate block">{{ vistoriaAtiva()?.solicitante?.nome || '—' }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">Imóveis no Laudo</span>
+                  <span class="font-bold text-slate-700">{{ vistoriaAtiva()?.imoveis?.length || 0 }} imóvel(is)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 2: ESTRUTURA DE SEÇÕES (CHECKLIST) -->
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Estrutura do Laudo
+              </h4>
+              <ul class="text-xs text-slate-600 space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200/80 max-h-56 overflow-y-auto">
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 1.0 Solicitante
+                </li>
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 2.0 Identificação do Objeto
+                </li>
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 3.0 Objetivo e Finalidade
+                </li>
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 4.0 Nível de Vistoria (Nível {{ vistoriaAtiva()?.nivelVistoriaCautelar }})
+                </li>
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 5.0 Instruções e Recomendações de Uso
+                </li>
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 6.0 Pressupostos, Ressalvas e Condições
+                </li>
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 7.0 Obra Geradora
+                </li>
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 8.0 Área de Influência
+                </li>
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> 9.0 Registro Fotográfico do Canteiro
+                </li>
+                @for (im of vistoriaAtiva()?.imoveis; track im.id; let idx = $index) {
+                  <li class="flex items-center gap-2 text-emerald-700 font-medium pl-2">
+                    <span class="text-emerald-500 font-bold">✓</span> 10.{{ idx + 1 }} Imóvel: {{ im.endereco }}
+                  </li>
+                }
+                <li class="flex items-center gap-2 text-emerald-700 font-medium">
+                  <span class="text-emerald-500 font-bold">✓</span> {{ 10 + (vistoriaAtiva()?.imoveis?.length || 0) }}.0 Local, Data e Assinaturas
+                </li>
+              </ul>
+            </div>
+
+            <!-- CARD 3: STATUS DO REGISTRO TÉCNICO -->
+            <div [class]="'p-3.5 rounded-xl border text-xs space-y-1 ' + (pdfPreviewDocumentoRegistrado() ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800')">
+              <p class="font-bold flex items-center gap-1.5">
+                @if (pdfPreviewDocumentoRegistrado()) {
+                  <span>✓ Numeração Oficial Garantida</span>
+                } @else {
+                  <span>⚠ Documento Provisório</span>
+                }
+              </p>
+              <p class="text-[11px] opacity-90">
+                @if (pdfPreviewDocumentoRegistrado()) {
+                  Este laudo possui registro profissional (CREA/CAU) e número de ART/RRT anexado.
+                } @else {
+                  Falta completar número de ART/RRT ou anexo do comprovante na Seção Assinaturas.
+                }
+              </p>
+            </div>
+
+          </div>
+
+          <!-- AÇÕES DO PAINEL ESQUERDO -->
+          <div class="pt-4 border-t border-slate-200 space-y-2">
+            <button (click)="imprimirPDFDoPreview()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              Imprimir / Salvar como PDF
+            </button>
+            <button (click)="abrirPDFEmNovaAba()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              Abrir em Nova Aba
+            </button>
+            <button (click)="fecharPreviewPDF()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition-colors">
+              Fechar Pré-visualização
+            </button>
+          </div>
+        </div>
+
+        <!-- PAINEL DIREITO: VISUALIZADOR EMBUTIDO (COL 8) -->
+        <div class="lg:col-span-8 bg-slate-200/90 flex flex-col h-full overflow-hidden relative">
+          
+          <!-- BARRA DE FERRAMENTAS DO VISUALIZADOR (ZOOM, SCROLL) -->
+          <div class="bg-slate-800 text-slate-300 px-4 py-2 flex items-center justify-between text-xs shrink-0 border-b border-slate-700">
+            <span class="font-medium text-slate-400 flex items-center gap-2">
+              <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Documento Pré-visualizado (Modelo A4)
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400 text-[11px]">Zoom:</span>
+              <button (click)="ajustarZoomPreview(-10)" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-2 py-0.5 rounded text-xs transition-colors">-</button>
+              <span class="font-mono text-white text-xs w-10 text-center">{{ pdfPreviewZoom() }}%</span>
+              <button (click)="ajustarZoomPreview(10)" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-2 py-0.5 rounded text-xs transition-colors">+</button>
+              <button (click)="resetarZoomPreview()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[11px] transition-colors ml-1">Reset</button>
+            </div>
+          </div>
+
+          <!-- FRAME DE PRÉ-VISUALIZAÇÃO DO DOCUMENTO -->
+          <div class="flex-1 overflow-auto p-4 sm:p-6 flex justify-center items-start bg-slate-300/80">
+            <div class="transition-transform duration-200 origin-top shadow-2xl rounded-sm bg-white"
+                 [style.transform]="'scale(' + (pdfPreviewZoom() / 100) + ')'"
+                 style="width: 210mm; min-height: 297mm;">
+              <iframe
+                [srcdoc]="pdfPreviewHtmlContent()"
+                class="w-full border-0 bg-white"
+                style="width: 210mm; height: 100%; min-height: 1200px; display: block;"
+                title="Visualizador do Laudo Cautelar">
+              </iframe>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   </div>
 }

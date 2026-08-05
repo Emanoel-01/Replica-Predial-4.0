@@ -371,10 +371,53 @@ export class VistoriaCautelarComponent implements OnInit {
     `;
   }
 
-  // ─── VC-9a: Painel de consolidação ───
+  // ─── VC-9a/VC-10: Painel de consolidação & Pré-visualização Lado a Lado ───
   modalConsolidacaoAberto = signal(false);
   modalRevisaoCamposAberto = signal(false);
   camposCurtosParaRevisao = signal<string[]>([]);
+  modalPreviewPdfAberto = signal(false);
+  pdfPreviewHtmlContent = signal('');
+  pdfPreviewNumeroDocumento = signal('');
+  pdfPreviewDocumentoRegistrado = signal(false);
+  pdfPreviewZoom = signal(100);
+  carregandoPreviewPdf = signal(false);
+
+  fecharPreviewPDF(): void {
+    this.modalPreviewPdfAberto.set(false);
+  }
+
+  ajustarZoomPreview(delta: number): void {
+    this.pdfPreviewZoom.update(z => Math.min(180, Math.max(50, z + delta)));
+  }
+
+  resetarZoomPreview(): void {
+    this.pdfPreviewZoom.set(100);
+  }
+
+  imprimirPDFDoPreview(): void {
+    const html = this.pdfPreviewHtmlContent();
+    if (!html) return;
+    const novaJanela = window.open('', '_blank');
+    if (!novaJanela) {
+      this.toastService.show('Popup bloqueado. Permita popups para este site e tente novamente.', 'error');
+      return;
+    }
+    novaJanela.document.write(html);
+    novaJanela.document.close();
+    setTimeout(() => novaJanela.print(), 800);
+  }
+
+  abrirPDFEmNovaAba(): void {
+    const html = this.pdfPreviewHtmlContent();
+    if (!html) return;
+    const novaJanela = window.open('', '_blank');
+    if (!novaJanela) {
+      this.toastService.show('Popup bloqueado. Permita popups para este site e tente novamente.', 'error');
+      return;
+    }
+    novaJanela.document.write(html);
+    novaJanela.document.close();
+  }
 
   pendenciasFotoDaObra = computed(() => {
     const vistoria = this.vistoriaAtiva();
@@ -557,6 +600,10 @@ export class VistoriaCautelarComponent implements OnInit {
 
   abrirDetalhe(id: string): void {
     this.vistoriaAtivaId.set(id);
+    this.pdfPreviewHtmlContent.set('');
+    this.pdfPreviewNumeroDocumento.set('');
+    this.pdfPreviewDocumentoRegistrado.set(false);
+    this.modalPreviewPdfAberto.set(false);
     this.modoExibicao.set('DETALHE');
   }
 
@@ -1458,12 +1505,7 @@ sem inventar conteúdo.`;
     const vistoria = this.vistoriaAtiva();
     if (!vistoria) return;
 
-    const novaJanela = window.open('', '_blank');
-    if (!novaJanela) {
-      this.toastService.show('Popup bloqueado. Permita popups para este site e tente novamente.', 'error');
-      return;
-    }
-    novaJanela.document.write('<html><body style="font-family:sans-serif;padding:20px">Gerando laudo, aguarde…</body></html>');
+    this.carregandoPreviewPdf.set(true);
 
     const dataFormatada = new Date().toLocaleDateString('pt-BR');
 
@@ -1866,10 +1908,12 @@ sem inventar conteúdo.`;
       </html>
     `;
 
-    novaJanela.document.open();
-    novaJanela.document.write(htmlContent);
-    novaJanela.document.close();
-    setTimeout(() => novaJanela.print(), 1500);
+    this.pdfPreviewHtmlContent.set(htmlContent);
+    this.pdfPreviewNumeroDocumento.set(numeroOuProvisorio);
+    this.pdfPreviewDocumentoRegistrado.set(documentoRegistrado);
+    this.modalConsolidacaoAberto.set(false);
+    this.modalPreviewPdfAberto.set(true);
+    this.carregandoPreviewPdf.set(false);
   }
 
   private headerLaudoCautelar(): string {
