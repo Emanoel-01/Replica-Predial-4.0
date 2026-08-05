@@ -175,7 +175,6 @@ export class AppComponent implements OnInit {
 
     // Liberação REAL do Admin — decidida pelo banco (coluna `role` em
     // `profissionais`), nunca por comparação de credencial no navegador.
-    // Convive com o atalho de auditoria: qualquer um dos dois caminhos libera.
     if (row.role === 'admin') {
       this.admAcessoLiberado.set(true);
     }
@@ -227,22 +226,6 @@ export class AppComponent implements OnInit {
     this.showLogin.set(false);
     this.activeView.set('visao-geral');
     this.admAcessoLiberado.set(false);
-  }
-
-  // AUDITORIA TEMPORÁRIA — atalho visual para revisar o re-skin no preview
-  // do AI Studio sem depender de e-mail/magic-link ou do deploy do Netlify.
-  // Não cria sessão no Supabase. Remover este método e o botão associado em
-  // login.component.html/.ts assim que o re-skin visual estiver concluído.
-  handleAuditAccess(): void {
-    this.userName.set('Auditoria');
-    this.isLoggedIn.set(true);
-    this.showLogin.set(false);
-    this.activeView.set('visao-geral');
-    // AUDITORIA TEMPORÁRIA — libera visualização do Painel Admin sem passar
-    // pelo mecanismo real (removido por segurança, substituto via backend
-    // ainda não implementado). Remover esta linha junto com o resto do
-    // atalho de auditoria.
-    this.admAcessoLiberado.set(true);
   }
 
   showLoginRequiredToast(): void {
