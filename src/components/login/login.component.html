@@ -1,74 +1,427 @@
 <div class="min-h-screen flex items-center justify-center bg-stone-100 font-sans p-4">
   <div class="w-full max-w-md">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 md:p-12">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 md:p-10 border border-stone-200/80">
+      
+      <!-- CABEÇALHO DA MARCA -->
       <div class="text-center mb-6 space-y-1">
-        <!-- Marca AmorimTech — idêntica ao cabeçalho do PDF (fundo claro) -->
         <div class="text-2xl font-bold" style="font-family:'Poppins','Inter',sans-serif; color:#132A41; letter-spacing:-.02em;">
           Amorim<span style="color:#B5642A;">Tech</span>
         </div>
         <p class="text-[10px] uppercase text-stone-400 tracking-[0.2em]">Ecossistema 4.0</p>
-        <h1 class="text-3xl sm:text-4xl font-black tracking-tight pt-3" style="font-family:'Poppins','Inter',sans-serif; color:#132A41;">
+        <h1 class="text-3xl sm:text-4xl font-black tracking-tight pt-2" style="font-family:'Poppins','Inter',sans-serif; color:#132A41;">
           Predial <span style="color:#B5642A;">4.0</span>
         </h1>
       </div>
 
-      @if (linkEnviado()) {
-        <div class="text-center space-y-4 py-4">
-          <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-8 h-8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-            </svg>
+      <!-- ESTADO 1: LOGIN (PADRÃO) -->
+      @if (modo() === 'login') {
+        <div class="space-y-5">
+          <div class="text-center">
+            <h2 class="text-lg font-bold text-stone-800">Entrar na plataforma</h2>
+            <p class="text-xs text-stone-500 mt-0.5">Acesse com seu e-mail e senha cadastrados</p>
           </div>
-          <h2 class="text-xl font-bold text-stone-800">Verifique seu e-mail</h2>
-          <p class="text-stone-600 text-sm leading-relaxed">
-            Enviamos um link mágico de acesso para <strong class="text-sky-900">{{ email() }}</strong>. Clique no link recebido para entrar.
-          </p>
-          <div class="pt-4 space-y-3">
-            <button
-              type="button"
-              (click)="resetForm()"
-              class="w-full bg-stone-200 text-stone-800 font-bold py-2.5 px-4 rounded-lg hover:bg-stone-300 transition-colors text-sm cursor-pointer">
-              Enviar para outro e-mail
-            </button>
-            <button
-              type="button"
-              (click)="handleGuestAccess()"
-              class="w-full bg-transparent text-stone-600 font-bold py-2 px-4 rounded-lg hover:text-stone-900 transition-colors text-sm cursor-pointer">
-              Acesso sem identificação
-            </button>
-          </div>
-        </div>
-      } @else {
-        <form (ngSubmit)="handleLogin()">
-          <div class="space-y-4">
+
+          <form (ngSubmit)="handleLogin()" class="space-y-4">
             <div>
-              <label for="email" class="block text-sm font-bold text-stone-700 mb-2">E-mail</label>
+              <label for="login-email" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">E-mail</label>
               <input
                 type="email"
-                id="email"
+                id="login-email"
                 [(ngModel)]="email"
                 name="email"
                 placeholder="seu.email@exemplo.com"
-                class="w-full px-4 py-3 bg-stone-50 border border-stone-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+                autocomplete="email"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
                 required>
             </div>
-          </div>
-          <div class="mt-8 space-y-4">
-            <button
-              type="submit"
-              [disabled]="loading()"
-              class="w-full bg-sky-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-900 disabled:opacity-50 transition-colors shadow-lg transform hover:scale-105 cursor-pointer">
-              {{ loading() ? 'Enviando link...' : 'Entrar com e-mail' }}
-            </button>
-            <button
-              type="button"
-              (click)="handleGuestAccess()"
-              class="w-full bg-stone-200 text-stone-800 font-bold py-3 px-4 rounded-lg hover:bg-stone-300 transition-colors cursor-pointer">
-              Acesso sem identificação
-            </button>
-          </div>
-        </form>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="login-password" class="block text-xs font-bold text-stone-700 uppercase tracking-wider">Senha</label>
+                <button
+                  type="button"
+                  (click)="setModo('recuperar')"
+                  class="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline transition-colors cursor-pointer">
+                  Esqueceu a senha?
+                </button>
+              </div>
+              <div class="relative">
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  id="login-password"
+                  [(ngModel)]="password"
+                  name="password"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  class="w-full px-3.5 py-2.5 pr-10 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                  required>
+                <button
+                  type="button"
+                  (click)="toggleShowPassword()"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1"
+                  [title]="showPassword() ? 'Ocultar senha' : 'Ver senha'">
+                  @if (showPassword()) {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2 space-y-3">
+              <button
+                type="submit"
+                [disabled]="loading()"
+                class="w-full bg-sky-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-900 disabled:opacity-50 transition-colors shadow-md text-sm cursor-pointer flex items-center justify-center gap-2">
+                @if (loading()) {
+                  <span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                  <span>Entrando...</span>
+                } @else {
+                  <span>Entrar</span>
+                }
+              </button>
+
+              <div class="text-center pt-2">
+                <span class="text-xs text-stone-500">Ainda não tem conta? </span>
+                <button
+                  type="button"
+                  (click)="setModo('cadastro')"
+                  class="text-xs font-bold text-sky-800 hover:text-sky-950 hover:underline transition-colors cursor-pointer">
+                  Cadastre-se
+                </button>
+              </div>
+
+              <div class="relative py-2">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-stone-200"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-stone-400 font-semibold">ou</span></div>
+              </div>
+
+              <button
+                type="button"
+                (click)="handleGuestAccess()"
+                class="w-full bg-stone-100 text-stone-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-stone-200 transition-colors text-xs cursor-pointer border border-stone-200">
+                Acesso sem identificação
+              </button>
+            </div>
+          </form>
+        </div>
       }
+
+      <!-- ESTADO 2: CADASTRO -->
+      @if (modo() === 'cadastro') {
+        <div class="space-y-5">
+          <div class="text-center">
+            <h2 class="text-lg font-bold text-stone-800">Criar nova conta</h2>
+            <p class="text-xs text-stone-500 mt-0.5">Preencha os dados abaixo para se cadastrar</p>
+          </div>
+
+          <form (ngSubmit)="handleCadastro()" class="space-y-3.5">
+            <div>
+              <label for="cad-nome" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Nome completo (opcional)</label>
+              <input
+                type="text"
+                id="cad-nome"
+                [(ngModel)]="nome"
+                name="nome"
+                placeholder="Ex: Eng. Carlos Silva"
+                autocomplete="name"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+            </div>
+
+            <div>
+              <label for="cad-email" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">E-mail *</label>
+              <input
+                type="email"
+                id="cad-email"
+                [(ngModel)]="email"
+                name="email"
+                placeholder="seu.email@exemplo.com"
+                autocomplete="email"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                required>
+            </div>
+
+            <div>
+              <label for="cad-password" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Senha (mínimo 8 caracteres) *</label>
+              <div class="relative">
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  id="cad-password"
+                  [(ngModel)]="password"
+                  name="password"
+                  placeholder="••••••••"
+                  autocomplete="new-password"
+                  class="w-full px-3.5 py-2.5 pr-10 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                  required>
+                <button
+                  type="button"
+                  (click)="toggleShowPassword()"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1"
+                  [title]="showPassword() ? 'Ocultar senha' : 'Ver senha'">
+                  @if (showPassword()) {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label for="cad-confirm" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Confirmar Senha *</label>
+              <div class="relative">
+                <input
+                  [type]="showConfirmPassword() ? 'text' : 'password'"
+                  id="cad-confirm"
+                  [(ngModel)]="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="••••••••"
+                  autocomplete="new-password"
+                  class="w-full px-3.5 py-2.5 pr-10 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                  required>
+                <button
+                  type="button"
+                  (click)="toggleShowConfirmPassword()"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1"
+                  [title]="showConfirmPassword() ? 'Ocultar senha' : 'Ver senha'">
+                  @if (showConfirmPassword()) {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2 space-y-3">
+              <button
+                type="submit"
+                [disabled]="loading()"
+                class="w-full bg-sky-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-900 disabled:opacity-50 transition-colors shadow-md text-sm cursor-pointer flex items-center justify-center gap-2">
+                @if (loading()) {
+                  <span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                  <span>Criando conta...</span>
+                } @else {
+                  <span>Criar conta</span>
+                }
+              </button>
+
+              <div class="text-center pt-2">
+                <span class="text-xs text-stone-500">Já tem conta? </span>
+                <button
+                  type="button"
+                  (click)="setModo('login')"
+                  class="text-xs font-bold text-sky-800 hover:text-sky-950 hover:underline transition-colors cursor-pointer">
+                  Fazer login
+                </button>
+              </div>
+
+              <div class="relative py-2">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-stone-200"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-stone-400 font-semibold">ou</span></div>
+              </div>
+
+              <button
+                type="button"
+                (click)="handleGuestAccess()"
+                class="w-full bg-stone-100 text-stone-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-stone-200 transition-colors text-xs cursor-pointer border border-stone-200">
+                Acesso sem identificação
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+      <!-- ESTADO 3: RECUPERAR SENHA -->
+      @if (modo() === 'recuperar') {
+        <div class="space-y-5">
+          <div class="text-center">
+            <h2 class="text-lg font-bold text-stone-800">Recuperar senha</h2>
+            <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+              Informe seu e-mail para receber as instruções de redefinição de senha
+            </p>
+          </div>
+
+          <form (ngSubmit)="handleRecuperarSenha()" class="space-y-4">
+            <div>
+              <label for="rec-email" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">E-mail cadastrado</label>
+              <input
+                type="email"
+                id="rec-email"
+                [(ngModel)]="email"
+                name="email"
+                placeholder="seu.email@exemplo.com"
+                autocomplete="email"
+                class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                required>
+            </div>
+
+            <div class="pt-2 space-y-3">
+              <button
+                type="submit"
+                [disabled]="loading()"
+                class="w-full bg-sky-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-900 disabled:opacity-50 transition-colors shadow-md text-sm cursor-pointer flex items-center justify-center gap-2">
+                @if (loading()) {
+                  <span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                  <span>Enviando link...</span>
+                } @else {
+                  <span>Enviar link de redefinição</span>
+                }
+              </button>
+
+              <button
+                type="button"
+                (click)="setModo('login')"
+                class="w-full bg-stone-200 text-stone-800 font-bold py-2.5 px-4 rounded-lg hover:bg-stone-300 transition-colors text-xs cursor-pointer">
+                Voltar ao login
+              </button>
+
+              <div class="relative py-2">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-stone-200"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-stone-400 font-semibold">ou</span></div>
+              </div>
+
+              <button
+                type="button"
+                (click)="handleGuestAccess()"
+                class="w-full bg-stone-100 text-stone-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-stone-200 transition-colors text-xs cursor-pointer border border-stone-200">
+                Acesso sem identificação
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+      <!-- ESTADO 4: NOVA SENHA (APÓS CLICAR NO LINK DE RECUPERAÇÃO) -->
+      @if (modo() === 'nova-senha') {
+        <div class="space-y-5">
+          <div class="text-center">
+            <div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-full flex items-center justify-center mx-auto mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            </div>
+            <h2 class="text-lg font-bold text-stone-800">Definir nova senha</h2>
+            <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+              Crie uma nova senha de no mínimo 8 caracteres para sua conta
+            </p>
+          </div>
+
+          <form (ngSubmit)="handleSalvarNovaSenha()" class="space-y-4">
+            <div>
+              <label for="new-password" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Nova Senha (mínimo 8 caracteres) *</label>
+              <div class="relative">
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  id="new-password"
+                  [(ngModel)]="password"
+                  name="password"
+                  placeholder="••••••••"
+                  autocomplete="new-password"
+                  class="w-full px-3.5 py-2.5 pr-10 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                  required>
+                <button
+                  type="button"
+                  (click)="toggleShowPassword()"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1"
+                  [title]="showPassword() ? 'Ocultar senha' : 'Ver senha'">
+                  @if (showPassword()) {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label for="new-confirm" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Confirmar Nova Senha *</label>
+              <div class="relative">
+                <input
+                  [type]="showConfirmPassword() ? 'text' : 'password'"
+                  id="new-confirm"
+                  [(ngModel)]="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="••••••••"
+                  autocomplete="new-password"
+                  class="w-full px-3.5 py-2.5 pr-10 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                  required>
+                <button
+                  type="button"
+                  (click)="toggleShowConfirmPassword()"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1"
+                  [title]="showConfirmPassword() ? 'Ocultar senha' : 'Ver senha'">
+                  @if (showConfirmPassword()) {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2 space-y-3">
+              <button
+                type="submit"
+                [disabled]="loading()"
+                class="w-full bg-sky-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-900 disabled:opacity-50 transition-colors shadow-md text-sm cursor-pointer flex items-center justify-center gap-2">
+                @if (loading()) {
+                  <span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                  <span>Salvando nova senha...</span>
+                } @else {
+                  <span>Salvar nova senha</span>
+                }
+              </button>
+
+              <button
+                type="button"
+                (click)="setModo('login')"
+                class="w-full bg-stone-200 text-stone-800 font-bold py-2.5 px-4 rounded-lg hover:bg-stone-300 transition-colors text-xs cursor-pointer">
+                Voltar ao login
+              </button>
+
+              <div class="relative py-2">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-stone-200"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-stone-400 font-semibold">ou</span></div>
+              </div>
+
+              <button
+                type="button"
+                (click)="handleGuestAccess()"
+                class="w-full bg-stone-100 text-stone-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-stone-200 transition-colors text-xs cursor-pointer border border-stone-200">
+                Acesso sem identificação
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
     </div>
   </div>
 </div>

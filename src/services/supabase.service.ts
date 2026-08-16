@@ -20,12 +20,34 @@ export class SupabaseService {
     return { error };
   }
 
+  async signInWithPassword(email: string, password: string): Promise<{ error: Error | null; data?: any }> {
+    const { data, error } = await this.client.auth.signInWithPassword({ email, password });
+    return { data, error };
+  }
+
+  async signUpWithPassword(email: string, password: string, options?: { data?: Record<string, any> }): Promise<{ error: Error | null; data?: any }> {
+    const { data, error } = await this.client.auth.signUp({ email, password, options });
+    return { data, error };
+  }
+
+  async resetPasswordForEmail(email: string): Promise<{ error: Error | null }> {
+    const { error } = await this.client.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/redefinir-senha',
+    });
+    return { error };
+  }
+
+  async updatePassword(newPassword: string): Promise<{ error: Error | null }> {
+    const { error } = await this.client.auth.updateUser({ password: newPassword });
+    return { error };
+  }
+
   async signOut(): Promise<void> {
     await this.client.auth.signOut();
   }
 
-  onAuthStateChange(callback: (session: Session | null) => void) {
-    return this.client.auth.onAuthStateChange((_event, session) => callback(session));
+  onAuthStateChange(callback: (event: string, session: Session | null) => void) {
+    return this.client.auth.onAuthStateChange((event, session) => callback(event, session));
   }
 
   async getProfissional(userId: string): Promise<any | null> {
