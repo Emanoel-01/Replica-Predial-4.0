@@ -8,10 +8,25 @@
           <h2 class="text-xl sm:text-2xl font-bold text-sky-900">Suas Vistorias de Campo</h2>
           <p class="text-slate-500 text-sm">Gerencie e retome vistorias interativas salvas localmente no seu dispositivo</p>
         </div>
-        <button (click)="abrirCriacao()" class="flex items-center gap-2 bg-slate-900 hover:bg-sky-600 text-white font-bold px-4 py-2.5 rounded-lg text-sm transition-all shadow-sm active:scale-95">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          <span>Nova Vistoria</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <button type="button"
+                  (click)="sincronizarTudo()"
+                  [disabled]="isSincronizandoGeral()"
+                  class="flex items-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold px-3.5 py-2.5 rounded-lg text-sm transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
+                  title="Sincronizar com a nuvem (Supabase)">
+            @if (isSincronizandoGeral()) {
+              <span class="w-4 h-4 border-2 border-sky-700 border-t-transparent rounded-full animate-spin"></span>
+              <span>Sincronizando...</span>
+            } @else {
+              <svg class="w-4 h-4 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Sincronizar</span>
+            }
+          </button>
+          <button (click)="abrirCriacao()" class="flex items-center gap-2 bg-slate-900 hover:bg-sky-600 text-white font-bold px-4 py-2.5 rounded-lg text-sm transition-all shadow-sm active:scale-95 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Nova Vistoria</span>
+          </button>
+        </div>
       </div>
 
       @if (carregandoVistorias()) {

@@ -245,6 +245,29 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   public syncService = inject(SyncService);
 
   vistoriaEmSincronizacaoId = signal<string | null>(null);
+  isSincronizandoGeral = signal<boolean>(false);
+
+  async sincronizarTudo(): Promise<void> {
+    this.isSincronizandoGeral.set(true);
+    try {
+      const res = await this.syncService.baixarDaNuvem();
+      await this.carregarVistorias();
+      if (res.erro) {
+        this.toastService.show(res.erro, 'error');
+      } else {
+        const total = res.baixadas + res.atualizadas;
+        if (total > 0) {
+          this.toastService.show(`${total} vistoria(s) sincronizada(s) da nuvem com sucesso.`, 'success');
+        } else {
+          this.toastService.show('Suas vistorias estão atualizadas com a nuvem.', 'info');
+        }
+      }
+    } catch {
+      this.toastService.show('Erro ao sincronizar com a nuvem.', 'error');
+    } finally {
+      this.isSincronizandoGeral.set(false);
+    }
+  }
 
   async sincronizarNuvem(event?: Event, vistoriaAlvo?: Vistoria): Promise<void> {
     if (event) {

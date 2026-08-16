@@ -14,6 +14,7 @@ import { VistoriaCautelarComponent } from './components/vistoria-cautelar/vistor
 import { NotificationService } from './services/notification.service';
 import { VistoriaDbService } from './services/vistoria-db.service';
 import { SupabaseService } from './services/supabase.service';
+import { SyncService } from './services/sync.service';
 import { Vistoria } from './components/checklist-inspecao/checklist-inspecao.component';
 
 @Component({
@@ -71,6 +72,7 @@ export class AppComponent implements OnInit {
   private toastService = inject(ToastService);
   public notificationService = inject(NotificationService);
   private supabaseService = inject(SupabaseService);
+  private syncService = inject(SyncService);
 
   navItems = [
     { id: 'visao-geral', label: 'Visão Geral', icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10' },
@@ -251,6 +253,24 @@ export class AppComponent implements OnInit {
     this.toastService.show('Você saiu com sucesso.', 'info');
   }
 
+  private async sincronizarSilenciosamente(): Promise<void> {
+    try {
+      const res = await this.syncService.baixarDaNuvem();
+      const total = res.baixadas + res.atualizadas;
+      if (total > 0) {
+        const list = await this.dbService.getAllVistorias();
+        this.todasVistorias.set(list);
+        this.notificationService.gerarLembretesLocais(this.todasVistorias(), this.userProfile());
+        this.toastService.show(
+          `${total} vistoria(s) sincronizada(s) de outro dispositivo.`,
+          'info'
+        );
+      }
+    } catch (e) {
+      console.warn('Erro ao sincronizar em segundo plano:', e);
+    }
+  }
+
   async ngOnInit(): Promise<void> {
     // Verificar sessão existente no Supabase Auth
     try {
@@ -262,6 +282,7 @@ export class AppComponent implements OnInit {
         const name = email.includes('@') ? email.split('@')[0] : email;
         this.userName.set(name || 'Usuário');
         await this.carregarPerfilDoSupabase(session.user.id);
+        void this.sincronizarSilenciosamente();
       }
     } catch (e) {
       console.error('Erro ao verificar sessão do Supabase:', e);
@@ -284,6 +305,7 @@ export class AppComponent implements OnInit {
         this.userName.set(name || 'Usuário');
         this.toastService.show(`Autenticado como: ${email}`, 'success');
         void this.carregarPerfilDoSupabase(session.user.id);
+        void this.sincronizarSilenciosamente();
       }
     });
 

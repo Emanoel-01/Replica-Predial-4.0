@@ -45,7 +45,7 @@
   <!-- SEÇÃO: VISTORIAS LOCAIS & SINCRONIZAÇÃO EM NUVEM -->
   @if (vistorias().length > 0) {
     <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-100 space-y-6">
-      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <h3 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
@@ -53,6 +53,18 @@
           </h3>
           <p class="text-slate-500 text-xs sm:text-sm">Sincronize o Rascunho Local do IndexedDB com o banco Supabase</p>
         </div>
+        <button type="button"
+                (click)="sincronizarTudo()"
+                [disabled]="isSincronizandoGeral()"
+                class="inline-flex items-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50">
+          @if (isSincronizandoGeral()) {
+            <span class="w-4 h-4 border-2 border-sky-700 border-t-transparent rounded-full animate-spin"></span>
+            <span>Sincronizando...</span>
+          } @else {
+            <svg class="w-4 h-4 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Sincronizar Nuvem</span>
+          }
+        </button>
       </div>
 
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

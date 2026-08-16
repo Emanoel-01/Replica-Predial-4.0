@@ -18,6 +18,7 @@ export class VisaoGeralComponent implements OnInit {
 
   vistorias = signal<Vistoria[]>([]);
   vistoriaEmSincronizacaoId = signal<string | null>(null);
+  isSincronizandoGeral = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
     await this.carregarVistorias();
@@ -30,6 +31,28 @@ export class VisaoGeralComponent implements OnInit {
       this.vistorias.set(lista);
     } catch (e) {
       console.error('Erro ao carregar vistorias em VisaoGeral', e);
+    }
+  }
+
+  async sincronizarTudo(): Promise<void> {
+    this.isSincronizandoGeral.set(true);
+    try {
+      const res = await this.syncService.baixarDaNuvem();
+      await this.carregarVistorias();
+      if (res.erro) {
+        this.toastService.show(res.erro, 'error');
+      } else {
+        const total = res.baixadas + res.atualizadas;
+        if (total > 0) {
+          this.toastService.show(`${total} vistoria(s) sincronizada(s) da nuvem com sucesso.`, 'success');
+        } else {
+          this.toastService.show('Todas as suas vistorias já estão sincronizadas com a nuvem.', 'info');
+        }
+      }
+    } catch {
+      this.toastService.show('Erro ao sincronizar com a nuvem.', 'error');
+    } finally {
+      this.isSincronizandoGeral.set(false);
     }
   }
 

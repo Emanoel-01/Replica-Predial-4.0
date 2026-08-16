@@ -86,6 +86,60 @@ export class SyncService {
     }
   }
 
+  async baixarDaNuvem(): Promise<{ baixadas: number; atualizadas: number; erro?: string }> {
+    try {
+      const session = await this.supabaseService.getSession();
+      if (!session?.user) {
+        return { baixadas: 0, atualizadas: 0, erro: 'Você precisa estar autenticado para sincronizar.' };
+      }
+
+      const { data: vistoriasNuvem, error } = await this.supabaseService.client
+        .from('vistorias')
+        .select('id, payload, atualizado_em')
+        .eq('profissional_id', session.user.id);
+
+      if (error) throw error;
+
+      const vistoriasLocais = await this.dbService.getAllVistorias();
+      const localPorId = new Map(vistoriasLocais.map(v => [v.id, v]));
+
+      let baixadas = 0;
+      let atualizadas = 0;
+      const listaFinal = [...vistoriasLocais];
+
+      for (const linhaNuvem of (vistoriasNuvem || [])) {
+        const vistoriaNuvem = linhaNuvem.payload as Vistoria;
+        if (!vistoriaNuvem?.id) continue;
+
+        vistoriaNuvem.cloudId = linhaNuvem.id;
+
+        const local = localPorId.get(vistoriaNuvem.id);
+
+        if (!local) {
+          listaFinal.push(vistoriaNuvem);
+          baixadas++;
+          continue;
+        }
+
+        const dataLocal = new Date(local.dateUpdated || 0).getTime();
+        const dataNuvem = new Date(vistoriaNuvem.dateUpdated || linhaNuvem.atualizado_em || 0).getTime();
+
+        if (dataNuvem > dataLocal) {
+          const idx = listaFinal.findIndex(v => v.id === vistoriaNuvem.id);
+          if (idx !== -1) {
+            listaFinal[idx] = vistoriaNuvem;
+            atualizadas++;
+          }
+        }
+      }
+
+      await this.dbService.saveAllVistorias(listaFinal);
+      return { baixadas, atualizadas };
+    } catch (e: any) {
+      return { baixadas: 0, atualizadas: 0, erro: e?.message || 'Erro ao sincronizar com a nuvem.' };
+    }
+  }
+
   private async uploadEvidenciasDaVistoria(vistoria: Vistoria, userId: string): Promise<{ falhas: number }> {
     const evidenciaIds = new Set<string>();
 
