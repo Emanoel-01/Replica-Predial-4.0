@@ -254,24 +254,14 @@ export class AppComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     // Verificar sessão existente no Supabase Auth
     try {
-      const isRecovery =
-        window.location.hash.includes('type=recovery') ||
-        window.location.search.includes('type=recovery') ||
-        window.location.pathname.includes('redefinir-senha');
-
-      if (isRecovery) {
-        this.showLogin.set(true);
-        this.isLoggedIn.set(false);
-      } else {
-        const session = await this.supabaseService.getSession();
-        if (session && session.user) {
-          this.isLoggedIn.set(true);
-          this.showLogin.set(false);
-          const email = session.user.email || '';
-          const name = email.includes('@') ? email.split('@')[0] : email;
-          this.userName.set(name || 'Usuário');
-          await this.carregarPerfilDoSupabase(session.user.id);
-        }
+      const session = await this.supabaseService.getSession();
+      if (session && session.user) {
+        this.isLoggedIn.set(true);
+        this.showLogin.set(false);
+        const email = session.user.email || '';
+        const name = email.includes('@') ? email.split('@')[0] : email;
+        this.userName.set(name || 'Usuário');
+        await this.carregarPerfilDoSupabase(session.user.id);
       }
     } catch (e) {
       console.error('Erro ao verificar sessão do Supabase:', e);
@@ -279,11 +269,6 @@ export class AppComponent implements OnInit {
 
     // Listener para mudanças no estado de autenticação
     this.supabaseService.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        this.showLogin.set(true);
-        this.isLoggedIn.set(false);
-        return;
-      }
       if (event === 'SIGNED_OUT') {
         this.isLoggedIn.set(false);
         this.showLogin.set(true);
@@ -292,15 +277,6 @@ export class AppComponent implements OnInit {
         return;
       }
       if (session && session.user) {
-        const isRecovery =
-          window.location.hash.includes('type=recovery') ||
-          window.location.search.includes('type=recovery') ||
-          window.location.pathname.includes('redefinir-senha');
-        if (isRecovery) {
-          this.showLogin.set(true);
-          this.isLoggedIn.set(false);
-          return;
-        }
         this.isLoggedIn.set(true);
         this.showLogin.set(false);
         const email = session.user.email || '';

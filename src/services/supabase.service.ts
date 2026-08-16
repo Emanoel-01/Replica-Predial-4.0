@@ -25,23 +25,6 @@ export class SupabaseService {
     return { data, error };
   }
 
-  async signUpWithPassword(email: string, password: string, options?: { data?: Record<string, any> }): Promise<{ error: Error | null; data?: any }> {
-    const { data, error } = await this.client.auth.signUp({ email, password, options });
-    return { data, error };
-  }
-
-  async resetPasswordForEmail(email: string): Promise<{ error: Error | null }> {
-    const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/redefinir-senha',
-    });
-    return { error };
-  }
-
-  async updatePassword(newPassword: string): Promise<{ error: Error | null }> {
-    const { error } = await this.client.auth.updateUser({ password: newPassword });
-    return { error };
-  }
-
   async signOut(): Promise<void> {
     await this.client.auth.signOut();
   }
