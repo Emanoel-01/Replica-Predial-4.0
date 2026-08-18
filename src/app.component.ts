@@ -175,9 +175,11 @@ export class AppComponent implements OnInit {
 
     this.userProfile.set(profile);
 
-    // Liberação REAL do Admin — decidida pelo banco (coluna `role` em
-    // `profissionais`), nunca por comparação de credencial no navegador.
-    if (row.role === 'admin') {
+    // Liberação REAL do Admin — decidida via permissoes_acesso (mesmo
+    // modelo centralizado usado pela Comunidade Nova), não mais pela
+    // coluna `role`, que fica obsoleta a partir deste bloco.
+    const ehAdmin = await this.supabaseService.temPermissaoModulo('predial4', 'admin');
+    if (ehAdmin) {
       this.admAcessoLiberado.set(true);
     }
 

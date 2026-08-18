@@ -358,74 +358,7 @@
           </div>
         }
 
-        <!-- SECTION 3: GESTÃO DE USUÁRIOS -->
-        @if (activeTab() === 'usuarios') {
-          <div class="space-y-6">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-4">
-              <div>
-                <h3 class="text-lg sm:text-xl font-bold text-slate-800">Gestão de Usuários e Engenheiros</h3>
-                <p class="text-slate-500 text-xs sm:text-sm mt-0.5">Gerencie os acessos ao copiloto técnico</p>
-              </div>
-            </div>
-
-            <!-- Users Table -->
-            <div class="overflow-x-auto rounded-2xl border border-slate-100">
-              <table class="w-full border-collapse text-left text-xs sm:text-sm">
-                <thead>
-                  <tr class="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100 text-[10px]">
-                    <th class="p-4">Iniciais</th>
-                    <th class="p-4">Nome</th>
-                    <th class="p-4">Cargo / Título</th>
-                    <th class="p-4">Empresa</th>
-                    <th class="p-4">Nível de Acesso</th>
-                    <th class="p-4 text-center">Status</th>
-                    <th class="p-4 text-right">Ações</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  @for (user of users(); track user.id) {
-                    <tr class="hover:bg-slate-50/50">
-                      <td class="p-4">
-                        <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-800 flex items-center justify-center font-bold">
-                          {{ user.initials }}
-                        </div>
-                      </td>
-                      <td class="p-4 font-bold text-slate-800">{{ user.name }}</td>
-                      <td class="p-4 text-slate-600">{{ user.title }}</td>
-                      <td class="p-4 font-medium text-slate-600">{{ user.company }}</td>
-                      <td class="p-4">
-                        <span class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-slate-200">
-                          {{ user.role }}
-                        </span>
-                      </td>
-                      <td class="p-4 text-center">
-                        <span 
-                          [class]="'inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ' + 
-                                   (user.active ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-500')">
-                          {{ user.active ? 'Ativo' : 'Inativo' }}
-                        </span>
-                      </td>
-                      <td class="p-4 text-right space-x-2">
-                        <button (click)="toggleUserActive(user.id)" class="text-xs font-bold text-sky-600 hover:text-sky-800 transition cursor-pointer">
-                          {{ user.active ? 'Bloquear' : 'Ativar' }}
-                        </button>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="7" class="p-8 text-center text-slate-400 font-medium">
-                        Nenhum profissional encontrado ou acesso restrito via Supabase RLS.
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-
-          </div>
-        }
-
-        <!-- SECTION 4: CENTRAL DE NOTIFICAÇÕES (From Screenshot Image 13) -->
+        <!-- SECTION 3: CENTRAL DE NOTIFICAÇÕES (From Screenshot Image 13) -->
         @if (activeTab() === 'notificacoes') {
           <div class="space-y-6">
             <div class="border-b border-slate-100 pb-4">
@@ -490,49 +423,7 @@
           </div>
         }
 
-        <!-- SECTION 5: CONVITES E ACESSOS -->
-        @if (activeTab() === 'convites') {
-          <div class="space-y-6">
-            <div class="border-b border-slate-100 pb-4">
-              <h3 class="text-lg sm:text-xl font-bold text-slate-800">Convites e Acessos Corporativos</h3>
-              <p class="text-slate-500 text-xs sm:text-sm mt-0.5">Emita códigos de convite seguros para novos engenheiros e estagiários</p>
-            </div>
-
-            <!-- Generator Block -->
-            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4 text-center sm:text-left">
-              <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div>
-                  <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Novo Token de Acesso de Campo</h4>
-                  <p class="text-slate-500 text-xs mt-0.5">Gera um código alfa-numérico válido por 72 horas para vistoriadores convidados.</p>
-                </div>
-                <button (click)="generateInviteCode()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer">
-                  🔑 Gerar Novo Convite
-                </button>
-              </div>
-
-              <!-- Generated Codes list -->
-              @if (inviteCodes().length > 0) {
-                <div class="pt-4 border-t border-slate-200 space-y-2">
-                  <h5 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Códigos Ativos Atualmente</h5>
-                  <div class="space-y-1.5">
-                    @for (code of inviteCodes(); track code.id) {
-                      <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-slate-100 text-xs">
-                        <div class="flex items-center gap-2">
-                          <code class="font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">{{ code.code }}</code>
-                          <span class="text-[10px] text-slate-400">Criado em: {{ code.created }}</span>
-                        </div>
-                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">Ativo (72h)</span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-
-          </div>
-        }
-
-        <!-- SECTION 6: CONFIGURAÇÕES -->
+        <!-- SECTION 4: CONFIGURAÇÕES -->
         @if (activeTab() === 'configuracoes') {
           <div class="space-y-8">
             <div class="border-b border-slate-100 pb-4">

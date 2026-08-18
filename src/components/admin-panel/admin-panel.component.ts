@@ -1,25 +1,8 @@
-import { Component, ChangeDetectionStrategy, signal, inject, computed, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
 import { LeadService } from '../../services/lead.service';
 import { ToastService } from '../../services/toast.service';
-import { SupabaseService } from '../../services/supabase.service';
-
-interface UserItem {
-  id: string;
-  name: string;
-  initials: string;
-  title: string;
-  company: string;
-  role: string;
-  active: boolean;
-}
-
-interface InviteCodeItem {
-  id: string;
-  code: string;
-  created: string;
-}
 
 @Component({
   selector: 'app-admin-panel',
@@ -27,21 +10,16 @@ interface InviteCodeItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
 })
-export class AdminPanelComponent implements OnInit {
+export class AdminPanelComponent {
   private notificationService = inject(NotificationService);
   private leadService = inject(LeadService);
   private toastService = inject(ToastService);
-  private supabaseService = inject(SupabaseService);
-
-  carregandoUsuarios = signal(false);
 
   // Tabs structure
   tabs = [
     { id: 'atividade', label: 'Análise de Atividade', icon: '📊' },
     { id: 'leads', label: 'Análise de Leads', icon: '📈' },
-    { id: 'usuarios', label: 'Gestão de Usuários', icon: '👥' },
     { id: 'notificacoes', label: 'Central de Notificações', icon: '🔔' },
-    { id: 'convites', label: 'Convites e Acessos', icon: '🎫' },
     { id: 'configuracoes', label: 'Configurações', icon: '⚙️' },
     { id: 'simulador', label: 'Simulador de Demonstração', icon: '🖥️' },
   ];
@@ -61,42 +39,6 @@ export class AdminPanelComponent implements OnInit {
 
   // Notifications computed from shared NotificationService
   notifications = computed(() => this.notificationService.notifications());
-
-  users = signal<UserItem[]>([]);
-
-  async ngOnInit(): Promise<void> {
-    await this.carregarUsuarios();
-  }
-
-  async carregarUsuarios(): Promise<void> {
-    this.carregandoUsuarios.set(true);
-    const rows = await this.supabaseService.getAllProfissionais();
-    const mapeados: UserItem[] = rows.map(row => ({
-      id: row.id,
-      name: row.full_name || '(sem nome cadastrado)',
-      initials: this.iniciaisDoNome(row.full_name),
-      title: row.professional_title || '—',
-      company: row.company_name || '—',
-      role: row.role === 'admin' ? 'Administrador' : (row.professional_title || 'Usuário'),
-      active: row.ativo !== false,
-    }));
-    this.users.set(mapeados);
-    this.carregandoUsuarios.set(false);
-  }
-
-  private iniciaisDoNome(nome: string | null | undefined): string {
-    if (!nome || !nome.trim()) return '?';
-    const partes = nome.trim().split(/\s+/);
-    const primeira = partes[0]?.[0] ?? '';
-    const ultima = partes.length > 1 ? partes[partes.length - 1][0] : '';
-    return (primeira + ultima).toUpperCase();
-  }
-
-  // Invite codes signals
-  inviteCodes = signal<InviteCodeItem[]>([
-    { id: 'C1', code: 'AMORIM-4.0-ENG88', created: '26/06/2026, 17:40' },
-    { id: 'C2', code: 'AMORIM-4.0-VIS21', created: '27/06/2026, 09:15' }
-  ]);
 
   // Sync parameters
   simulateOffline = signal(true);
@@ -155,30 +97,6 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
-  // User actions
-  async toggleUserActive(id: string): Promise<void> {
-    const user = this.users().find(u => u.id === id);
-    if (!user) return;
-
-    const nextActive = !user.active;
-    const { error } = await this.supabaseService.updateAtivoProfissional(id, nextActive);
-
-    if (error) {
-      console.error('Erro ao atualizar status do usuário:', error);
-      this.toastService.show('Erro ao atualizar status do usuário no banco de dados.', 'error');
-      return;
-    }
-
-    this.users.update(prev =>
-      prev.map(u => (u.id === id ? { ...u, active: nextActive } : u))
-    );
-
-    this.toastService.show(
-      `Usuário "${user.name}" foi ${nextActive ? 'ativado' : 'bloqueado'} com sucesso.`,
-      nextActive ? 'success' : 'info'
-    );
-  }
-
   // Notification actions
   sendNotification(title: string, message: string): void {
     if (!title.trim() || !message.trim()) {
@@ -203,28 +121,6 @@ export class AdminPanelComponent implements OnInit {
   deleteNotification(id: string): void {
     this.notificationService.deleteNotification(id);
     this.toastService.show('Notificação removida.', 'info');
-  }
-
-  // Invite actions
-  generateInviteCode(): void {
-    const randomSuffix = Math.floor(10 + Math.random() * 90).toString();
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let randomLetters = '';
-    for (let i = 0; i < 3; i++) {
-      randomLetters += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    const newCode = `AMORIM-4.0-${randomLetters}${randomSuffix}`;
-    const now = new Date();
-    const formattedDate = now.toLocaleDateString('pt-BR') + ', ' + now.toLocaleTimeString('pt-BR').substring(0, 5);
-    
-    const newItem: InviteCodeItem = {
-      id: Math.random().toString(36).substring(2, 9),
-      code: newCode,
-      created: formattedDate,
-    };
-
-    this.inviteCodes.update(prev => [newItem, ...prev]);
-    this.toastService.show('Novo código de convite gerado: ' + newCode, 'success');
   }
 
   // Config actions

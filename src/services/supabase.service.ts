@@ -52,6 +52,27 @@ export class SupabaseService {
     }
   }
 
+  async temPermissaoModulo(produto: 'predial4' | 'comunidade', modulo: string): Promise<boolean> {
+    try {
+      const session = await this.getSession();
+      if (!session?.user) return false;
+      const { data, error } = await this.client
+        .from('permissoes_acesso')
+        .select('id, validade')
+        .eq('profissional_id', session.user.id)
+        .eq('produto', produto)
+        .eq('modulo', modulo)
+        .eq('liberado', true)
+        .limit(1);
+      if (error || !data || data.length === 0) return false;
+      const validade = data[0].validade;
+      if (validade && new Date(validade) < new Date()) return false;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async upsertProfissional(userId: string, payload: Record<string, any>): Promise<{ error: Error | null }> {
     try {
       const { error } = await this.client
