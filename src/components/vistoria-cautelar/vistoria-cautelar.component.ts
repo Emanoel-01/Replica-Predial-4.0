@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
 import { GeminiService } from '../../services/gemini.service';
+import { SyncService } from '../../services/sync.service';
 
 // ═══════════════════════════════════════════════════════════════════
 // VISTORIA CAUTELAR DE VIZINHANÇA — MODELO DE DADOS
@@ -241,10 +242,13 @@ export class VistoriaCautelarComponent implements OnInit {
   private dbService = inject(VistoriaDbService);
   private toastService = inject(ToastService);
   private geminiService = inject(GeminiService);
+  private syncService = inject(SyncService);
 
   modoExibicao = signal<'LISTA' | 'CRIACAO' | 'DETALHE' | 'DETALHE_IMOVEL'>('LISTA');
   todasVistoriasCautelares = signal<VistoriaCautelar[]>([]);
   vistoriaAtivaId = signal<string | null>(null);
+  vistoriaEmSincronizacaoId = signal<string | null>(null);
+  sincronizandoTudo = signal(false);
 
   // ─── Campos do formulário (Solicitante) ───
   novoSolicitanteNome = signal('');
@@ -615,6 +619,48 @@ export class VistoriaCautelarComponent implements OnInit {
     await this.dbService.deleteVistoriaCautelar(id);
     await this.carregarVistorias();
     this.toastService.show('Vistoria Cautelar excluída.', 'info');
+  }
+
+  async sincronizarNuvem(event?: Event, vistoriaAlvo?: VistoriaCautelar): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+    }
+    const target = vistoriaAlvo || this.vistoriaAtiva();
+    if (!target) {
+      this.toastService.show('Nenhuma vistoria cautelar selecionada para salvar na nuvem.', 'error');
+      return;
+    }
+
+    this.vistoriaEmSincronizacaoId.set(target.id);
+    const sucesso = await this.syncService.salvarVistoriaCautelarNaNuvem(target);
+    this.vistoriaEmSincronizacaoId.set(null);
+
+    if (sucesso) {
+      this.toastService.show('Vistoria cautelar salva na nuvem com sucesso.', 'success');
+      await this.carregarVistorias();
+    } else {
+      this.toastService.show('Não foi possível salvar na nuvem. Verifique sua conexão e se está autenticado.', 'error');
+    }
+  }
+
+  async sincronizarTodasDaNuvem(): Promise<void> {
+    this.sincronizandoTudo.set(true);
+    try {
+      const res = await this.syncService.baixarVistoriasCautelaresDaNuvem();
+      if (res.erro) {
+        this.toastService.show(res.erro, 'error');
+      } else {
+        await this.carregarVistorias();
+        const total = res.baixadas + res.atualizadas;
+        if (total > 0) {
+          this.toastService.show(`${total} registro(s) cautelar(es) sincronizado(s) da nuvem.`, 'success');
+        } else {
+          this.toastService.show('Tudo atualizado com a nuvem.', 'info');
+        }
+      }
+    } finally {
+      this.sincronizandoTudo.set(false);
+    }
   }
 
   imovelEmEdicao(): LaudoImovelVizinho | undefined {
@@ -1532,6 +1578,7 @@ sem inventar conteúdo.`;
         dataEmissao: new Date().toISOString(),
       };
       await this.dbService.salvarLaudoCautelarEmitido(novoLaudo);
+      void this.syncService.salvarLaudoCautelarNaNuvem(novoLaudo);
     } catch (e) {
       console.warn('Falha ao registrar emissão do laudo (o PDF ainda será gerado normalmente):', e);
       // Falha no registro NÃO deve impedir a geração do PDF em si.

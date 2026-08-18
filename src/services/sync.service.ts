@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { VistoriaDbService } from './vistoria-db.service';
 import { Vistoria } from '../components/checklist-inspecao/checklist-inspecao.component';
+import { VistoriaCautelar, LaudoCautelarEmitido } from '../components/vistoria-cautelar/vistoria-cautelar.component';
 
 export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error';
 
@@ -137,6 +138,122 @@ export class SyncService {
       return { baixadas, atualizadas };
     } catch (e: any) {
       return { baixadas: 0, atualizadas: 0, erro: e?.message || 'Erro ao sincronizar com a nuvem.' };
+    }
+  }
+
+  async salvarVistoriaCautelarNaNuvem(vistoria: VistoriaCautelar): Promise<boolean> {
+    try {
+      const session = await this.supabaseService.getSession();
+      if (!session?.user) return false;
+
+      const { error } = await this.supabaseService.client
+        .from('vistorias_cautelares')
+        .upsert({
+          id: vistoria.id,
+          profissional_id: session.user.id,
+          obra_nome: vistoria.obraGeradora?.nome || null,
+          payload: vistoria,
+          atualizado_em: new Date().toISOString(),
+        }, { onConflict: 'id' });
+
+      return !error;
+    } catch (e) {
+      console.error('Erro ao sincronizar vistoria cautelar:', e);
+      return false;
+    }
+  }
+
+  async salvarLaudoCautelarNaNuvem(laudo: LaudoCautelarEmitido): Promise<boolean> {
+    try {
+      const session = await this.supabaseService.getSession();
+      if (!session?.user) return false;
+
+      const { error } = await this.supabaseService.client
+        .from('laudos_cautelares_emitidos')
+        .insert({
+          id: laudo.id,
+          profissional_id: session.user.id,
+          numero_emissao: laudo.numeroEmissao,
+          payload: laudo,
+          data_emissao: laudo.dataEmissao,
+        });
+
+      return !error;
+    } catch (e) {
+      console.error('Erro ao salvar laudo cautelar na nuvem:', e);
+      return false;
+    }
+  }
+
+  async baixarVistoriasCautelaresDaNuvem(): Promise<{ baixadas: number; atualizadas: number; erro?: string }> {
+    try {
+      const session = await this.supabaseService.getSession();
+      if (!session?.user) {
+        return { baixadas: 0, atualizadas: 0, erro: 'Você precisa estar autenticado para sincronizar.' };
+      }
+
+      const { data: vistoriasNuvem, error } = await this.supabaseService.client
+        .from('vistorias_cautelares')
+        .select('id, payload, atualizado_em')
+        .eq('profissional_id', session.user.id);
+
+      if (error) throw error;
+
+      const vistoriasLocais = await this.dbService.getAllVistoriasCautelares();
+      const localPorId = new Map(vistoriasLocais.map(v => [v.id, v]));
+
+      let baixadas = 0;
+      let atualizadas = 0;
+      const listaFinal = [...vistoriasLocais];
+
+      for (const linhaNuvem of (vistoriasNuvem || [])) {
+        const vistoriaNuvem = linhaNuvem.payload as VistoriaCautelar;
+        if (!vistoriaNuvem?.id) continue;
+
+        const local = localPorId.get(vistoriaNuvem.id);
+
+        if (!local) {
+          listaFinal.push(vistoriaNuvem);
+          baixadas++;
+          continue;
+        }
+
+        const dataNuvem = new Date(linhaNuvem.atualizado_em).getTime();
+        const dataLocalAny = (local as any).dateUpdated || (local as any).dataAtualizacao || (local as any).atualizadoEm;
+        const dataLocal = dataLocalAny ? new Date(dataLocalAny).getTime() : 0;
+
+        if (dataNuvem > dataLocal) {
+          const idx = listaFinal.findIndex(v => v.id === vistoriaNuvem.id);
+          if (idx !== -1) {
+            listaFinal[idx] = vistoriaNuvem;
+            atualizadas++;
+          }
+        }
+      }
+
+      await this.dbService.salvarTodasVistoriasCautelares(listaFinal);
+
+      // Laudos emitidos são imutáveis — baixar os que ainda não existem
+      // localmente, nunca sobrescrever um já existente.
+      const { data: laudosNuvem } = await this.supabaseService.client
+        .from('laudos_cautelares_emitidos')
+        .select('id, payload')
+        .eq('profissional_id', session.user.id);
+
+      const laudosLocais = await this.dbService.getAllLaudosCautelaresEmitidos?.() ?? [];
+      const idsLocais = new Set(laudosLocais.map((l: any) => l.id));
+      let laudosBaixados = 0;
+
+      for (const linhaLaudo of (laudosNuvem || [])) {
+        if (!idsLocais.has(linhaLaudo.id)) {
+          await this.dbService.salvarLaudoCautelarEmitido(linhaLaudo.payload as LaudoCautelarEmitido);
+          laudosBaixados++;
+        }
+      }
+
+      return { baixadas: baixadas + laudosBaixados, atualizadas };
+    } catch (e: any) {
+      return { baixadas: 0, atualizadas: 0, erro: e?.message || 'Erro ao sincronizar vistorias cautelares.' };
     }
   }
 

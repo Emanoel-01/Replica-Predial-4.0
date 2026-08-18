@@ -200,6 +200,12 @@ export class VistoriaDbService {
     await db.put('vistoriasCautelares', vistoria);
   }
 
+  async salvarTodasVistoriasCautelares(lista: VistoriaCautelar[]): Promise<void> {
+    const db = await this.dbPromise;
+    const tx = db.transaction('vistoriasCautelares', 'readwrite');
+    await Promise.all([...lista.map((v) => tx.store.put(v)), tx.done]);
+  }
+
   async getAllVistoriasCautelares(): Promise<VistoriaCautelar[]> {
     const db = await this.dbPromise;
     return db.getAll('vistoriasCautelares');

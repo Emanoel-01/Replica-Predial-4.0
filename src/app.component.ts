@@ -263,14 +263,30 @@ export class AppComponent implements OnInit {
 
   private async sincronizarSilenciosamente(): Promise<void> {
     try {
-      const res = await this.syncService.baixarDaNuvem();
-      const total = res.baixadas + res.atualizadas;
-      if (total > 0) {
+      const [resPredial, resCautelar] = await Promise.all([
+        this.syncService.baixarDaNuvem(),
+        this.syncService.baixarVistoriasCautelaresDaNuvem()
+      ]);
+      const totalPredial = resPredial.baixadas + resPredial.atualizadas;
+      const totalCautelar = resCautelar.baixadas + resCautelar.atualizadas;
+      const total = totalPredial + totalCautelar;
+
+      if (totalPredial > 0) {
         const list = await this.dbService.getAllVistorias();
         this.todasVistorias.set(list);
         this.notificationService.gerarLembretesLocais(this.todasVistorias(), this.userProfile());
+      }
+
+      if (total > 0) {
+        const partes: string[] = [];
+        if (totalPredial > 0) {
+          partes.push(`${totalPredial} inspeção(ões) predial(ais)`);
+        }
+        if (totalCautelar > 0) {
+          partes.push(`${totalCautelar} vistoria(s) cautelar(es)`);
+        }
         this.toastService.show(
-          `${total} vistoria(s) sincronizada(s) de outro dispositivo.`,
+          `${partes.join(' e ')} sincronizada(s) da nuvem.`,
           'info'
         );
       }
