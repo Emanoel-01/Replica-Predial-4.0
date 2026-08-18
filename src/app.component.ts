@@ -294,17 +294,26 @@ export class AppComponent implements OnInit {
     this.supabaseService.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         this.isLoggedIn.set(false);
-        this.showLogin.set(true);
+        this.showLogin.set(false);
         this.userName.set('');
         this.admAcessoLiberado.set(false);
         return;
       }
-      if (session && session.user) {
-        this.isLoggedIn.set(true);
-        this.showLogin.set(false);
-        const email = session.user.email || '';
-        const name = email.includes('@') ? email.split('@')[0] : email;
-        this.userName.set(name || 'Usuário');
+
+      if (!session?.user) {
+        return;
+      }
+
+      this.isLoggedIn.set(true);
+      this.showLogin.set(false);
+      const email = session.user.email || '';
+      const name = email.includes('@') ? email.split('@')[0] : email;
+      this.userName.set(name || 'Usuário');
+
+      // Só mostra o toast e recarrega tudo em login manual de verdade —
+      // não em renovação automática de token (TOKEN_REFRESHED) nem na
+      // sessão que já existia ao abrir a página (INITIAL_SESSION).
+      if (event === 'SIGNED_IN') {
         this.toastService.show(`Autenticado como: ${email}`, 'success');
         void this.carregarPerfilDoSupabase(session.user.id);
         void this.sincronizarSilenciosamente();
