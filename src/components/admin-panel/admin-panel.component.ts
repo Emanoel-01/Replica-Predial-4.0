@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
-import { LeadService } from '../../services/lead.service';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
@@ -12,13 +11,11 @@ import { ToastService } from '../../services/toast.service';
 })
 export class AdminPanelComponent {
   private notificationService = inject(NotificationService);
-  private leadService = inject(LeadService);
   private toastService = inject(ToastService);
 
   // Tabs structure
   tabs = [
     { id: 'atividade', label: 'Análise de Atividade', icon: '📊' },
-    { id: 'leads', label: 'Análise de Leads', icon: '📈' },
     { id: 'notificacoes', label: 'Central de Notificações', icon: '🔔' },
     { id: 'configuracoes', label: 'Configurações', icon: '⚙️' },
     { id: 'simulador', label: 'Simulador de Demonstração', icon: '🖥️' },
@@ -31,12 +28,6 @@ export class AdminPanelComponent {
   totalActivities = signal(1000);
   activeUsers = signal(1);
 
-  // Show form state
-  showAddLeadForm = signal(false);
-
-  // Leads computed from shared LeadService
-  leads = computed(() => this.leadService.leads());
-
   // Notifications computed from shared NotificationService
   notifications = computed(() => this.notificationService.notifications());
 
@@ -44,7 +35,6 @@ export class AdminPanelComponent {
   simulateOffline = signal(true);
   advancedSyncMode = signal(false);
 
-  leadPendenteConfirmacaoExclusao = signal<string | null>(null);
   notificacoesPendenteConfirmacaoLimpeza = signal<boolean>(false);
   checklistPendenteConfirmacaoReset = signal<boolean>(false);
 
@@ -73,40 +63,6 @@ export class AdminPanelComponent {
       }
       this.toastService.show('Dados de atividade atualizados com sucesso!', 'success');
     }, 1000);
-  }
-
-  // Lead actions
-  addManualLead(name: string, email: string, plan: string): void {
-    if (!name.trim() || !email.trim()) {
-      this.toastService.show('Preencha o nome e o e-mail do lead.', 'error');
-      return;
-    }
-    this.leadService.addLead(name, email, plan);
-    this.toastService.show(`Lead "${name}" registrado com sucesso!`, 'success');
-    this.showAddLeadForm.set(false);
-  }
-
-  toggleLeadStatus(id: string, currentStatus: string): void {
-    const statuses = ['Pendente', 'Ativo', 'Sob Consulta', 'Cancelado'];
-    const nextIndex = (statuses.indexOf(currentStatus) + 1) % statuses.length;
-    const nextStatus = statuses[nextIndex];
-    this.leadService.updateLeadStatus(id, nextStatus);
-    this.toastService.show('Status do lead alterado para: ' + nextStatus, 'info');
-  }
-
-  deleteLead(id: string): void {
-    if (this.leadPendenteConfirmacaoExclusao() === id) {
-      this.leadService.deleteLead(id);
-      this.toastService.show('Lead removido com sucesso.', 'info');
-      this.leadPendenteConfirmacaoExclusao.set(null);
-    } else {
-      this.leadPendenteConfirmacaoExclusao.set(id);
-      setTimeout(() => {
-        if (this.leadPendenteConfirmacaoExclusao() === id) {
-          this.leadPendenteConfirmacaoExclusao.set(null);
-        }
-      }, 3000);
-    }
   }
 
   // Notification actions
