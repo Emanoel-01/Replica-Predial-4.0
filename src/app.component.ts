@@ -53,6 +53,12 @@ export class AppComponent implements OnInit {
 
   admAcessoLiberado = signal<boolean>(false);
 
+  // Controla se a sessão inicial desta execução da página já foi processada —
+  // usado para diferenciar "a página acabou de carregar e restaurou a sessão" de
+  // "o usuário realmente clicou em Entrar agora". NÃO confiar no nome do evento do
+  // Supabase para isso (SIGNED_IN pode disparar também na restauração de sessão).
+  private sessaoInicialProcessada = false;
+
   activeView = signal('visao-geral');
   isMenuOpen = signal(false);
   isProfileModalOpen = signal(false);
@@ -288,6 +294,11 @@ export class AppComponent implements OnInit {
       }
     } catch (e) {
       console.error('Erro ao verificar sessão do Supabase:', e);
+    } finally {
+      // Marca que a checagem inicial desta execução da página já rodou —
+      // a partir daqui, qualquer evento do listener abaixo já é considerado
+      // "depois do carregamento", não mais "a própria abertura da página".
+      this.sessaoInicialProcessada = true;
     }
 
     // Listener para mudanças no estado de autenticação
@@ -310,10 +321,14 @@ export class AppComponent implements OnInit {
       const name = email.includes('@') ? email.split('@')[0] : email;
       this.userName.set(name || 'Usuário');
 
-      // Só mostra o toast e recarrega tudo em login manual de verdade —
-      // não em renovação automática de token (TOKEN_REFRESHED) nem na
-      // sessão que já existia ao abrir a página (INITIAL_SESSION).
-      if (event === 'SIGNED_IN') {
+      // Só reage (toast + recarregar tudo) se a sessão inicial desta
+      // execução da página JÁ tiver sido processada — ou seja, este evento
+      // aconteceu DEPOIS da checagem inicial, o que só acontece em um login
+      // manual de verdade feito pelo usuário durante esta sessão do navegador.
+      // Isso evita depender do nome do evento (SIGNED_IN vs INITIAL_SESSION),
+      // que o próprio Supabase não usa de forma 100% consistente entre
+      // carregamentos de página.
+      if (this.sessaoInicialProcessada) {
         this.toastService.show(`Autenticado como: ${email}`, 'success');
         void this.carregarPerfilDoSupabase(session.user.id);
         void this.sincronizarSilenciosamente();
