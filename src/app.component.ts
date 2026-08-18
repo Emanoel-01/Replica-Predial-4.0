@@ -294,7 +294,7 @@ export class AppComponent implements OnInit {
     this.supabaseService.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         this.isLoggedIn.set(false);
-        this.showLogin.set(false);
+        this.showLogin.set(true);
         this.userName.set('');
         this.admAcessoLiberado.set(false);
         return;
