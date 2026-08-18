@@ -343,7 +343,12 @@
                       </td>
                       <td class="p-4 text-right space-x-1">
                         <button (click)="toggleLeadStatus(lead.id, lead.status)" class="text-sky-600 hover:text-sky-800 font-bold p-1 transition cursor-pointer" title="Alterar Status">🔄</button>
-                        <button (click)="deleteLead(lead.id)" class="text-rose-600 hover:text-rose-800 font-bold p-1 transition cursor-pointer" title="Remover">🗑️</button>
+                        <button (click)="deleteLead(lead.id)" 
+                                [class]="leadPendenteConfirmacaoExclusao() === lead.id ? 'bg-rose-600 text-white px-2 py-0.5 rounded-md text-[11px] font-bold' : 'text-rose-600 hover:text-rose-800 font-bold p-1'"
+                                class="transition cursor-pointer" 
+                                [title]="leadPendenteConfirmacaoExclusao() === lead.id ? 'Clique novamente para confirmar a exclusão' : 'Remover lead'">
+                          {{ leadPendenteConfirmacaoExclusao() === lead.id ? 'Confirmar?' : '🗑️' }}
+                        </button>
                       </td>
                     </tr>
                   } @empty {
@@ -382,7 +387,11 @@
               </div>
 
               <div class="flex justify-end gap-3">
-                <button (click)="clearNotifications()" class="px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold transition cursor-pointer">Limpar Todos</button>
+                <button (click)="clearNotifications()" 
+                        [class]="notificacoesPendenteConfirmacaoLimpeza() ? 'bg-rose-600 text-white hover:bg-rose-700' : 'text-rose-600 hover:bg-rose-50'"
+                        class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer">
+                  {{ notificacoesPendenteConfirmacaoLimpeza() ? 'Clique novamente para confirmar' : 'Limpar Todos' }}
+                </button>
                 <button 
                   (click)="sendNotification(notifTitle.value, notifMsg.value); notifTitle.value=''; notifMsg.value=''" 
                   class="px-5 py-2.5 bg-sky-600 text-white hover:bg-sky-700 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5 cursor-pointer">
@@ -480,8 +489,9 @@
                 </p>
                 <button 
                   (click)="resetLocalChecklist()"
-                  class="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-5 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-colors duration-200 cursor-pointer">
-                  ⚠️ Limpar Progresso do Checklist
+                  [class]="checklistPendenteConfirmacaoReset() ? 'bg-rose-700 ring-2 ring-rose-300' : 'bg-rose-600 hover:bg-rose-700'"
+                  class="w-full sm:w-auto text-white font-bold py-2.5 px-5 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-colors duration-200 cursor-pointer">
+                  {{ checklistPendenteConfirmacaoReset() ? '⚠️ Clique novamente para confirmar exclusão' : '⚠️ Limpar Progresso do Checklist' }}
                 </button>
               </div>
             </div>

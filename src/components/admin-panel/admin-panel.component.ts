@@ -44,6 +44,10 @@ export class AdminPanelComponent {
   simulateOffline = signal(true);
   advancedSyncMode = signal(false);
 
+  leadPendenteConfirmacaoExclusao = signal<string | null>(null);
+  notificacoesPendenteConfirmacaoLimpeza = signal<boolean>(false);
+  checklistPendenteConfirmacaoReset = signal<boolean>(false);
+
   constructor() {
     // Sync settings from local storage if available
     const offlineSim = localStorage.getItem('simulateOffline');
@@ -91,9 +95,17 @@ export class AdminPanelComponent {
   }
 
   deleteLead(id: string): void {
-    if (confirm('Deseja realmente remover este lead do sistema?')) {
+    if (this.leadPendenteConfirmacaoExclusao() === id) {
       this.leadService.deleteLead(id);
       this.toastService.show('Lead removido com sucesso.', 'info');
+      this.leadPendenteConfirmacaoExclusao.set(null);
+    } else {
+      this.leadPendenteConfirmacaoExclusao.set(id);
+      setTimeout(() => {
+        if (this.leadPendenteConfirmacaoExclusao() === id) {
+          this.leadPendenteConfirmacaoExclusao.set(null);
+        }
+      }, 3000);
     }
   }
 
@@ -108,9 +120,13 @@ export class AdminPanelComponent {
   }
 
   clearNotifications(): void {
-    if (confirm('Deseja limpar todo o histórico de notificações?')) {
+    if (this.notificacoesPendenteConfirmacaoLimpeza()) {
       this.notificationService.clearAll();
       this.toastService.show('Histórico de notificações limpo com sucesso.', 'info');
+      this.notificacoesPendenteConfirmacaoLimpeza.set(false);
+    } else {
+      this.notificacoesPendenteConfirmacaoLimpeza.set(true);
+      setTimeout(() => this.notificacoesPendenteConfirmacaoLimpeza.set(false), 3000);
     }
   }
 
@@ -145,9 +161,13 @@ export class AdminPanelComponent {
   }
 
   resetLocalChecklist(): void {
-    if (confirm('Atenção: isto apagará todo o progresso do Checklist de Campo e vistorias offline salvos no navegador. Confirmar?')) {
+    if (this.checklistPendenteConfirmacaoReset()) {
       localStorage.removeItem('inspections_checklist_progress');
       this.toastService.show('Progresso do Checklist de Campo limpo com sucesso!', 'success');
+      this.checklistPendenteConfirmacaoReset.set(false);
+    } else {
+      this.checklistPendenteConfirmacaoReset.set(true);
+      setTimeout(() => this.checklistPendenteConfirmacaoReset.set(false), 3000);
     }
   }
 }

@@ -2260,7 +2260,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
 
     const novaJanela = window.open('', '_blank');
     if (!novaJanela) {
-      alert('Popup bloqueado. Permita popups para este site e tente novamente.');
+      this.toastService.show('Popup bloqueado. Permita popups para este site e tente novamente.', 'error');
       return;
     }
     novaJanela.document.write('<html><body style="font-family:sans-serif;padding:20px">Gerando relatório, aguarde…</body></html>');
