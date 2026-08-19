@@ -3,7 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { GoogleGenAI } from 'https://esm.sh/@google/genai@1.16.0';
 
 const ALLOWED_ORIGINS = [
-  'https://predial40-app.netlify.app',
+  'https://app-predial.emanoelamorim.com',
+  'https://predial40-app.netlify.app', // manter temporariamente até a migração de DNS ser confirmada — remover depois
   'http://localhost:4200',
   'http://localhost:5173',
 ];
