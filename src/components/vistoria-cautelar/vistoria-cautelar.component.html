@@ -136,6 +136,46 @@
         <label class="block text-xs font-bold text-slate-600 mb-1.5">Impactos Previstos à Vizinhança</label>
         <textarea [(ngModel)]="novaObraImpactosVizinhanca" name="obraImp" rows="2" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
       </div>
+
+      <!-- FOTOS E PROJETOS DO CANTEIRO / OBRA GERADORA -->
+      <div class="space-y-2 pt-2 border-t border-slate-100">
+        <div class="flex items-center justify-between">
+          <label class="block text-xs font-bold text-slate-600">
+            Fotos e Projetos da Obra Geradora / Canteiro
+            <span class="font-normal text-slate-400 ml-1">(opcional — fotos da fachada, acessos, plantas/projetos — máx. 6)</span>
+          </label>
+          <span class="text-[11px] font-semibold text-slate-400">{{ novaObraFotos().length }}/6</span>
+        </div>
+        <p class="text-[11px] text-slate-400 -mt-1">Serão comprimidas automaticamente. Ficam vinculadas permanentemente à Obra Geradora e disponíveis para o Gerador de Caracterização.</p>
+        <input type="file" accept="image/*" multiple
+               (change)="onFotoObraChange($event)"
+               class="block w-full text-xs text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-slate-200 rounded-lg bg-white px-2 py-1.5">
+
+        @if (novaObraFotos().length > 0) {
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+            @for (foto of novaObraFotos(); track foto.timestamp; let i = $index) {
+              <div class="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex flex-col">
+                <div class="relative aspect-video bg-slate-100">
+                  <img [src]="foto.dataUrl" alt="Foto da obra geradora" class="w-full h-full object-cover">
+                  <button type="button" (click)="removerFotoObra(i)"
+                          title="Remover foto"
+                          class="absolute top-1.5 right-1.5 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-rose-700 cursor-pointer shadow-sm">
+                    ×
+                  </button>
+                </div>
+                <div class="p-1.5 bg-white border-t border-slate-100">
+                  <input type="text"
+                         [value]="foto.legenda ?? ''"
+                         (input)="atualizarLegendaFotoObra(i, $any($event.target).value)"
+                         placeholder="Legenda (ex: Fachada, Planta)"
+                         class="w-full px-2 py-1 text-[11px] border border-slate-200 rounded text-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                </div>
+              </div>
+            }
+          </div>
+          <p class="text-xs text-emerald-700 font-semibold">{{ novaObraFotos().length }}/6 foto(s)/projeto(s) anexada(s).</p>
+        }
+      </div>
     </div>
 
     <!-- MOMENTO DA VISTORIA -->

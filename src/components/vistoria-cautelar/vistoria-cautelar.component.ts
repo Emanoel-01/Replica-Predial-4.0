@@ -4,6 +4,7 @@ import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
 import { GeminiService } from '../../services/gemini.service';
 import { SyncService } from '../../services/sync.service';
+import { FotoObra } from '../../models/caracterizacao.model';
 
 // ═══════════════════════════════════════════════════════════════════
 // VISTORIA CAUTELAR DE VIZINHANÇA — MODELO DE DADOS
@@ -203,6 +204,7 @@ export interface VistoriaCautelar {
   obraGeradora: {
     nome: string; endereco: string; fundacao?: string; estrutura?: string;
     logisticaCanteiro?: string; impactosVizinhanca?: string;
+    fotos?: FotoObra[];
   };
   momentoVistoria: 'PRE_DEMOLICAO' | 'PRE_MOVIMENTACAO_TERRA';
   areaInfluencia: {
@@ -306,6 +308,7 @@ export class VistoriaCautelarComponent implements OnInit {
   novaObraEstrutura = signal('');
   novaObraLogisticaCanteiro = signal('');
   novaObraImpactosVizinhanca = signal('');
+  novaObraFotos = signal<FotoObra[]>([]);
 
   // ─── Momento e nível ───
   novoMomentoVistoria = signal<'PRE_DEMOLICAO' | 'PRE_MOVIMENTACAO_TERRA'>('PRE_MOVIMENTACAO_TERRA');
@@ -560,6 +563,43 @@ export class VistoriaCautelarComponent implements OnInit {
     });
   }
 
+  async onFotoObraChange(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    const atuais = this.novaObraFotos();
+    const max = 6;
+    const restante = max - atuais.length;
+    if (restante <= 0) {
+      this.toastService.show('Máximo de 6 fotos/projetos atingido.', 'info');
+      return;
+    }
+    for (const file of files.slice(0, restante)) {
+      if (!file.type.startsWith('image/')) continue;
+      await new Promise<void>(res => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const dataUrl = e.target?.result as string;
+          const compressed = await this.comprimirImagem(dataUrl, 900, 0.78);
+          this.novaObraFotos.update(arr => [
+            ...arr,
+            { dataUrl: compressed, timestamp: new Date().toISOString() }
+          ]);
+          res();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    input.value = '';
+  }
+
+  removerFotoObra(index: number): void {
+    this.novaObraFotos.update(arr => arr.filter((_, i) => i !== index));
+  }
+
+  atualizarLegendaFotoObra(index: number, legenda: string): void {
+    this.novaObraFotos.update(arr => arr.map((f, i) => i === index ? { ...f, legenda: legenda.trim() || undefined } : f));
+  }
+
   async ngOnInit(): Promise<void> {
     await this.carregarVistorias();
   }
@@ -583,6 +623,7 @@ export class VistoriaCautelarComponent implements OnInit {
     this.novaObraEstrutura.set('');
     this.novaObraLogisticaCanteiro.set('');
     this.novaObraImpactosVizinhanca.set('');
+    this.novaObraFotos.set([]);
     this.novoMomentoVistoria.set('PRE_MOVIMENTACAO_TERRA');
     this.novoNivelVistoriaCautelar.set('2');
     this.novaAreaRaio.set('');
@@ -620,6 +661,7 @@ export class VistoriaCautelarComponent implements OnInit {
     this.novaObraEstrutura.set(vistoria.obraGeradora.estrutura || '');
     this.novaObraLogisticaCanteiro.set(vistoria.obraGeradora.logisticaCanteiro || '');
     this.novaObraImpactosVizinhanca.set(vistoria.obraGeradora.impactosVizinhanca || '');
+    this.novaObraFotos.set(vistoria.obraGeradora.fotos ?? []);
 
     this.novoMomentoVistoria.set(vistoria.momentoVistoria || 'PRE_MOVIMENTACAO_TERRA');
     this.novoNivelVistoriaCautelar.set(vistoria.nivelVistoriaCautelar || '2');
@@ -650,6 +692,7 @@ export class VistoriaCautelarComponent implements OnInit {
     this.novaObraEstrutura.set('');
     this.novaObraLogisticaCanteiro.set('');
     this.novaObraImpactosVizinhanca.set('');
+    this.novaObraFotos.set([]);
     this.novoMomentoVistoria.set('PRE_MOVIMENTACAO_TERRA');
     this.novoNivelVistoriaCautelar.set('2');
     this.novaAreaRaio.set('');
@@ -701,6 +744,7 @@ export class VistoriaCautelarComponent implements OnInit {
           estrutura: this.novaObraEstrutura() || undefined,
           logisticaCanteiro: this.novaObraLogisticaCanteiro() || undefined,
           impactosVizinhanca: this.novaObraImpactosVizinhanca() || undefined,
+          fotos: this.novaObraFotos(),
         },
         momentoVistoria: this.novoMomentoVistoria(),
         areaInfluencia: {
@@ -741,6 +785,7 @@ export class VistoriaCautelarComponent implements OnInit {
         estrutura: this.novaObraEstrutura() || undefined,
         logisticaCanteiro: this.novaObraLogisticaCanteiro() || undefined,
         impactosVizinhanca: this.novaObraImpactosVizinhanca() || undefined,
+        fotos: this.novaObraFotos(),
       },
       momentoVistoria: this.novoMomentoVistoria(),
       areaInfluencia: {
