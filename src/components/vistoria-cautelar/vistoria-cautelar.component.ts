@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, WritableSignal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
@@ -239,6 +239,47 @@ export interface LaudoCautelarEmitido {
 })
 export class VistoriaCautelarComponent implements OnInit {
   readonly ELEMENTOS_CONSTRUTIVOS = ELEMENTOS_CONSTRUTIVOS;
+
+  readonly OPCOES_ESTRUTURA = [
+    'Concreto armado convencional',
+    'Alvenaria estrutural',
+    'Estrutura metálica',
+    'Estrutura de madeira',
+    'Pré-moldado de concreto',
+    'Misto (concreto + alvenaria estrutural)',
+    'Não identificado / não visível',
+  ];
+
+  readonly OPCOES_COBERTURA = [
+    'Telha cerâmica sobre estrutura de madeira',
+    'Telha metálica (zinco/alumínio)',
+    'Telha de fibrocimento',
+    'Laje impermeabilizada (cobertura plana)',
+    'Telha shingle',
+    'Estrutura metálica com telha sanduíche',
+    'Não identificado / não visível',
+  ];
+
+  readonly OPCOES_CONTENCAO = [
+    'Sem elemento de contenção aparente',
+    'Muro de arrimo em concreto armado',
+    'Muro de arrimo em alvenaria de pedra',
+    'Cortina atirantada',
+    'Gabião',
+    'Talude natural sem contenção',
+    'Não identificado / não visível',
+  ];
+
+  readonly OPCOES_VEDACOES_VERTICAIS = [
+    'Alvenaria de blocos cerâmicos',
+    'Alvenaria de blocos de concreto',
+    'Alvenaria estrutural',
+    'Drywall / gesso acartonado',
+    'Painéis pré-moldados',
+    'Vidro (fachada cortina)',
+    'Não identificado / não visível',
+  ];
+
   private dbService = inject(VistoriaDbService);
   private toastService = inject(ToastService);
   private geminiService = inject(GeminiService);
@@ -247,8 +288,10 @@ export class VistoriaCautelarComponent implements OnInit {
   modoExibicao = signal<'LISTA' | 'CRIACAO' | 'DETALHE' | 'DETALHE_IMOVEL'>('LISTA');
   todasVistoriasCautelares = signal<VistoriaCautelar[]>([]);
   vistoriaAtivaId = signal<string | null>(null);
+  vistoriaEmEdicaoId = signal<string | null>(null);
   vistoriaEmSincronizacaoId = signal<string | null>(null);
   sincronizandoTudo = signal(false);
+  imovelPendenteConfirmacaoExclusao = signal<string | null>(null);
 
   // ─── Campos do formulário (Solicitante) ───
   novoSolicitanteNome = signal('');
@@ -314,6 +357,7 @@ export class VistoriaCautelarComponent implements OnInit {
   edRecusaFotoFachada = signal<string | null>(null);
 
   // ─── VC-5: Dados do imóvel ───
+  edImovelEndereco = signal('');
   edImovelOcupante = signal('');
   edImovelIdadeEstimada = signal('');
   edImovelPadraoConstrutivo = signal('');
@@ -528,6 +572,7 @@ export class VistoriaCautelarComponent implements OnInit {
   }
 
   abrirCriacao(): void {
+    this.vistoriaEmEdicaoId.set(null);
     this.novoSolicitanteNome.set('');
     this.novoSolicitanteCnpjCpf.set('');
     this.novoSolicitanteEndereco.set('');
@@ -549,8 +594,76 @@ export class VistoriaCautelarComponent implements OnInit {
     this.modoExibicao.set('CRIACAO');
   }
 
+  async abrirEdicaoObraGeradora(id: string): Promise<void> {
+    try {
+      const laudosEmitidos = await this.dbService.getAllLaudosCautelaresEmitidos();
+      const possuiLaudo = laudosEmitidos.some(l => l.snapshotVistoria?.id === id);
+      if (possuiLaudo) {
+        this.toastService.show('Esta vistoria já possui laudo emitido e não pode ter os dados da obra alterados.', 'info');
+        return;
+      }
+    } catch (e) {
+      console.warn('Não foi possível verificar laudos emitidos:', e);
+    }
+
+    const vistoria = this.todasVistoriasCautelares().find(v => v.id === id);
+    if (!vistoria) return;
+
+    this.novoSolicitanteNome.set(vistoria.solicitante.nome || '');
+    this.novoSolicitanteCnpjCpf.set(vistoria.solicitante.cnpjCpf || '');
+    this.novoSolicitanteEndereco.set(vistoria.solicitante.endereco || '');
+    this.novoSolicitanteResponsavelLegal.set(vistoria.solicitante.responsavelLegal || '');
+
+    this.novaObraNome.set(vistoria.obraGeradora.nome || '');
+    this.novaObraEndereco.set(vistoria.obraGeradora.endereco || '');
+    this.novaObraFundacao.set(vistoria.obraGeradora.fundacao || '');
+    this.novaObraEstrutura.set(vistoria.obraGeradora.estrutura || '');
+    this.novaObraLogisticaCanteiro.set(vistoria.obraGeradora.logisticaCanteiro || '');
+    this.novaObraImpactosVizinhanca.set(vistoria.obraGeradora.impactosVizinhanca || '');
+
+    this.novoMomentoVistoria.set(vistoria.momentoVistoria || 'PRE_MOVIMENTACAO_TERRA');
+    this.novoNivelVistoriaCautelar.set(vistoria.nivelVistoriaCautelar || '2');
+
+    this.novaAreaRaio.set(vistoria.areaInfluencia?.raio || '');
+    this.novaAreaMemorialJustificativo.set(vistoria.areaInfluencia?.memorialJustificativo || '');
+    this.novaAreaEstudosPrevios.set(vistoria.areaInfluencia?.estudosPreviosConsiderados || '');
+
+    this.novoCanteiroFotosExternas.set(vistoria.canteiroObras?.fotosExternas || []);
+    this.novoCanteiroFotosInternas.set(vistoria.canteiroObras?.fotosInternas || []);
+
+    this.novoMarcoTemporal.set(vistoria.marcoTemporal || 'ASSINATURA_DIGITAL');
+
+    this.vistoriaEmEdicaoId.set(id);
+    this.modoExibicao.set('CRIACAO');
+  }
+
   cancelarCriacao(): void {
-    this.modoExibicao.set('LISTA');
+    const editandoId = this.vistoriaEmEdicaoId();
+    this.vistoriaEmEdicaoId.set(null);
+    this.novoSolicitanteNome.set('');
+    this.novoSolicitanteCnpjCpf.set('');
+    this.novoSolicitanteEndereco.set('');
+    this.novoSolicitanteResponsavelLegal.set('');
+    this.novaObraNome.set('');
+    this.novaObraEndereco.set('');
+    this.novaObraFundacao.set('');
+    this.novaObraEstrutura.set('');
+    this.novaObraLogisticaCanteiro.set('');
+    this.novaObraImpactosVizinhanca.set('');
+    this.novoMomentoVistoria.set('PRE_MOVIMENTACAO_TERRA');
+    this.novoNivelVistoriaCautelar.set('2');
+    this.novaAreaRaio.set('');
+    this.novaAreaMemorialJustificativo.set('');
+    this.novaAreaEstudosPrevios.set('');
+    this.novoCanteiroFotosExternas.set([]);
+    this.novoCanteiroFotosInternas.set([]);
+    this.novoMarcoTemporal.set('ASSINATURA_DIGITAL');
+
+    if (editandoId) {
+      this.modoExibicao.set('DETALHE');
+    } else {
+      this.modoExibicao.set('LISTA');
+    }
   }
 
   podeSalvarObra(): boolean {
@@ -564,6 +677,55 @@ export class VistoriaCautelarComponent implements OnInit {
       return;
     }
     const nowIso = new Date().toISOString();
+    const editandoId = this.vistoriaEmEdicaoId();
+
+    if (editandoId) {
+      const vistoriaExistente = this.todasVistoriasCautelares().find(v => v.id === editandoId);
+      if (!vistoriaExistente) {
+        this.toastService.show('Vistoria não encontrada para atualização.', 'error');
+        return;
+      }
+
+      const atualizada: VistoriaCautelar = {
+        ...vistoriaExistente,
+        solicitante: {
+          nome: this.novoSolicitanteNome(),
+          cnpjCpf: this.novoSolicitanteCnpjCpf(),
+          endereco: this.novoSolicitanteEndereco(),
+          responsavelLegal: this.novoSolicitanteResponsavelLegal() || undefined,
+        },
+        obraGeradora: {
+          nome: this.novaObraNome(),
+          endereco: this.novaObraEndereco(),
+          fundacao: this.novaObraFundacao() || undefined,
+          estrutura: this.novaObraEstrutura() || undefined,
+          logisticaCanteiro: this.novaObraLogisticaCanteiro() || undefined,
+          impactosVizinhanca: this.novaObraImpactosVizinhanca() || undefined,
+        },
+        momentoVistoria: this.novoMomentoVistoria(),
+        areaInfluencia: {
+          raio: this.novaAreaRaio() || undefined,
+          memorialJustificativo: this.novaAreaMemorialJustificativo() || undefined,
+          estudosPreviosConsiderados: this.novaAreaEstudosPrevios() || undefined,
+        },
+        nivelVistoriaCautelar: this.novoNivelVistoriaCautelar(),
+        canteiroObras: {
+          fotosExternas: this.novoCanteiroFotosExternas(),
+          fotosInternas: this.novoCanteiroFotosInternas(),
+        },
+        marcoTemporal: this.novoMarcoTemporal(),
+        dateUpdated: nowIso,
+      };
+
+      await this.dbService.salvarVistoriaCautelar(atualizada);
+      await this.carregarVistorias();
+      this.vistoriaAtivaId.set(atualizada.id);
+      this.vistoriaEmEdicaoId.set(null);
+      this.toastService.show('Dados da obra atualizados com sucesso.', 'success');
+      this.modoExibicao.set('DETALHE');
+      return;
+    }
+
     const vistoria: VistoriaCautelar = {
       id: crypto.randomUUID(),
       solicitante: {
@@ -600,6 +762,38 @@ export class VistoriaCautelarComponent implements OnInit {
     await this.carregarVistorias();
     this.toastService.show('Vistoria Cautelar criada. Agora adicione os imóveis da área de influência.', 'success');
     this.modoExibicao.set('LISTA');
+  }
+
+  async removerImovel(imovelId: string, event?: Event): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+    }
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return;
+
+    if (this.imovelPendenteConfirmacaoExclusao() === imovelId) {
+      const imoveisAtualizados = vistoria.imoveis.filter(im => im.id !== imovelId);
+      const atualizada: VistoriaCautelar = {
+        ...vistoria,
+        imoveis: imoveisAtualizados,
+        dateUpdated: new Date().toISOString(),
+      };
+      await this.dbService.salvarVistoriaCautelar(atualizada);
+      await this.carregarVistorias();
+      this.imovelPendenteConfirmacaoExclusao.set(null);
+      this.toastService.show('Imóvel removido da vistoria.', 'info');
+
+      if (this.imovelEmEdicaoId() === imovelId) {
+        this.fecharDetalheImovel();
+      }
+    } else {
+      this.imovelPendenteConfirmacaoExclusao.set(imovelId);
+      setTimeout(() => {
+        if (this.imovelPendenteConfirmacaoExclusao() === imovelId) {
+          this.imovelPendenteConfirmacaoExclusao.set(null);
+        }
+      }, 3000);
+    }
   }
 
   abrirDetalhe(id: string): void {
@@ -827,6 +1021,7 @@ export class VistoriaCautelarComponent implements OnInit {
     const imovel = this.vistoriaAtiva()?.imoveis.find(i => i.id === imovelId);
     if (!imovel) return;
     this.imovelEmEdicaoId.set(imovelId);
+    this.edImovelEndereco.set(imovel.endereco ?? '');
     this.edImovelOcupante.set(imovel.dadosImovel.ocupante ?? '');
     this.edImovelIdadeEstimada.set(imovel.dadosImovel.idadeEstimada ?? '');
     this.edImovelPadraoConstrutivo.set(imovel.dadosImovel.padraoConstrutivo ?? '');
@@ -873,6 +1068,25 @@ export class VistoriaCautelarComponent implements OnInit {
     this.modoExibicao.set('DETALHE_IMOVEL');
   }
 
+  mostrarCampoOutro(valorAtual: string, opcoes: string[]): boolean {
+    return !!valorAtual && !opcoes.includes(valorAtual);
+  }
+
+  opcaoSelecionadaOuOutro(valorAtual: string, opcoes: string[]): string {
+    if (!valorAtual) return '';
+    return opcoes.includes(valorAtual) ? valorAtual : '__OUTRO__';
+  }
+
+  onSelecionarCaracteristica(valorSelect: string, signalCampo: WritableSignal<string>, opcoes: string[]): void {
+    if (valorSelect === '__OUTRO__') {
+      if (!signalCampo() || opcoes.includes(signalCampo())) {
+        signalCampo.set(' ');
+      }
+    } else {
+      signalCampo.set(valorSelect);
+    }
+  }
+
   fecharDetalheImovel(): void {
     this.imovelEmEdicaoId.set(null);
     this.modoExibicao.set('DETALHE');
@@ -892,6 +1106,11 @@ export class VistoriaCautelarComponent implements OnInit {
     const imovelId = this.imovelEmEdicaoId();
     if (!vistoria || !imovelId) return;
 
+    if (!this.edImovelEndereco().trim()) {
+      this.toastService.show('Informe o endereço do imóvel.', 'error');
+      return;
+    }
+
     const pavimentosNum = this.edImovelPavimentos() ? Number(this.edImovelPavimentos()) : undefined;
     const afastamentoNum = this.edImovelAfastamentoDivisa() ? Number(this.edImovelAfastamentoDivisa()) : undefined;
 
@@ -899,6 +1118,7 @@ export class VistoriaCautelarComponent implements OnInit {
       if (im.id !== imovelId) return im;
       return {
         ...im,
+        endereco: this.edImovelEndereco().trim(),
         posicaoRelativaObra: this.edImovelPosicaoRelativa() || undefined,
         afastamentoDivisaMetros: afastamentoNum,
         dataVistoria: this.edImovelDataVistoria() || undefined,
@@ -911,10 +1131,10 @@ export class VistoriaCautelarComponent implements OnInit {
           usoOcupacao: this.edImovelUsoOcupacao() || undefined,
         },
         caracteristicasConstrutivas: {
-          estrutura: this.edImovelEstrutura() || undefined,
-          cobertura: this.edImovelCobertura() || undefined,
-          contencao: this.edImovelContencao() || undefined,
-          vedacoesVerticais: this.edImovelVedacoesVerticais() || undefined,
+          estrutura: this.edImovelEstrutura()?.trim() || undefined,
+          cobertura: this.edImovelCobertura()?.trim() || undefined,
+          contencao: this.edImovelContencao()?.trim() || undefined,
+          vedacoesVerticais: this.edImovelVedacoesVerticais()?.trim() || undefined,
         },
         estadoConservacao: {
           classificacao: this.edImovelEstadoConservacao(),

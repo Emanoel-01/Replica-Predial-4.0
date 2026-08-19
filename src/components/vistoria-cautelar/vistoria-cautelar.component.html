@@ -72,7 +72,13 @@
   <div class="space-y-6 animate-fade-in pb-16 max-w-3xl">
 
     <div class="flex items-center justify-between">
-      <h2 class="text-xl sm:text-2xl font-bold text-sky-900">Nova Vistoria Cautelar — Dados da Obra</h2>
+      <h2 class="text-xl sm:text-2xl font-bold text-sky-900">
+        @if (vistoriaEmEdicaoId()) {
+          Editar Vistoria Cautelar — Dados da Obra
+        } @else {
+          Nova Vistoria Cautelar — Dados da Obra
+        }
+      </h2>
       <button (click)="cancelarCriacao()" class="text-slate-400 hover:text-slate-700">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
@@ -192,7 +198,13 @@
 
     <div class="flex gap-3 pt-2">
       <button (click)="cancelarCriacao()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-sm transition-colors">Cancelar</button>
-      <button (click)="salvarVistoriaCautelar()" [disabled]="!podeSalvarObra()" class="flex-1 bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">Criar Vistoria Cautelar</button>
+      <button (click)="salvarVistoriaCautelar()" [disabled]="!podeSalvarObra()" class="flex-1 bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">
+        @if (vistoriaEmEdicaoId()) {
+          Salvar Alterações da Obra
+        } @else {
+          Criar Vistoria Cautelar
+        }
+      </button>
     </div>
 
   </div>
@@ -232,6 +244,13 @@
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+          <button type="button"
+                  (click)="abrirEdicaoObraGeradora(vistoriaAtiva()!.id)"
+                  class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3.5 py-2.5 rounded-lg text-sm transition-all shadow-xs active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                  title="Editar dados cadastrais e técnicos da obra geradora">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+            <span>Editar Obra</span>
+          </button>
           <button type="button"
                   (click)="sincronizarNuvem($event, vistoriaAtiva())"
                   [disabled]="vistoriaEmSincronizacaoId() === vistoriaAtiva()?.id"
@@ -312,9 +331,21 @@
           <div (click)="abrirDetalheImovel(im.id)" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-sky-200 transition-all cursor-pointer">
             <div class="flex justify-between items-start gap-2 mb-1.5">
               <h4 class="font-bold text-slate-800 text-sm">{{ im.endereco }}</h4>
-              <span [class]="'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ' + corStatusImovel(im.status)">
-                {{ labelStatusImovel(im.status) }}
-              </span>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span [class]="'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + corStatusImovel(im.status)">
+                  {{ labelStatusImovel(im.status) }}
+                </span>
+                <button type="button"
+                        (click)="removerImovel(im.id, $event)"
+                        [class]="'p-1 rounded-md transition-all ' + (imovelPendenteConfirmacaoExclusao() === im.id ? 'bg-red-600 text-white font-bold text-[10px] px-2' : 'text-slate-400 hover:text-red-600 hover:bg-red-50')"
+                        [title]="imovelPendenteConfirmacaoExclusao() === im.id ? 'Clique novamente para confirmar a exclusão' : 'Remover imóvel'">
+                  @if (imovelPendenteConfirmacaoExclusao() === im.id) {
+                    <span>Confirmar exclusão?</span>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  }
+                </button>
+              </div>
             </div>
             <p class="text-xs text-slate-400">{{ im.dadosImovel.tipologia }}</p>
           </div>
@@ -328,7 +359,7 @@
   <div class="space-y-6 animate-fade-in pb-16 max-w-3xl">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-sky-900">{{ imovelEmEdicao()!.endereco }}</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-sky-900">{{ edImovelEndereco() || imovelEmEdicao()!.endereco }}</h2>
         <span [class]="'inline-block mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + corStatusImovel(imovelEmEdicao()!.status)">
           {{ labelStatusImovel(imovelEmEdicao()!.status) }}
         </span>
@@ -356,6 +387,10 @@
     <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
       <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Dados do Imóvel</h3>
       <div class="grid sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Endereço do Imóvel *</label>
+          <input type="text" [(ngModel)]="edImovelEndereco" name="imovelEndereco" placeholder="Ex: Rua das Flores, 123" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Posição relativa à obra</label>
           <select [(ngModel)]="edImovelPosicaoRelativa" name="posicao" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
@@ -407,19 +442,91 @@
       <div class="grid sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Estrutura</label>
-          <input type="text" [(ngModel)]="edImovelEstrutura" name="estrutura" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <select
+            [ngModel]="opcaoSelecionadaOuOutro(edImovelEstrutura(), OPCOES_ESTRUTURA)"
+            (ngModelChange)="onSelecionarCaracteristica($event, edImovelEstrutura, OPCOES_ESTRUTURA)"
+            name="estruturaSelect"
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Selecione…</option>
+            @for (opcao of OPCOES_ESTRUTURA; track opcao) {
+              <option [value]="opcao">{{ opcao }}</option>
+            }
+            <option value="__OUTRO__">Outro (especificar)</option>
+          </select>
+          @if (mostrarCampoOutro(edImovelEstrutura(), OPCOES_ESTRUTURA)) {
+            <input
+              type="text"
+              [(ngModel)]="edImovelEstrutura"
+              name="estruturaOutro"
+              placeholder="Descreva o sistema estrutural observado"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          }
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Cobertura</label>
-          <input type="text" [(ngModel)]="edImovelCobertura" name="cobertura" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <select
+            [ngModel]="opcaoSelecionadaOuOutro(edImovelCobertura(), OPCOES_COBERTURA)"
+            (ngModelChange)="onSelecionarCaracteristica($event, edImovelCobertura, OPCOES_COBERTURA)"
+            name="coberturaSelect"
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Selecione…</option>
+            @for (opcao of OPCOES_COBERTURA; track opcao) {
+              <option [value]="opcao">{{ opcao }}</option>
+            }
+            <option value="__OUTRO__">Outro (especificar)</option>
+          </select>
+          @if (mostrarCampoOutro(edImovelCobertura(), OPCOES_COBERTURA)) {
+            <input
+              type="text"
+              [(ngModel)]="edImovelCobertura"
+              name="coberturaOutro"
+              placeholder="Descreva a cobertura observada"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          }
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Contenção</label>
-          <input type="text" [(ngModel)]="edImovelContencao" name="contencao" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <select
+            [ngModel]="opcaoSelecionadaOuOutro(edImovelContencao(), OPCOES_CONTENCAO)"
+            (ngModelChange)="onSelecionarCaracteristica($event, edImovelContencao, OPCOES_CONTENCAO)"
+            name="contencaoSelect"
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Selecione…</option>
+            @for (opcao of OPCOES_CONTENCAO; track opcao) {
+              <option [value]="opcao">{{ opcao }}</option>
+            }
+            <option value="__OUTRO__">Outro (especificar)</option>
+          </select>
+          @if (mostrarCampoOutro(edImovelContencao(), OPCOES_CONTENCAO)) {
+            <input
+              type="text"
+              [(ngModel)]="edImovelContencao"
+              name="contencaoOutro"
+              placeholder="Descreva a contenção observada"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          }
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Vedações verticais</label>
-          <input type="text" [(ngModel)]="edImovelVedacoesVerticais" name="vedacoes" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <select
+            [ngModel]="opcaoSelecionadaOuOutro(edImovelVedacoesVerticais(), OPCOES_VEDACOES_VERTICAIS)"
+            (ngModelChange)="onSelecionarCaracteristica($event, edImovelVedacoesVerticais, OPCOES_VEDACOES_VERTICAIS)"
+            name="vedacoesSelect"
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Selecione…</option>
+            @for (opcao of OPCOES_VEDACOES_VERTICAIS; track opcao) {
+              <option [value]="opcao">{{ opcao }}</option>
+            }
+            <option value="__OUTRO__">Outro (especificar)</option>
+          </select>
+          @if (mostrarCampoOutro(edImovelVedacoesVerticais(), OPCOES_VEDACOES_VERTICAIS)) {
+            <input
+              type="text"
+              [(ngModel)]="edImovelVedacoesVerticais"
+              name="vedacoesOutro"
+              placeholder="Descreva as vedações verticais observadas"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          }
         </div>
       </div>
     </div>
@@ -662,8 +769,17 @@
       </div>
     </div>
 
-    <div class="flex gap-3 pt-2">
+    <div class="flex flex-col sm:flex-row gap-3 pt-2">
       <button (click)="fecharDetalheImovel()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-sm transition-colors">Voltar</button>
+      <button type="button"
+              (click)="removerImovel(imovelEmEdicao()!.id)"
+              [class]="'border font-bold py-3 px-4 rounded-xl text-sm transition-all ' + (imovelPendenteConfirmacaoExclusao() === imovelEmEdicao()!.id ? 'bg-red-600 text-white border-red-600' : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200')">
+        @if (imovelPendenteConfirmacaoExclusao() === imovelEmEdicao()!.id) {
+          <span>Confirmar exclusão do imóvel?</span>
+        } @else {
+          <span>Remover Imóvel</span>
+        }
+      </button>
       <button (click)="salvarDadosImovel()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md">Salvar Dados do Imóvel</button>
     </div>
     @if (imovelEmEdicao()!.status === 'EM_ANDAMENTO') {
