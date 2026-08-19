@@ -1,9 +1,10 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, WritableSignal, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, WritableSignal, Input, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
 import { GeminiService } from '../../services/gemini.service';
 import { SyncService } from '../../services/sync.service';
+import { TourService } from '../../services/tour.service';
 import { FotoObra, DadosCaracterizacao } from '../../models/caracterizacao.model';
 import { GeradorCaracterizacaoComponent } from '../gerador-caracterizacao/gerador-caracterizacao.component';
 import { UserProfile } from '../../models/user-profile.model';
@@ -290,6 +291,77 @@ export class VistoriaCautelarComponent implements OnInit {
   private toastService = inject(ToastService);
   private geminiService = inject(GeminiService);
   private syncService = inject(SyncService);
+  public tourService = inject(TourService);
+
+  constructor() {
+    effect(() => {
+      const isAtivo = this.tourService.isTourAtivo();
+      const passo = this.tourService.passoAtual();
+      if (!isAtivo || !passo) return;
+
+      if (passo.view === 'cautelar') {
+        const passosCriacao = [
+          'cautelar-solicitante',
+          'cautelar-obra-geradora'
+        ];
+        const passosDetalhe = [
+          'cautelar-painel-status',
+          'cautelar-adicionar-imovel',
+          'cautelar-lista-imoveis',
+          'cautelar-consolidar'
+        ];
+        const passosImovel = [
+          'imovel-intro',
+          'imovel-autorizacao-acesso',
+          'imovel-dados',
+          'imovel-caracteristicas',
+          'imovel-estado-conservacao',
+          'imovel-checklist-ambientes',
+          'imovel-assinaturas'
+        ];
+
+        if (passo.acaoAoEntrar === 'abrir-detalhe-imovel-demo' || passosImovel.includes(passo.id)) {
+          const lista = this.todasVistoriasCautelares();
+          if (lista.length > 0) {
+            if (!this.vistoriaAtiva()) {
+              this.abrirDetalhe(lista[0].id);
+            }
+            const vistoria = this.vistoriaAtiva();
+            if (vistoria && vistoria.imoveis && vistoria.imoveis.length > 0) {
+              if (this.modoExibicao() !== 'DETALHE_IMOVEL' || !this.imovelEmEdicao()) {
+                this.abrirDetalheImovel(vistoria.imoveis[0].id);
+              }
+            } else {
+              // Sem imóveis cadastrados: pula todo o bloco de imóveis e vai para o orçamento
+              this.tourService.pularAte('orcamento-intro');
+            }
+          } else {
+            this.tourService.pularAte('orcamento-intro');
+          }
+        } else if (passosCriacao.includes(passo.id) || passo.acaoAoEntrar === 'abrir-criacao-cautelar') {
+          if (this.modoExibicao() !== 'CRIACAO') {
+            this.abrirCriacao();
+          }
+        } else if (passosDetalhe.includes(passo.id) || passo.acaoAoEntrar === 'abrir-detalhe-cautelar-demo') {
+          const lista = this.todasVistoriasCautelares();
+          if (lista.length > 0) {
+            if (!this.vistoriaAtiva()) {
+              this.abrirDetalhe(lista[0].id);
+            } else if (this.modoExibicao() !== 'DETALHE') {
+              this.modoExibicao.set('DETALHE');
+            }
+          } else {
+            // Sem vistoria cautelar cadastrada: pula até o orçamento
+            this.tourService.pularAte('orcamento-intro');
+          }
+        } else if (['cautelar-intro', 'cautelar-sincronizar', 'cautelar-nova-vistoria'].includes(passo.id)) {
+          if (this.modoExibicao() !== 'LISTA') {
+            this.modoExibicao.set('LISTA');
+          }
+        }
+      }
+    });
+  }
 
   modoExibicao = signal<'LISTA' | 'CRIACAO' | 'DETALHE' | 'DETALHE_IMOVEL'>('LISTA');
   todasVistoriasCautelares = signal<VistoriaCautelar[]>([]);

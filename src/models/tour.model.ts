@@ -5,5 +5,5 @@ export interface TourStep {
   titulo: string;
   descricao: string;
   posicaoBalao?: 'top' | 'bottom' | 'left' | 'right' | 'center'; // padrão 'bottom' se omitido
-  acaoAoEntrar?: 'abrir-modal-perfil' | 'abrir-modal-notificacoes' | 'abrir-criacao-vistoria' | null;
+  acaoAoEntrar?: 'abrir-modal-perfil' | 'abrir-modal-notificacoes' | 'abrir-criacao-vistoria' | 'ir-para-execucao-demo' | 'abrir-criacao-cautelar' | 'abrir-detalhe-cautelar-demo' | 'abrir-detalhe-imovel-demo' | 'requer-login' | 'ir-para-norteadores-demo' | 'ir-para-anamnese-demo' | 'ir-para-avaliacao-manutencao-demo' | 'ir-para-avaliacao-criticidade-demo' | 'ir-para-conclusoes-demo' | 'ir-para-anexo-art-demo' | string | null;
 }

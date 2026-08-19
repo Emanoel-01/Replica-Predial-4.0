@@ -263,7 +263,67 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           'checkup-selecao-sistemas',
           'checkup-gerar-prancheta'
         ];
-        if (passo.acaoAoEntrar === 'abrir-criacao-vistoria' || passosCriacao.includes(passo.id)) {
+        const passosExecucao = [
+          'execucao-intro',
+          'execucao-cabecalho',
+          'execucao-filtros-status',
+          'execucao-item-checklist',
+          'execucao-mais-acoes',
+          'execucao-salvar-nuvem'
+        ];
+
+        const passosSubTelas = [
+          'norteadores-intro',
+          'anamnese-intro',
+          'avaliacao-manutencao-intro',
+          'avaliacao-criticidade-intro',
+          'conclusoes-intro',
+          'anexo-art-intro'
+        ];
+
+        const mapaAcoesSubTelas: Record<string, () => void> = {
+          'ir-para-norteadores-demo': () => this.navegarParaNorteadores(),
+          'ir-para-anamnese-demo': () => this.navegarParaAnamnese(),
+          'ir-para-avaliacao-manutencao-demo': () => this.navegarParaAvaliacaoManutencao(),
+          'ir-para-avaliacao-criticidade-demo': () => this.navegarParaAvaliacaoCriticidade(),
+          'ir-para-conclusoes-demo': () => this.navegarParaConclusoes(),
+          'ir-para-anexo-art-demo': () => this.navegarParaAnexoArt(),
+        };
+
+        const mapaModoEsperado: Record<string, string> = {
+          'ir-para-norteadores-demo': 'NORTEADORES',
+          'ir-para-anamnese-demo': 'ANAMNESE',
+          'ir-para-avaliacao-manutencao-demo': 'AVALIACAO_MANUTENCAO',
+          'ir-para-avaliacao-criticidade-demo': 'AVALIACAO_CRITICIDADE',
+          'ir-para-conclusoes-demo': 'CONCLUSOES',
+          'ir-para-anexo-art-demo': 'ANEXO_ART',
+        };
+
+        if (passo.acaoAoEntrar && mapaAcoesSubTelas[passo.acaoAoEntrar]) {
+          const lista = this.vistorias();
+          if (lista.length > 0) {
+            if (!this.vistoriaAtiva()) {
+              this.abrirVistoria(lista[0]);
+            }
+            if (this.modoExibicao() !== mapaModoEsperado[passo.acaoAoEntrar]) {
+              mapaAcoesSubTelas[passo.acaoAoEntrar]();
+            }
+          } else {
+            this.tourService.pularAte('cautelar-intro');
+          }
+        } else if (passosExecucao.includes(passo.id) || passo.acaoAoEntrar === 'ir-para-execucao-demo') {
+          const lista = this.vistorias();
+          if (lista.length > 0) {
+            if (!this.vistoriaAtiva()) {
+              this.abrirVistoria(lista[0]);
+            } else if (this.modoExibicao() !== 'EXECUCAO') {
+              this.modoExibicao.set('EXECUCAO');
+            }
+          } else {
+            // Sem vistoria salva: pula diretamente o bloco de execução
+            this.tourService.pularAte('cautelar-intro');
+          }
+        } else if (passo.acaoAoEntrar === 'abrir-criacao-vistoria' || passosCriacao.includes(passo.id)) {
           if (this.modoExibicao() !== 'CRIACAO') {
             this.abrirCriacao();
           }

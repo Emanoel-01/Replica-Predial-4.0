@@ -112,6 +112,12 @@ export class AppComponent implements OnInit {
             this.activeView.set(passo.view);
           }
         }
+        if (passo.acaoAoEntrar === 'requer-login' && !this.isLoggedIn()) {
+          this.tourService.proximo();
+        }
+        if (passo.acaoAoEntrar === 'abrir-modal-perfil' && this.isLoggedIn()) {
+          this.isProfileModalOpen.set(true);
+        }
       }
     });
   }
@@ -125,6 +131,7 @@ export class AppComponent implements OnInit {
 
   onTourEnded(): void {
     this.activeView.set('visao-geral');
+    this.isProfileModalOpen.set(false);
     this.toastService.show('Tour concluído! Explore livremente o ecossistema.', 'success');
   }
 
@@ -288,6 +295,306 @@ export class AppComponent implements OnInit {
         targetSelector: '[data-tour-id="checkup-btn-gerar-prancheta"]',
         titulo: 'Prancheta Digital de Campo',
         descricao: 'Ao clicar aqui, o sistema gera a prancheta de campo personalizada com todas as patologias catalogadas para sua vistoria no local.',
+      },
+    ];
+  }
+
+  private montarPassosExecucao(): TourStep[] {
+    return [
+      {
+        id: 'execucao-intro',
+        view: 'checklist',
+        targetSelector: null,
+        titulo: '🔍 Executando a Vistoria',
+        descricao: 'Depois de gerar a prancheta, você chega aqui: a tela de execução da inspeção em campo. Vamos ver como funciona o preenchimento.',
+        posicaoBalao: 'center',
+        acaoAoEntrar: 'ir-para-execucao-demo',
+      },
+      {
+        id: 'execucao-cabecalho',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="execucao-cabecalho"]',
+        titulo: 'Painel da Inspeção',
+        descricao: 'Aqui você acompanha o nome do edifício, o status de sincronização com a nuvem, e um indicador de "Salvo" toda vez que você atualiza um item.',
+      },
+      {
+        id: 'execucao-filtros-status',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="execucao-filtros-status"]',
+        titulo: 'Filtrar por Status',
+        descricao: 'Filtre os itens do checklist por Conforme, Não Conforme ou pendentes de avaliação — útil para revisar rapidamente o que ainda falta.',
+      },
+      {
+        id: 'execucao-item-checklist',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="execucao-item-checklist"]',
+        titulo: 'Avaliação de Campo',
+        descricao: 'Para cada item do checklist, classifique como Pass (Conforme), Fail (Não Conforme) ou N/A. Ao marcar uma falha, você pode anexar fotos — nossa IA analisa a imagem e sugere o diagnóstico e o grau de criticidade automaticamente.',
+      },
+      {
+        id: 'execucao-mais-acoes',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="execucao-btn-mais-acoes"]',
+        titulo: 'Mais Ações',
+        descricao: 'Este menu reúne as demais etapas do laudo: Documentos Norteadores, Anamnese, Avaliação de Manutenção, Avaliação de Criticidade, Conclusões e Anexo de ART/RRT — além da opção de pausar e retomar depois.',
+      },
+      ...this.montarPassosSubTelasCheckup(),
+      {
+        id: 'execucao-salvar-nuvem',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="execucao-btn-salvar-nuvem"]',
+        titulo: 'Salvar na Nuvem',
+        descricao: 'Salve seu progresso na nuvem a qualquer momento — mesmo no meio da vistoria. Assim você pode continuar de outro aparelho depois.',
+      },
+    ];
+  }
+
+  private montarPassosSubTelasCheckup(): TourStep[] {
+    return [
+      {
+        id: 'norteadores-intro',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="norteadores-cabecalho"]',
+        titulo: 'Documentos Norteadores',
+        descricao: 'Registre quais documentos de referência (projetos, manuais, laudos anteriores) foram disponibilizados pelo responsável legal — parte do Anexo I do laudo.',
+        acaoAoEntrar: 'ir-para-norteadores-demo',
+      },
+      {
+        id: 'anamnese-intro',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="anamnese-cabecalho"]',
+        titulo: 'Anamnese',
+        descricao: 'Registre o histórico da edificação e relatos colhidos durante a vistoria — informações que complementam o diagnóstico técnico.',
+        acaoAoEntrar: 'ir-para-anamnese-demo',
+      },
+      {
+        id: 'avaliacao-manutencao-intro',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="avaliacao-manutencao-cabecalho"]',
+        titulo: 'Avaliação da Manutenção e Uso',
+        descricao: 'Seção 11.0 do laudo, conforme a ABNT NBR 16747 — avalie como a edificação está sendo mantida e utilizada.',
+        acaoAoEntrar: 'ir-para-avaliacao-manutencao-demo',
+      },
+      {
+        id: 'avaliacao-criticidade-intro',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="avaliacao-criticidade-cabecalho"]',
+        titulo: 'Avaliação do Grau de Criticidade',
+        descricao: 'Seção 12.0 do laudo — consolide o grau de criticidade das não conformidades encontradas durante a inspeção.',
+        acaoAoEntrar: 'ir-para-avaliacao-criticidade-demo',
+      },
+      {
+        id: 'conclusoes-intro',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="conclusoes-cabecalho"]',
+        titulo: 'Conclusões e Considerações Finais',
+        descricao: 'Seção 13.0 do laudo — o fechamento técnico da inspeção, com o parecer final do responsável técnico.',
+        acaoAoEntrar: 'ir-para-conclusoes-demo',
+      },
+      {
+        id: 'anexo-art-intro',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="anexo-art-cabecalho"]',
+        titulo: 'Anexo IV — ART/RRT',
+        descricao: 'Anexe o comprovante da Anotação ou Registro de Responsabilidade Técnica — o documento que confere validade legal ao laudo.',
+        acaoAoEntrar: 'ir-para-anexo-art-demo',
+      },
+    ];
+  }
+
+  private montarPassosCautelar(): TourStep[] {
+    return [
+      {
+        id: 'cautelar-intro',
+        view: 'cautelar',
+        targetSelector: null,
+        titulo: '🏘️ Vistoria Cautelar de Vizinhança',
+        descricao: 'Módulo completo para caracterização da obra geradora e constatação de anomalias nos imóveis vizinhos na área de influência, conforme a Norma IBAPE/SP 2025 e NBR 13752.',
+        posicaoBalao: 'center',
+      },
+      {
+        id: 'cautelar-sincronizar',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="cautelar-btn-sincronizar"]',
+        titulo: 'Sincronização em Nuvem',
+        descricao: 'Sincronize todas as obras geradoras e os laudos dos imóveis vizinhos com a nuvem do Supabase, garantindo backup e acesso entre dispositivos.',
+      },
+      {
+        id: 'cautelar-nova-vistoria',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="cautelar-btn-nova-vistoria"]',
+        titulo: 'Cadastrar Obra Geradora',
+        descricao: 'Inicie uma nova vistoria cadastrando a obra causadora do impacto e os dados do solicitante.',
+        acaoAoEntrar: 'abrir-criacao-cautelar',
+      },
+      {
+        id: 'cautelar-solicitante',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="cautelar-solicitante"]',
+        titulo: 'Dados do Solicitante',
+        descricao: 'Identifique a construtora, incorporadora ou contratante responsável pela obra e pela contratação da vistoria cautelar.',
+      },
+      {
+        id: 'cautelar-obra-geradora',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="cautelar-obra-geradora"]',
+        titulo: 'Caracterização da Obra Geradora',
+        descricao: 'Cadastre os dados técnicos da obra (sistema estrutural, fundação, logística e impactos previstos) e anexe fotos e plantas do canteiro.',
+      },
+      {
+        id: 'cautelar-painel-status',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="cautelar-painel-status"]',
+        titulo: 'Painel de Status dos Imóveis',
+        descricao: 'Acompanhe em tempo real o progresso da vistoria na vizinhança: total de imóveis, laudos concluídos, acessos negados e vistorias pendentes.',
+        acaoAoEntrar: 'abrir-detalhe-cautelar-demo',
+      },
+      {
+        id: 'cautelar-adicionar-imovel',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="cautelar-btn-adicionar-imovel"]',
+        titulo: 'Adicionar Imóveis Vizinhos',
+        descricao: 'Adicione cada um dos imóveis localizados na área de influência da obra para realizar a vistoria individual.',
+      },
+      {
+        id: 'cautelar-lista-imoveis',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="cautelar-lista-imoveis"]',
+        titulo: 'Gestão dos Imóveis',
+        descricao: 'Acesse o laudo de cada imóvel para registrar ambientes, elementos construtivos, ocorrências fotográficas com IA e termos de autorização de acesso.',
+      },
+      {
+        id: 'cautelar-consolidar',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="cautelar-btn-consolidar"]',
+        titulo: 'Consolidação do Laudo-Mestre',
+        descricao: 'Gere o Laudo Completo consolidado reunindo a caracterização da obra geradora e todas as vistorias individuais dos imóveis vizinhos em um único PDF técnico.',
+      },
+    ];
+  }
+
+  private montarPassosImovelCautelar(): TourStep[] {
+    return [
+      {
+        id: 'imovel-intro',
+        view: 'cautelar',
+        targetSelector: null,
+        titulo: '🏠 Ficha do Imóvel Vizinho',
+        descricao: 'Ao clicar em um imóvel da lista, você abre esta ficha completa — vamos ver as principais seções.',
+        posicaoBalao: 'center',
+        acaoAoEntrar: 'abrir-detalhe-imovel-demo',
+      },
+      {
+        id: 'imovel-autorizacao-acesso',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="imovel-autorizacao-acesso"]',
+        titulo: 'Autorização de Acesso',
+        descricao: 'Registre se o morador autorizou a vistoria total, parcial (com restrições) ou negou o acesso — essencial para a validade do laudo.',
+      },
+      {
+        id: 'imovel-dados',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="imovel-dados"]',
+        titulo: 'Dados do Imóvel',
+        descricao: 'Endereço e posição relativa à obra geradora — confrontante lateral, de fundos, de frente ou transversal.',
+      },
+      {
+        id: 'imovel-caracteristicas',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="imovel-caracteristicas"]',
+        titulo: 'Características Construtivas',
+        descricao: 'Detalhe o sistema construtivo do imóvel vizinho — item 6.4.1-b da norma, importante para a análise técnica futura em caso de reclamação.',
+      },
+      {
+        id: 'imovel-estado-conservacao',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="imovel-estado-conservacao"]',
+        titulo: 'Estado de Conservação',
+        descricao: 'Classifique o estado geral do imóvel no momento da vistoria — a base factual que protege todas as partes envolvidas.',
+      },
+      {
+        id: 'imovel-checklist-ambientes',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="imovel-checklist-ambientes"]',
+        titulo: 'Checklist de Ambientes',
+        descricao: 'Percorra cada ambiente do imóvel, registrando fotos e observações — a evidência fotográfica é obrigatória antes de poder consolidar o laudo.',
+      },
+      {
+        id: 'imovel-assinaturas',
+        view: 'cautelar',
+        targetSelector: '[data-tour-id="imovel-assinaturas"]',
+        titulo: 'Assinaturas',
+        descricao: 'O vistoriador é sempre você, o usuário logado — os dados vêm automaticamente do seu perfil. Você pode ainda registrar um corresponsável técnico, se aplicável.',
+      },
+    ];
+  }
+
+  private montarPassosOrcamentoENotificacoes(): TourStep[] {
+    return [
+      {
+        id: 'orcamento-intro',
+        view: 'orcamento',
+        targetSelector: '[data-tour-id="orcamento-cabecalho"]',
+        titulo: '💰 Módulo de Orçamento',
+        descricao: 'Este módulo está em desenvolvimento — vai reunir Plano de Ação, Orçamento de Referência e Caderno de Encargos, aproveitando os dados já coletados nas suas vistorias.',
+      },
+      {
+        id: 'orcamento-escopo',
+        view: 'orcamento',
+        targetSelector: '[data-tour-id="orcamento-escopo"]',
+        titulo: 'O que vem por aí',
+        descricao: 'Confira o escopo planejado: cronograma de intervenções, estimativa de custos e o caderno de encargos técnico, tudo conectado ao que você já registrou no Check-up.',
+      },
+      {
+        id: 'notificacoes-intro',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="btn-notificacoes"]',
+        titulo: '🔔 Central de Notificações',
+        descricao: 'Aqui você recebe alertas sobre suas vistorias, avisos do sistema e comunicados importantes. O número vermelho mostra quantos ainda não foram lidos.',
+        acaoAoEntrar: 'requer-login',
+      },
+    ];
+  }
+
+  private montarPassosPerfil(): TourStep[] {
+    return [
+      {
+        id: 'perfil-intro',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="btn-perfil"]',
+        titulo: '👤 Seu Perfil Profissional',
+        descricao: 'Este é o último passo do nosso tour. Vamos ver onde você completa seus dados profissionais.',
+        posicaoBalao: 'bottom',
+        acaoAoEntrar: 'requer-login',
+      },
+      {
+        id: 'perfil-cabecalho',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="perfil-cabecalho"]',
+        titulo: 'Perfil Profissional',
+        descricao: 'Preencha seus dados uma vez — eles aparecem automaticamente em todos os laudos que você emitir, no cabeçalho, na capa e no selo de responsabilidade técnica.',
+        acaoAoEntrar: 'abrir-modal-perfil',
+      },
+      {
+        id: 'perfil-dados-profissionais',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="perfil-dados-profissionais"]',
+        titulo: 'Dados Profissionais',
+        descricao: 'Nome completo, título profissional e o registro no CAU ou CREA — essencial para que seus laudos tenham validade técnica.',
+      },
+      {
+        id: 'perfil-dados-empresa',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="perfil-dados-empresa"]',
+        titulo: 'Dados da Empresa',
+        descricao: 'Se você trabalha através de uma empresa, complete aqui o CNPJ, endereço e contatos — tudo aparece no cabeçalho institucional dos documentos.',
+      },
+      {
+        id: 'perfil-salvar',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="perfil-btn-salvar"]',
+        titulo: 'Pronto para começar!',
+        descricao: 'Salve seus dados e comece a usar o Predial 4.0 de verdade. Você pode revisitar este tour a qualquer momento pelo menu lateral.',
       },
     ];
   }
@@ -502,7 +809,12 @@ export class AppComponent implements OnInit {
     // Inicializar passos do Tour Guiado
     this.tourService.registrarPassos([
       ...this.montarPassosVisaoGeralESidebar(),
-      ...this.montarPassosCheckup()
+      ...this.montarPassosCheckup(),
+      ...this.montarPassosExecucao(),
+      ...this.montarPassosCautelar(),
+      ...this.montarPassosImovelCautelar(),
+      ...this.montarPassosOrcamentoENotificacoes(),
+      ...this.montarPassosPerfil()
     ]);
   }
 }

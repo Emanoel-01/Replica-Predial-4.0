@@ -793,7 +793,7 @@
     <div class="space-y-6">
       
       <!-- Cabeçalho de Execução -->
-      <div class="bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg p-3 sm:p-5 border border-slate-200 space-y-3 sm:space-y-4">
+      <div data-tour-id="execucao-cabecalho" class="bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg p-3 sm:p-5 border border-slate-200 space-y-3 sm:space-y-4">
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
             <div class="flex flex-wrap items-center gap-2 mb-1">
@@ -851,6 +851,7 @@
             <!-- Botão Salvar na Nuvem — sempre visível, é a ação mais frequente -->
             <button (click)="sincronizarNuvem($event, vistoriaAtiva())"
                     [disabled]="syncService.status() === 'syncing'"
+                    data-tour-id="execucao-btn-salvar-nuvem"
                     class="flex-1 lg:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm transition-all shadow-sm active:scale-95 cursor-pointer">
               @if (syncService.status() === 'syncing' && vistoriaEmSincronizacaoId() === vistoriaAtiva()?.id) {
                 <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -863,6 +864,7 @@
 
             <!-- Botão Mais Ações — abre menu com as 7 opções restantes -->
             <button (click)="toggleMenuMaisAcoes()"
+                    data-tour-id="execucao-btn-mais-acoes"
                     class="flex-1 lg:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm transition-all border border-slate-200 active:scale-95 cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
               <span>Mais Ações</span>
@@ -984,7 +986,7 @@
           </div>
 
           <h3 class="font-bold text-xs uppercase tracking-wider text-slate-500 border-b border-slate-100 pt-2 pb-2">Status da Inspeção</h3>
-          <div class="space-y-1">
+          <div data-tour-id="execucao-filtros-status" class="space-y-1">
             <button (click)="filtroStatus.set('TODOS')" 
                     [class]="'w-full text-left px-3 py-2 text-xs font-semibold rounded-lg transition-colors ' + 
                              (filtroStatus() === 'TODOS' ? 'bg-slate-200 text-slate-800' : 'text-slate-600 hover:bg-slate-50')">
@@ -1053,7 +1055,8 @@
             </div>
 
             @for (item of itemsExibidos(); track item.id) {
-              <div class="bg-white rounded-xl border p-5 shadow-sm transition-all duration-200 border-l-4"
+              <div [attr.data-tour-id]="$first ? 'execucao-item-checklist' : null"
+                   class="bg-white rounded-xl border p-5 shadow-sm transition-all duration-200 border-l-4"
                    [class.border-l-sky-500]="item.status === 'PENDENTE'"
                    [class.border-l-green-500]="item.status === 'CONFORME' || item.status === 'PASS'"
                    [class.border-l-rose-500]="item.status === 'NAO_CONFORME' || item.status === 'FAIL'"
@@ -1690,7 +1693,7 @@
   @if (modoExibicao() === 'NORTEADORES' && vistoriaAtiva()) {
     <div class="space-y-6">
       <!-- Cabeçalho de Navegação -->
-      <div class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div data-tour-id="norteadores-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <span class="bg-sky-100 text-sky-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Anexo I
@@ -1919,7 +1922,7 @@
   @if (modoExibicao() === 'ANAMNESE' && vistoriaAtiva()) {
     <div class="space-y-6">
       <!-- Cabeçalho de Navegação -->
-      <div class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div data-tour-id="anamnese-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Histórico e Constatações
@@ -2239,7 +2242,7 @@
   @if (modoExibicao() === 'AVALIACAO_MANUTENCAO' && vistoriaAtiva()) {
     <div class="space-y-6">
       <!-- Cabeçalho de Navegação -->
-      <div class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div data-tour-id="avaliacao-manutencao-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Seção 11.0 do Laudo
@@ -2336,7 +2339,7 @@
   @if (modoExibicao() === 'AVALIACAO_CRITICIDADE' && vistoriaAtiva()) {
     <div class="space-y-6">
       <!-- Cabeçalho de Navegação -->
-      <div class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div data-tour-id="avaliacao-criticidade-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Seção 12.0 do Laudo
@@ -2455,7 +2458,7 @@
   @if (modoExibicao() === 'CONCLUSOES' && vistoriaAtiva()) {
     <div class="space-y-6">
       <!-- Cabeçalho de Navegação -->
-      <div class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div data-tour-id="conclusoes-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Seção 13.0 do Laudo
@@ -2651,7 +2654,7 @@
   @if (modoExibicao() === 'ANEXO_ART' && vistoriaAtiva()) {
     <div class="space-y-6">
       <!-- Cabeçalho de Navegação -->
-      <div class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div data-tour-id="anexo-art-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Anexo IV do Laudo

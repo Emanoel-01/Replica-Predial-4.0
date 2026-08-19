@@ -43,6 +43,15 @@ export class TourService {
     }
   }
 
+  pularAte(idDoPasso: string): void {
+    const indice = this.todosOsPassos.findIndex(p => p.id === idDoPasso);
+    if (indice >= 0) {
+      this.indiceAtual.set(indice);
+    } else {
+      this.encerrar();
+    }
+  }
+
   encerrar(): void {
     this.isTourAtivo.set(false);
     this.indiceAtual.set(0);
