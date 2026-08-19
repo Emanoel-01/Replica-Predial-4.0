@@ -189,11 +189,36 @@
 
     <!-- ÁREA DE INFLUÊNCIA -->
     <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-      <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">7.0 · Área de Influência</h3>
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">7.0 · Área de Influência</h3>
+        <button type="button" (click)="abrirGeradorCaracterizacao()"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 border border-sky-200 hover:bg-sky-100 text-sky-800 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.814a2.25 2.25 0 00-2.006 0L2.622 6.251C2.241 6.441 2 6.832 2 7.257v11.923c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+          </svg>
+          <span>Abrir Mapa & Raio de Influência</span>
+        </button>
+      </div>
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1.5">Raio Considerado</label>
         <input type="text" [(ngModel)]="novaAreaRaio" name="areaRaio" placeholder="ex.: 60 m" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
       </div>
+      @if (novaAreaCroqui()) {
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold text-emerald-800">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              Mapa da área de influência anexado com sucesso
+            </span>
+            <button type="button" (click)="novaAreaCroqui.set(null)" class="text-rose-600 hover:text-rose-800 text-[11px] cursor-pointer">Remover mapa</button>
+          </div>
+          <div class="aspect-video max-h-48 rounded-lg overflow-hidden border border-emerald-200 bg-white">
+            <img [src]="novaAreaCroqui()" alt="Mapa da Área de Influência" class="w-full h-full object-contain">
+          </div>
+        </div>
+      }
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1.5">Memorial Justificativo</label>
         <textarea [(ngModel)]="novaAreaMemorialJustificativo" name="areaMem" rows="2" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
@@ -1370,4 +1395,14 @@
 
     </div>
   </div>
+}
+
+<!-- MODAL NATIVO DO GERADOR DE CARACTERIZAÇÃO / LOCALIZAÇÃO (CAUTELAR) -->
+@if (isGeradorCaracterizacaoOpen()) {
+  <app-gerador-caracterizacao
+    modo="cautelar"
+    [dadosIniciais]="dadosIniciaisParaGerador()"
+    (fechar)="isGeradorCaracterizacaoOpen.set(false)"
+    (dadosGerados)="aplicarDadosDoGerador($event)">
+  </app-gerador-caracterizacao>
 }

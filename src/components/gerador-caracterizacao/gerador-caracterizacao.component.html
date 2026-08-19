@@ -1,0 +1,536 @@
+<div class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-fade-in text-slate-800">
+
+    <!-- CABEÇALHO DO MODAL -->
+    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/75 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.814a2.25 2.25 0 00-2.006 0L2.622 6.251C2.241 6.441 2 6.832 2 7.257v11.923c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+            @if (modo === 'ltip') {
+              Gerador de Caracterização da Edificação (LTIP)
+            } @else {
+              Localização e Situação da Obra Geradora (Vistoria Cautelar)
+            }
+          </h2>
+          <p class="text-xs text-slate-500">
+            @if (modo === 'ltip') {
+              Caracterização técnica, mapa de situação com anotações e memorial descritivo com IA
+            } @else {
+              Delimitação do perímetro de influência e mapa de situação da obra
+            }
+          </p>
+        </div>
+      </div>
+      <button type="button" (click)="fechar.emit()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- TRACKER DE ETAPAS (APENAS MODO LTIP) -->
+    @if (modo === 'ltip') {
+      <div class="px-6 py-2.5 bg-slate-100/70 border-b border-slate-200 flex items-center justify-between flex-shrink-0 text-xs">
+        <div class="flex items-center gap-1 sm:gap-2 w-full max-w-xl mx-auto">
+          <!-- Etapa 1 -->
+          <button type="button" (click)="irParaEtapa(1)"
+                  [class]="'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg font-semibold transition-all ' + (etapaAtual() === 1 ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200/70')">
+            <span class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">1</span>
+            <span>Dados & Fotos</span>
+          </button>
+          <span class="text-slate-300">›</span>
+          <!-- Etapa 2 -->
+          <button type="button" (click)="irParaEtapa(2)"
+                  [class]="'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg font-semibold transition-all ' + (etapaAtual() === 2 ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200/70')">
+            <span class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">2</span>
+            <span>Mapa</span>
+          </button>
+          <span class="text-slate-300">›</span>
+          <!-- Etapa 3 -->
+          <button type="button" (click)="irParaEtapa(3)"
+                  [class]="'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg font-semibold transition-all ' + (etapaAtual() === 3 ? 'bg-sky-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200/70')">
+            <span class="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">3</span>
+            <span>Anotar & Memorial</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- CORPO DO MODAL (ROLÁVEL) -->
+    <div class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+
+      <!-- =================================================================== -->
+      <!-- ETAPA 1 (MODO LTIP): DADOS DA EDIFICAÇÃO & FOTOS                   -->
+      <!-- =================================================================== -->
+      @if (modo === 'ltip' && etapaAtual() === 1) {
+        <div class="space-y-5 animate-fade-in">
+          <div class="bg-sky-50/50 border border-sky-100 rounded-2xl p-4 flex items-start gap-3">
+            <svg class="w-5 h-5 text-sky-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+            </svg>
+            <div class="text-xs text-slate-600">
+              <p class="font-bold text-slate-800">Preencha as características da edificação para compor a Seção 4 do LTIP.</p>
+              <p class="mt-0.5 text-slate-500">Estes dados alimentarão o Memorial Descritivo e a identificação cartográfica do laudo.</p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Denominação do Edifício *</label>
+              <input type="text" [ngModel]="denominacao()" (ngModelChange)="denominacao.set($event)"
+                     placeholder="Ex: Condomínio Residencial Jardim das Acácias"
+                     class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Endereço Completo *</label>
+              <input type="text" [ngModel]="endereco()" (ngModelChange)="endereco.set($event)"
+                     placeholder="Ex: Av. Paulista, 1000 - Bela Vista, São Paulo - SP"
+                     class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Tipologia de Uso</label>
+              <select [ngModel]="tipoUso()" (ngModelChange)="tipoUso.set($event)"
+                      class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
+                @for (opcao of TIPOS_USO; track opcao) {
+                  <option [value]="opcao">{{ opcao }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Área Construída Estimada (m²)</label>
+              <input type="text" [ngModel]="areaConstruida()" (ngModelChange)="areaConstruida.set($event)"
+                     placeholder="Ex: 4500"
+                     class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Número de Pavimentos</label>
+              <input type="text" [ngModel]="numeroPavimentos()" (ngModelChange)="numeroPavimentos.set($event)"
+                     placeholder="Ex: 2 subsolos, térreo e 12 pavimentos tipo"
+                     class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Ano / Idade da Construção</label>
+              <input type="text" [ngModel]="anoConstrucao()" (ngModelChange)="anoConstrucao.set($event)"
+                     placeholder="Ex: 2012 (aprox. 14 anos)"
+                     class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Sistema Estrutural Predominante</label>
+              <select [ngModel]="sistemaEstrutural()" (ngModelChange)="sistemaEstrutural.set($event)"
+                      class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
+                @for (op of opcoesSistemasEstruturais; track op) {
+                  <option [value]="op">{{ op }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Sistema de Fundação</label>
+              <select [ngModel]="sistemaFundacao()" (ngModelChange)="sistemaFundacao.set($event)"
+                      class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
+                @for (op of opcoesSistemasFundacao; track op) {
+                  <option [value]="op">{{ op }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Observações Complementares de Campo</label>
+            <textarea [ngModel]="observacoes()" (ngModelChange)="observacoes.set($event)"
+                      rows="2"
+                      placeholder="Ex: Edificação com recuos ajardinados, fachada frontal com revestimento cerâmico e pintura texturizada nas empenas..."
+                      class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+          </div>
+
+          <!-- UPLOAD DE FOTOS DA EDIFICAÇÃO -->
+          <div class="space-y-3 pt-3 border-t border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">
+                  Fotos Gerais da Edificação (Fachada, Acessos, Envoltória)
+                </label>
+                <p class="text-[11px] text-slate-500">As fotos são analisadas pela IA para redigir o Memorial Descritivo Situacional.</p>
+              </div>
+              <span class="text-xs font-bold text-slate-500">{{ fotos().length }}/6 foto(s)</span>
+            </div>
+
+            <input type="file" accept="image/*" multiple (change)="onFotosChange($event)"
+                   class="block w-full text-xs text-slate-700 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-slate-300 rounded-xl bg-white px-2 py-1.5">
+
+            @if (fotos().length > 0) {
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+                @for (foto of fotos(); track foto.timestamp; let i = $index) {
+                  <div class="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex flex-col shadow-xs">
+                    <div class="relative aspect-video bg-slate-100">
+                      <img [src]="foto.dataUrl" alt="Foto da edificação" class="w-full h-full object-cover">
+                      <button type="button" (click)="removerFoto(i)"
+                              title="Remover foto"
+                              class="absolute top-1.5 right-1.5 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-rose-700 cursor-pointer shadow-sm">
+                        ×
+                      </button>
+                    </div>
+                    <div class="p-1.5 bg-white border-t border-slate-100">
+                      <input type="text"
+                             [value]="foto.legenda ?? ''"
+                             (input)="atualizarLegendaFoto(i, $any($event.target).value)"
+                             placeholder="Legenda (ex: Fachada Principal)"
+                             class="w-full px-2 py-1 text-[11px] border border-slate-200 rounded text-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- =================================================================== -->
+      <!-- ETAPA 2 (MODO LTIP & CAUTELAR): MAPA DE LOCALIZAÇÃO                -->
+      <!-- =================================================================== -->
+      @if (etapaAtual() === 2) {
+        <div class="space-y-4 animate-fade-in">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">
+                @if (modo === 'cautelar') {
+                  Definir Endereço e Perímetro de Vizinhança
+                } @else {
+                  Localizar Edificação no Mapa
+                }
+              </h3>
+              <p class="text-xs text-slate-500">
+                @if (modo === 'cautelar') {
+                  Ajuste o raio de influência e posicione o pino no centro da obra geradora.
+                } @else {
+                  Posicione o marcador sobre a edificação inspecionada.
+                }
+              </p>
+            </div>
+
+            <!-- BUSCA DE ENDEREÇO -->
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <input type="text" [ngModel]="endereco()" (ngModelChange)="endereco.set($event)"
+                     placeholder="Digite o endereço para buscar..."
+                     (keyup.enter)="geocodificarEndereco()"
+                     class="flex-1 sm:w-72 px-3 py-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <button type="button" (click)="geocodificarEndereco()" [disabled]="buscandoEndereco()"
+                      class="px-3 py-2 bg-slate-900 hover:bg-sky-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50">
+                @if (buscandoEndereco()) {
+                  <span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                } @else {
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                }
+                <span>Buscar</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- CONTROLE DE RAIO / PERÍMETRO (MODO CAUTELAR) -->
+          @if (modo === 'cautelar') {
+            <div class="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wide">Raio de Influência (item 6.2 Norma IBAPE)</h4>
+                  <p class="text-[11px] text-amber-700">O círculo tracejado no mapa delimita a vizinhança passível de vistoria cautelar.</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-bold text-slate-700">Raio:</label>
+                <div class="relative flex items-center">
+                  <input type="number" min="10" max="500" step="5"
+                         [ngModel]="perimetroMetros()"
+                         (ngModelChange)="onPerimetroChange($event)"
+                         class="w-24 px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                  <span class="absolute right-2 text-xs text-slate-400 font-semibold pointer-events-none">metros</span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- CONTAINER DO MAPA LEAFLET -->
+          <div class="relative border border-slate-200 rounded-2xl overflow-hidden shadow-inner bg-slate-100" style="height: 380px;">
+            <div id="mapa-leaflet-container" #mapContainer class="w-full h-full z-0"></div>
+
+            @if (lat() && lng()) {
+              <div class="absolute bottom-3 left-3 z-10 bg-slate-950/80 backdrop-blur-xs text-white px-3 py-1.5 rounded-lg text-[11px] font-mono shadow-md flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Lat: {{ lat() }} · Lng: {{ lng() }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- BOTÃO USAR MAPA DIRETO (MODO CAUTELAR) -->
+          @if (modo === 'cautelar') {
+            <div class="flex items-center justify-between pt-2">
+              <div>
+                @if (mapaBase64()) {
+                  <p class="text-xs text-emerald-700 font-bold flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    Mapa com raio de {{ perimetroMetros() }}m capturado!
+                  </p>
+                }
+              </div>
+              <button type="button" (click)="capturarMapaCautelar()" [disabled]="capturandoMapa()"
+                      class="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50">
+                @if (capturandoMapa()) {
+                  <span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                  <span>Capturando imagem...</span>
+                } @else {
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                  </svg>
+                  <span>Usar este mapa</span>
+                }
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- =================================================================== -->
+      <!-- ETAPA 3 (MODO LTIP): ANOTAR MAPA (FABRIC.JS) & MEMORIAL (GEMINI AI)-->
+      <!-- =================================================================== -->
+      @if (modo === 'ltip' && etapaAtual() === 3) {
+        <div class="space-y-6 animate-fade-in">
+
+          <!-- BLOCO 1: EDITOR GRÁFICO FABRIC.JS -->
+          <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span>🗺️ Editor de Mapa & Anotações</span>
+                </h3>
+                <p class="text-xs text-slate-500">Desenhe setas, demarque o perímetro ou adicione anotações sobre o mapa capturado.</p>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button type="button" (click)="desfazerUltimaAcao()"
+                        title="Desfazer"
+                        class="p-2 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-700 text-xs font-semibold shadow-2xs">
+                  ↩ Desfazer
+                </button>
+                <button type="button" (click)="limparAnotacoes()"
+                        title="Limpar anotações"
+                        class="p-2 bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-700 rounded-lg text-slate-700 text-xs font-semibold shadow-2xs">
+                  🗑️ Limpar
+                </button>
+                <button type="button" (click)="salvarMapaEditado()"
+                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  <span>Usar este mapa</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- TOOLBAR DE FERRAMENTAS FABRIC -->
+            <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-wrap items-center gap-2">
+              <!-- Ferramentas -->
+              <div class="flex items-center gap-1 border-r border-slate-200 pr-2">
+                <button type="button" (click)="selecionarFerramenta('select')"
+                        [class]="'p-1.5 rounded-lg text-xs font-semibold transition-colors ' + (ferramentaAtiva() === 'select' ? 'bg-sky-600 text-white' : 'text-slate-700 hover:bg-slate-100')"
+                        title="Selecionar / Mover">
+                  ↖ Mover
+                </button>
+                <button type="button" (click)="selecionarFerramenta('pen')"
+                        [class]="'p-1.5 rounded-lg text-xs font-semibold transition-colors ' + (ferramentaAtiva() === 'pen' ? 'bg-sky-600 text-white' : 'text-slate-700 hover:bg-slate-100')"
+                        title="Caneta livre">
+                  ✏️ Desenhar
+                </button>
+                <button type="button" (click)="selecionarFerramenta('arrow')"
+                        [class]="'p-1.5 rounded-lg text-xs font-semibold transition-colors ' + (ferramentaAtiva() === 'arrow' ? 'bg-sky-600 text-white' : 'text-slate-700 hover:bg-slate-100')"
+                        title="Adicionar Seta">
+                  ➔ Seta
+                </button>
+                <button type="button" (click)="selecionarFerramenta('rect')"
+                        [class]="'p-1.5 rounded-lg text-xs font-semibold transition-colors ' + (ferramentaAtiva() === 'rect' ? 'bg-sky-600 text-white' : 'text-slate-700 hover:bg-slate-100')"
+                        title="Retângulo de Lote">
+                  ⬜ Borda
+                </button>
+                <button type="button" (click)="selecionarFerramenta('box_fill')"
+                        [class]="'p-1.5 rounded-lg text-xs font-semibold transition-colors ' + (ferramentaAtiva() === 'box_fill' ? 'bg-sky-600 text-white' : 'text-slate-700 hover:bg-slate-100')"
+                        title="Área Hachurada / Preenchida">
+                  ⬛ Área
+                </button>
+                <button type="button" (click)="selecionarFerramenta('text')"
+                        [class]="'p-1.5 rounded-lg text-xs font-semibold transition-colors ' + (ferramentaAtiva() === 'text' ? 'bg-sky-600 text-white' : 'text-slate-700 hover:bg-slate-100')"
+                        title="Adicionar Texto">
+                  📝 Texto
+                </button>
+              </div>
+
+              <!-- Cores -->
+              <div class="flex items-center gap-1.5 border-r border-slate-200 pr-2">
+                @for (c of CORES_PALETA; track c.hex) {
+                  <button type="button" (click)="selecionarCor(c.hex)"
+                          [title]="c.label"
+                          [style.background-color]="c.hex"
+                          [class]="'w-5 h-5 rounded-full border transition-transform ' + (corAtiva() === c.hex ? 'scale-125 border-slate-900 ring-2 ring-sky-500' : 'border-slate-300')">
+                  </button>
+                }
+              </div>
+
+              <!-- Espessura -->
+              <div class="flex items-center gap-1 border-r border-slate-200 pr-2">
+                <button type="button" (click)="selecionarEspessura(2)" [class]="'px-2 py-1 rounded text-xs ' + (espessuraAtiva() === 2 ? 'bg-slate-200 font-bold' : 'text-slate-600')">2px</button>
+                <button type="button" (click)="selecionarEspessura(4)" [class]="'px-2 py-1 rounded text-xs ' + (espessuraAtiva() === 4 ? 'bg-slate-200 font-bold' : 'text-slate-600')">4px</button>
+                <button type="button" (click)="selecionarEspessura(6)" [class]="'px-2 py-1 rounded text-xs ' + (espessuraAtiva() === 6 ? 'bg-slate-200 font-bold' : 'text-slate-600')">6px</button>
+              </div>
+
+              <!-- Excluir Selecionado -->
+              @if (objetoSelecionado()) {
+                <button type="button" (click)="excluirObjetoSelecionado()"
+                        class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-xs font-bold transition-colors">
+                  Excluir Seleção
+                </button>
+              }
+            </div>
+
+            <!-- CANVAS FABRIC -->
+            <div class="flex justify-center overflow-x-auto bg-slate-900/5 p-2 rounded-xl border border-slate-200">
+              <canvas id="editor-fabric-canvas" #canvasElement class="rounded-lg shadow-sm border border-slate-200"></canvas>
+            </div>
+
+            @if (mapaBase64()) {
+              <div class="flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl">
+                <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                <span class="font-bold">Mapa gravado com carimbo técnico e pronto para o laudo!</span>
+              </div>
+            }
+          </div>
+
+          <!-- BLOCO 2: MEMORIAL DESCRITIVO COM GEMINI IA -->
+          <div class="border border-slate-200 rounded-2xl p-5 bg-white space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Memorial Descritivo da Edificação (Seção 4)</h3>
+                  <p class="text-xs text-slate-500">Gere automaticamente a descrição técnica com IA a partir dos dados e fotos da etapa 1.</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                @if (memorialGerado()) {
+                  <button type="button" (click)="copiarMemorial()"
+                          class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors">
+                    @if (memorialCopiado()) {
+                      <span>✓ Copiado</span>
+                    } @else {
+                      <span>📋 Copiar</span>
+                    }
+                  </button>
+                }
+
+                <button type="button" (click)="gerarMemorialComIA()" [disabled]="gerandoMemorial()"
+                        class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50">
+                  @if (gerandoMemorial()) {
+                    <span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                    <span>Analisando com IA...</span>
+                  } @else {
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    <span>{{ memorialGerado() ? 'Regenerar Memorial' : 'Gerar Memorial com IA' }}</span>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <textarea [ngModel]="memorialGerado()" (ngModelChange)="memorialGerado.set($event)"
+                        rows="6"
+                        placeholder="O texto do Memorial Descritivo gerado pela IA aparecerá aqui para sua revisão técnica e edição livre..."
+                        class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm leading-relaxed text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+            </div>
+          </div>
+
+        </div>
+      }
+
+    </div>
+
+    <!-- RODAPÉ DO MODAL (AÇÕES) -->
+    <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-shrink-0">
+      <button type="button" (click)="fechar.emit()"
+              class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs sm:text-sm transition-colors">
+        Cancelar
+      </button>
+
+      <div class="flex items-center gap-2">
+        @if (modo === 'ltip') {
+          @if (etapaAtual() === 1) {
+            <button type="button" (click)="irParaEtapa(2)"
+                    class="px-5 py-2.5 bg-slate-900 hover:bg-sky-600 text-white font-bold rounded-xl text-xs sm:text-sm transition-colors shadow-md flex items-center gap-1.5">
+              <span>Avançar para o Mapa</span>
+              <span>›</span>
+            </button>
+          } @else if (etapaAtual() === 2) {
+            <button type="button" (click)="irParaEtapa(1)"
+                    class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs sm:text-sm transition-colors">
+              ‹ Voltar
+            </button>
+            <button type="button" (click)="irParaEtapa(3)"
+                    class="px-5 py-2.5 bg-slate-900 hover:bg-sky-600 text-white font-bold rounded-xl text-xs sm:text-sm transition-colors shadow-md flex items-center gap-1.5">
+              <span>Capturar e Anotar Mapa</span>
+              <span>›</span>
+            </button>
+          } @else {
+            <button type="button" (click)="irParaEtapa(2)"
+                    class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs sm:text-sm transition-colors">
+              ‹ Voltar ao Mapa
+            </button>
+            <button type="button" (click)="concluir()"
+                    class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm transition-colors shadow-md flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              <span>Concluir e Aplicar no Laudo</span>
+            </button>
+          }
+        } @else {
+          <!-- MODO CAUTELAR -->
+          <button type="button" (click)="concluir()"
+                  class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs sm:text-sm transition-colors shadow-md flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            <span>Concluir e Aplicar na Vistoria</span>
+          </button>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

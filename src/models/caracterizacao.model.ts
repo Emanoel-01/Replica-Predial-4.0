@@ -9,6 +9,8 @@ export interface DadosCaracterizacao {
   endereco: string;
   latitude?: number;
   longitude?: number;
+  lat?: number;
+  lng?: number;
   perimetroMetros?: number; // usado especificamente pelo modo Cautelar
 
   // Campos exclusivos do modo LTIP completo (opcionais no modo Cautelar)
@@ -16,9 +18,11 @@ export interface DadosCaracterizacao {
   tipoUso?: string;
   areaConstruida?: string;
   numeroPavimentos?: string;
+  anoConstrucao?: string;
   anoConstucao?: string;
   sistemaEstrutural?: string;
   sistemaFundacao?: string;
+  observacoes?: string;
   observacoesAdicionais?: string;
 
   // Compartilhado pelos dois: fotos/projetos do canteiro ou da edificação

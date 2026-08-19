@@ -1693,6 +1693,28 @@ export class DataService {
     return this.normasPorSistema[systemTitle]?.tipologias?.[tipologiaTitle] ?? [];
   }
 
+  getTipologiasEstruturais(): string[] {
+    const tips = this.appData?.estrutura?.systems?.estruturais?.tipologias;
+    if (Array.isArray(tips) && tips.length > 0) {
+      return tips.map(t => t.title);
+    }
+    if (this.normasPorSistema?.['Sistemas Estruturais']?.tipologias) {
+      return Object.keys(this.normasPorSistema['Sistemas Estruturais'].tipologias);
+    }
+    return [];
+  }
+
+  getTipologiasFundacoes(): string[] {
+    const tips = this.appData?.estrutura?.systems?.fundacoes?.tipologias;
+    if (Array.isArray(tips) && tips.length > 0) {
+      return tips.map(t => t.title);
+    }
+    if (this.normasPorSistema?.['Sistemas de Fundações']?.tipologias) {
+      return Object.keys(this.normasPorSistema['Sistemas de Fundações'].tipologias);
+    }
+    return [];
+  }
+
   getData(): any {
     return this.appData;
   }

@@ -8,6 +8,8 @@ import { VistoriaDbService, Evidencia } from '../../services/vistoria-db.service
 import { CameraService } from '../../services/camera.service';
 import { OrcamentoService, Composicao } from '../../services/orcamento.service';
 import { SyncService } from '../../services/sync.service';
+import { GeradorCaracterizacaoComponent } from '../gerador-caracterizacao/gerador-caracterizacao.component';
+import { DadosCaracterizacao } from '../../models/caracterizacao.model';
 
 export interface FichaDano {
   id: string;
@@ -56,6 +58,7 @@ export interface ChecklistItem {
 export interface FotoGeral {
   dataUrl: string;
   timestamp: string;
+  legenda?: string;
 }
 
 export interface Anexo {
@@ -233,7 +236,7 @@ const SEED_NORTEADORES_RAW: { grupo: string; descricao: string }[] = [
   selector: 'app-checklist-inspecao',
   templateUrl: './checklist-inspecao.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, GeradorCaracterizacaoComponent],
 })
 export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   private dataService = inject(DataService);
@@ -453,6 +456,50 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   novoNivelInspecaoMetodologia = signal('');
   novoNivelInspecaoJustificativa = signal('');
   novoExibirGlossario = signal<boolean>(true);
+
+  isGeradorCaracterizacaoOpen = signal(false);
+
+  abrirGeradorCaracterizacao(): void {
+    this.isGeradorCaracterizacaoOpen.set(true);
+  }
+
+  dadosIniciaisParaGerador(): Partial<DadosCaracterizacao> {
+    return {
+      denominacao: this.novoBuildingName(),
+      endereco: this.novoAddress(),
+      tipoUso: this.novoTipoUso(),
+      areaConstruida: this.novaAreaConstruida(),
+      numeroPavimentos: this.novoNumeroPavimentos(),
+      anoConstrucao: this.novaIdadeEdificacao(),
+      sistemaEstrutural: this.novoSistemaEstruturalPredominante(),
+      sistemaFundacao: this.novoSistemaFundacao(),
+      memorialDescritivo: this.novoMemoriaDescritivo(),
+      mapaBase64: this.novaMapaImagemBase64() ?? undefined,
+      fotos: this.novoFotosGerais(),
+      lat: this.novoLat() ?? undefined,
+      lng: this.novoLng() ?? undefined
+    };
+  }
+
+  aplicarDadosDoGerador(dados: DadosCaracterizacao): void {
+    if (dados.denominacao) this.novoBuildingName.set(dados.denominacao);
+    if (dados.endereco) this.novoAddress.set(dados.endereco);
+    if (dados.tipoUso) this.novoTipoUso.set(dados.tipoUso);
+    if (dados.areaConstruida) this.novaAreaConstruida.set(dados.areaConstruida);
+    if (dados.numeroPavimentos) this.novoNumeroPavimentos.set(dados.numeroPavimentos);
+    if (dados.anoConstrucao) this.novaIdadeEdificacao.set(dados.anoConstrucao);
+    if (dados.sistemaEstrutural) this.novoSistemaEstruturalPredominante.set(dados.sistemaEstrutural);
+    if (dados.sistemaFundacao) this.novoSistemaFundacao.set(dados.sistemaFundacao);
+    if (dados.memorialDescritivo) this.novoMemoriaDescritivo.set(dados.memorialDescritivo);
+    if (dados.mapaBase64) this.novaMapaImagemBase64.set(dados.mapaBase64);
+    if (dados.lat !== undefined && dados.lat !== null) this.novoLat.set(dados.lat);
+    if (dados.lng !== undefined && dados.lng !== null) this.novoLng.set(dados.lng);
+    if (dados.fotos && dados.fotos.length > 0) {
+      this.novoFotosGerais.set([...dados.fotos]);
+    }
+    this.isGeradorCaracterizacaoOpen.set(false);
+    this.toastService.show('Dados e mapa da caracterização aplicados com sucesso!', 'success');
+  }
 
   private resolverOcorrenciaEmEdicao(item: ChecklistItem): FichaDano | null {
     if (this.itemDaFichaEmEdicaoId() === item.id && this.fichaEmEdicaoId()) {

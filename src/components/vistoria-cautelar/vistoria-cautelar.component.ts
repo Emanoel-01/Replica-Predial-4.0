@@ -4,7 +4,8 @@ import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
 import { GeminiService } from '../../services/gemini.service';
 import { SyncService } from '../../services/sync.service';
-import { FotoObra } from '../../models/caracterizacao.model';
+import { FotoObra, DadosCaracterizacao } from '../../models/caracterizacao.model';
+import { GeradorCaracterizacaoComponent } from '../gerador-caracterizacao/gerador-caracterizacao.component';
 
 // ═══════════════════════════════════════════════════════════════════
 // VISTORIA CAUTELAR DE VIZINHANÇA — MODELO DE DADOS
@@ -237,7 +238,7 @@ export interface LaudoCautelarEmitido {
   selector: 'app-vistoria-cautelar',
   templateUrl: './vistoria-cautelar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [FormsModule, GeradorCaracterizacaoComponent],
 })
 export class VistoriaCautelarComponent implements OnInit {
   readonly ELEMENTOS_CONSTRUTIVOS = ELEMENTOS_CONSTRUTIVOS;
@@ -318,6 +319,38 @@ export class VistoriaCautelarComponent implements OnInit {
   novaAreaRaio = signal('');
   novaAreaMemorialJustificativo = signal('');
   novaAreaEstudosPrevios = signal('');
+  novaAreaCroqui = signal<string | null>(null);
+
+  isGeradorCaracterizacaoOpen = signal(false);
+
+  abrirGeradorCaracterizacao(): void {
+    this.isGeradorCaracterizacaoOpen.set(true);
+  }
+
+  dadosIniciaisParaGerador(): Partial<DadosCaracterizacao> {
+    const raioNum = parseFloat(this.novaAreaRaio().replace(/[^\d.]/g, ''));
+    return {
+      denominacao: this.novaObraNome(),
+      endereco: this.novaObraEndereco(),
+      sistemaEstrutural: this.novaObraEstrutura(),
+      sistemaFundacao: this.novaObraFundacao(),
+      perimetroMetros: !isNaN(raioNum) && raioNum > 0 ? raioNum : 50,
+      mapaBase64: this.novaAreaCroqui() ?? undefined,
+      fotos: this.novaObraFotos(),
+    };
+  }
+
+  aplicarDadosDoGerador(dados: DadosCaracterizacao): void {
+    if (dados.endereco) this.novaObraEndereco.set(dados.endereco);
+    if (dados.denominacao && !this.novaObraNome()) this.novaObraNome.set(dados.denominacao);
+    if (dados.perimetroMetros) this.novaAreaRaio.set(`${dados.perimetroMetros}m`);
+    if (dados.mapaBase64) this.novaAreaCroqui.set(dados.mapaBase64);
+    if (dados.fotos && dados.fotos.length > 0) {
+      this.novaObraFotos.set([...dados.fotos]);
+    }
+    this.isGeradorCaracterizacaoOpen.set(false);
+    this.toastService.show('Localização e mapa da Obra Geradora aplicados com sucesso!', 'success');
+  }
 
   // ─── Canteiro de obras (fotos) ───
   novoCanteiroFotosExternas = signal<string[]>([]);
@@ -669,6 +702,7 @@ export class VistoriaCautelarComponent implements OnInit {
     this.novaAreaRaio.set(vistoria.areaInfluencia?.raio || '');
     this.novaAreaMemorialJustificativo.set(vistoria.areaInfluencia?.memorialJustificativo || '');
     this.novaAreaEstudosPrevios.set(vistoria.areaInfluencia?.estudosPreviosConsiderados || '');
+    this.novaAreaCroqui.set(vistoria.areaInfluencia?.croqui ?? null);
 
     this.novoCanteiroFotosExternas.set(vistoria.canteiroObras?.fotosExternas || []);
     this.novoCanteiroFotosInternas.set(vistoria.canteiroObras?.fotosInternas || []);
@@ -698,6 +732,7 @@ export class VistoriaCautelarComponent implements OnInit {
     this.novaAreaRaio.set('');
     this.novaAreaMemorialJustificativo.set('');
     this.novaAreaEstudosPrevios.set('');
+    this.novaAreaCroqui.set(null);
     this.novoCanteiroFotosExternas.set([]);
     this.novoCanteiroFotosInternas.set([]);
     this.novoMarcoTemporal.set('ASSINATURA_DIGITAL');
@@ -748,6 +783,7 @@ export class VistoriaCautelarComponent implements OnInit {
         },
         momentoVistoria: this.novoMomentoVistoria(),
         areaInfluencia: {
+          croqui: this.novaAreaCroqui() || undefined,
           raio: this.novaAreaRaio() || undefined,
           memorialJustificativo: this.novaAreaMemorialJustificativo() || undefined,
           estudosPreviosConsiderados: this.novaAreaEstudosPrevios() || undefined,
@@ -789,6 +825,7 @@ export class VistoriaCautelarComponent implements OnInit {
       },
       momentoVistoria: this.novoMomentoVistoria(),
       areaInfluencia: {
+        croqui: this.novaAreaCroqui() || undefined,
         raio: this.novaAreaRaio() || undefined,
         memorialJustificativo: this.novaAreaMemorialJustificativo() || undefined,
         estudosPreviosConsiderados: this.novaAreaEstudosPrevios() || undefined,
