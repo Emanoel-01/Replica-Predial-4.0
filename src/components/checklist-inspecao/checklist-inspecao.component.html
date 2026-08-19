@@ -10,6 +10,7 @@
         </div>
         <div class="flex items-center gap-2">
           <button type="button"
+                  data-tour-id="checkup-btn-sincronizar"
                   (click)="sincronizarTudo()"
                   [disabled]="isSincronizandoGeral()"
                   class="flex items-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold px-3.5 py-2.5 rounded-lg text-sm transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
@@ -22,19 +23,20 @@
               <span>Sincronizar</span>
             }
           </button>
-          <button (click)="abrirCriacao()" class="flex items-center gap-2 bg-slate-900 hover:bg-sky-600 text-white font-bold px-4 py-2.5 rounded-lg text-sm transition-all shadow-sm active:scale-95 cursor-pointer">
+          <button (click)="abrirCriacao()" data-tour-id="checkup-btn-nova-vistoria" class="flex items-center gap-2 bg-slate-900 hover:bg-sky-600 text-white font-bold px-4 py-2.5 rounded-lg text-sm transition-all shadow-sm active:scale-95 cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span>Nova Vistoria</span>
           </button>
         </div>
       </div>
 
-      @if (carregandoVistorias()) {
-        <div class="text-center py-16 px-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center space-y-3">
-          <div class="w-8 h-8 border-3 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
-          <p class="text-slate-600 text-sm font-medium">Carregando vistorias de campo do banco de dados local...</p>
-        </div>
-      } @else if (vistorias().length === 0) {
+      <div data-tour-id="checkup-lista-vistorias">
+        @if (carregandoVistorias()) {
+          <div class="text-center py-16 px-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center space-y-3">
+            <div class="w-8 h-8 border-3 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-slate-600 text-sm font-medium">Carregando vistorias de campo do banco de dados local...</p>
+          </div>
+        } @else if (vistorias().length === 0) {
         <div class="text-center py-12 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
           <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sky-50 text-sky-700 mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>
@@ -134,6 +136,7 @@
           }
         </div>
       }
+      </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-lg p-6 border border-slate-100 mt-6">
@@ -430,7 +433,7 @@
       </div>
 
       <!-- Form basico -->
-      <div class="grid sm:grid-cols-2 gap-6 p-5 border border-slate-200 rounded-xl bg-slate-50/50">
+      <div data-tour-id="checkup-dados-basicos" class="grid sm:grid-cols-2 gap-6 p-5 border border-slate-200 rounded-xl bg-slate-50/50">
         <div class="space-y-1">
           <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">Nome do Edifício *</label>
           <input [value]="novoBuildingName()" 
@@ -633,6 +636,7 @@
               <span class="normal-case font-normal text-slate-400 ml-1">(opcional — Seção 4 do LTIP)</span>
             </label>
             <button type="button" (click)="abrirGeradorCaracterizacao()"
+                    data-tour-id="checkup-gerador-caracterizacao"
                     class="inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-800 hover:underline cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
@@ -646,7 +650,7 @@
                     placeholder="Descreve o imóvel: tipo de uso, sistema construtivo, estado de conservação aparente, localização e acessos..."
                     class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"></textarea>
         </div>
-        <div class="sm:col-span-2 space-y-2">
+        <div data-tour-id="checkup-fotos-gerais" class="sm:col-span-2 space-y-2">
           <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">
             Fotos Gerais da Edificação
             <span class="normal-case font-normal text-slate-400 ml-1">(opcional — fachada, entorno, cobertura — máx. 4 fotos — Seção 4)</span>
@@ -711,7 +715,7 @@
       </div>
 
       <!-- Escolha das tipologias de sistemas -->
-      <div class="space-y-4">
+      <div data-tour-id="checkup-selecao-sistemas" class="space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h3 class="font-bold text-slate-800 text-base">Selecione os Sistemas & Tipologias que Serão Inspecionados *</h3>
           <div class="flex gap-2 w-full sm:w-auto">
@@ -768,7 +772,7 @@
           Cancelar
         </button>
         <div class="flex-1 flex flex-col gap-2">
-          <button (click)="criarVistoria()" class="w-full bg-slate-900 hover:bg-sky-600 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md active:scale-95">
+          <button (click)="criarVistoria()" data-tour-id="checkup-btn-gerar-prancheta" class="w-full bg-slate-900 hover:bg-sky-600 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md active:scale-95">
             Gerar Prancheta e Iniciar Vistoria
           </button>
           @if (novoLat()) {

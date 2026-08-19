@@ -27,11 +27,12 @@
         <nav class="flex flex-col space-y-1.5">
           @for (item of navItemsVisiveis(); track item.id) {
             <button 
+              [attr.data-tour-id]="'nav-' + item.id"
               (click)="setActiveView(item.id)" 
-              [disabled]="!isLoggedIn() && item.id !== 'visao-geral'"
+              [disabled]="!isLoggedIn() && !tourService.isTourAtivo() && item.id !== 'visao-geral'"
               [class]="'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ' + 
                        (activeView() === item.id ? 'bg-sky-600 text-white shadow-md shadow-sky-600/10' : 'text-slate-300 hover:bg-white/5 hover:text-white') + 
-                       (!isLoggedIn() && item.id !== 'visao-geral' ? ' opacity-40 cursor-not-allowed' : '')">
+                       (!isLoggedIn() && !tourService.isTourAtivo() && item.id !== 'visao-geral' ? ' opacity-40 cursor-not-allowed' : ' cursor-pointer')">
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" /></svg>
               <span>{{ item.label }}</span>
             </button>
@@ -54,9 +55,7 @@
         <!-- Fazer Tour -->
         <button 
           (click)="startTour()"
-          [disabled]="!isLoggedIn()"
-          [class]="'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 ' + 
-                   (!isLoggedIn() ? 'opacity-40 cursor-not-allowed' : '')">
+          class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer">
           <!-- Icone Bússola/Localização -->
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
           <span>Fazer Tour</span>
@@ -155,7 +154,7 @@
                   }
                 </div>
 
-                <button (click)="openProfile()" class="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-4 py-2 hover:bg-slate-50 transition-colors">
+                <button (click)="openProfile()" data-tour-id="btn-perfil" class="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-4 py-2 hover:bg-slate-50 transition-colors cursor-pointer">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2.73l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2.73l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   <span>Perfil</span>
                 </button>
@@ -190,64 +189,8 @@
 <app-user-profile-modal [isOpen]="isProfileModalOpen()" [profileData]="userProfile()" (closeModal)="isProfileModalOpen.set(false)" (profileUpdate)="onProfileUpdate($event)" (logout)="handleLogout()" />
 <app-toast />
 
-<!-- TOUR GUIDADO INTEGRADO -->
-@if (isTourActive()) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-fade-in">
-    <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-sky-100 flex flex-col justify-between">
-      
-      <!-- Top banner -->
-      <div class="bg-gradient-to-r from-slate-900 to-sky-950 text-white p-6 relative">
-        <span class="bg-sky-500 text-slate-950 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider block w-max">Tour do Ecossistema</span>
-        <h4 class="text-xl font-black mt-2">
-          @if (tourStep() === 1) { 🚀 Passo 1 de 4: Visão Geral }
-          @else if (tourStep() === 2) { 🏗️ Passo 2 de 4: Sistemas de Campo }
-          @else if (tourStep() === 3) { 📋 Passo 3 de 4: Check-up }
-          @else if (tourStep() === 4) { 🤖 Passo 4 de 4: Assistentes com IA }
-        </h4>
-        <button (click)="isTourActive.set(false)" class="absolute top-6 right-6 text-slate-300 hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-        </button>
-      </div>
-
-      <!-- Content -->
-      <div class="p-6 space-y-4">
-        @if (tourStep() === 1) {
-          <p class="text-slate-600 text-sm leading-relaxed">
-            Bem-vindo ao <strong>Predial 4.0</strong>! Esta é a página inicial da AmorimTech. Aqui você tem uma visão geral, pode assinar planos de teste, baixar eBooks de engenharia diagnóstica e visualizar o gráfico comparativo de estratégias de manutenção.
-          </p>
-        } @else if (tourStep() === 2) {
-          <p class="text-slate-600 text-sm leading-relaxed">
-            Explore os sistemas do edifício na barra lateral: <strong>Estrutura &amp; Envoltória</strong>, <strong>Instalações</strong>, <strong>Segurança &amp; Transporte</strong> e <strong>Áreas Externas</strong>. Cada módulo traz tipologias técnicas e catálogo completo de patologias comuns.
-          </p>
-        } @else if (tourStep() === 3) {
-          <p class="text-slate-600 text-sm leading-relaxed">
-            Abra o <strong>Check-up</strong> para iniciar uma inspeção predial no edifício em tempo real. Registre conformidades, fotografias com GPS e anotações técnicas — salvas localmente para uso sem internet.
-          </p>
-        } @else if (tourStep() === 4) {
-          <p class="text-slate-600 text-sm leading-relaxed">
-            No canto inferior direito, você tem acesso às nossas <strong>Ferramentas de IA Ativas</strong>: Diagnóstico de patologias por fotos de campo (IA), Assistente de vistorias por chat, Diagnóstico Técnico guiado e o Cronograma Preventivo anual!
-          </p>
-        }
-      </div>
-
-      <!-- Footer Buttons -->
-      <div class="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-        <button 
-          (click)="prevTourStep()" 
-          [disabled]="tourStep() === 1"
-          class="px-4 py-2 border border-slate-200 hover:bg-slate-100 disabled:opacity-40 text-slate-700 font-bold rounded-xl text-xs sm:text-sm cursor-pointer transition-colors duration-200">
-          Anterior
-        </button>
-        <button 
-          (click)="nextTourStep()" 
-          class="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs sm:text-sm cursor-pointer transition-colors duration-200 shadow-md">
-          {{ tourStep() === 4 ? 'Concluir' : 'Próximo' }}
-        </button>
-      </div>
-
-    </div>
-  </div>
-}
+<!-- TOUR GUIDADO REAL COM SPOTLIGHT -->
+<app-tour-overlay (tourEnded)="onTourEnded()" />
 
 <!-- MODAL ADMIN / PREFERÊNCIAS DO SISTEMA -->
 @if (isAdminModalOpen()) {

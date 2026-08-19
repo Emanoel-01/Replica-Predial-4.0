@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, effect } from '@angular/core';
 
 // Component Imports
 import { VisaoGeralComponent } from './components/visao-geral/visao-geral.component';
@@ -11,10 +11,13 @@ import { ChecklistInspecaoComponent } from './components/checklist-inspecao/chec
 import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
 import { OrcamentoRoadmapComponent } from './components/orcamento-roadmap/orcamento-roadmap.component';
 import { VistoriaCautelarComponent } from './components/vistoria-cautelar/vistoria-cautelar.component';
+import { TourOverlayComponent } from './components/tour-overlay/tour-overlay.component';
 import { NotificationService } from './services/notification.service';
 import { VistoriaDbService } from './services/vistoria-db.service';
 import { SupabaseService } from './services/supabase.service';
 import { SyncService } from './services/sync.service';
+import { TourService } from './services/tour.service';
+import { TourStep } from './models/tour.model';
 import { Vistoria } from './components/checklist-inspecao/checklist-inspecao.component';
 
 @Component({
@@ -45,6 +48,7 @@ import { Vistoria } from './components/checklist-inspecao/checklist-inspecao.com
     VistoriaCautelarComponent,
     AdminPanelComponent,
     OrcamentoRoadmapComponent,
+    TourOverlayComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -66,9 +70,7 @@ export class AppComponent implements OnInit {
   userName = signal('');
   userProfile = signal<UserProfile | null>(null);
 
-  // New signals for Interactive Tour and Admin Panel
-  isTourActive = signal(false);
-  tourStep = signal(1);
+  // Signals for Admin Panel
   isAdminModalOpen = signal(false);
   simulateOffline = signal(true);
   advancedSyncMode = signal(false);
@@ -77,6 +79,7 @@ export class AppComponent implements OnInit {
   isLoggedIn = signal(false);
   private toastService = inject(ToastService);
   public notificationService = inject(NotificationService);
+  public tourService = inject(TourService);
   private supabaseService = inject(SupabaseService);
   private syncService = inject(SyncService);
 
@@ -99,36 +102,30 @@ export class AppComponent implements OnInit {
   });
   
   constructor() {
-    // Perfil agora é carregado do Supabase (tabela `profissionais`) no ngOnInit,
-    // vinculado ao usuário autenticado. Não há mais leitura de localStorage
-    // nem perfil de exemplo hardcoded aqui.
+    // Sincroniza a visualização ativa conforme o passo atual do tour
+    effect(() => {
+      const isAtivo = this.tourService.isTourAtivo();
+      const passo = this.tourService.passoAtual();
+      if (isAtivo && passo && passo.view) {
+        if (['visao-geral', 'checklist', 'cautelar', 'orcamento', 'admin'].includes(passo.view)) {
+          if (this.activeView() !== passo.view) {
+            this.activeView.set(passo.view);
+          }
+        }
+      }
+    });
   }
 
   startTour(): void {
-    if (!this.isLoggedIn()) {
-      this.showLoginRequiredToast();
-      return;
-    }
+    this.tourService.iniciar();
     this.activeView.set('visao-geral');
-    this.tourStep.set(1);
-    this.isTourActive.set(true);
     this.isMenuOpen.set(false);
-    this.toastService.show('Tour do Ecossistema iniciado!', 'success');
+    this.toastService.show('Tour do Ecossistema iniciado!', 'info');
   }
 
-  nextTourStep(): void {
-    if (this.tourStep() < 4) {
-      this.tourStep.update(s => s + 1);
-    } else {
-      this.isTourActive.set(false);
-      this.toastService.show('Tour concluído! Explore livremente.', 'success');
-    }
-  }
-
-  prevTourStep(): void {
-    if (this.tourStep() > 1) {
-      this.tourStep.update(s => s - 1);
-    }
+  onTourEnded(): void {
+    this.activeView.set('visao-geral');
+    this.toastService.show('Tour concluído! Explore livremente o ecossistema.', 'success');
   }
 
   openAdminModal(): void {
@@ -147,12 +144,152 @@ export class AppComponent implements OnInit {
   }
 
   setActiveView(view: string): void {
-    if (!this.isLoggedIn() && view !== 'visao-geral') {
+    const tourAtivo = this.tourService.isTourAtivo();
+    if (!this.isLoggedIn() && !tourAtivo && view !== 'visao-geral') {
       this.showLoginRequiredToast();
       return;
     }
     this.activeView.set(view);
     this.isMenuOpen.set(false);
+  }
+
+  private montarPassosVisaoGeralESidebar(): TourStep[] {
+    return [
+      {
+        id: 'boas-vindas',
+        view: 'visao-geral',
+        targetSelector: null,
+        titulo: '👋 Bem-vindo ao Predial 4.0',
+        descricao: 'Este é o ecossistema completo de engenharia diagnóstica da AmorimTech. Vamos te mostrar as principais ferramentas — você pode pular a qualquer momento.',
+        posicaoBalao: 'center',
+      },
+      {
+        id: 'sidebar-visao-geral',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="nav-visao-geral"]',
+        titulo: 'Visão Geral',
+        descricao: 'Sua página inicial. Aqui você acompanha suas vistorias recentes e conhece as funcionalidades do ecossistema.',
+      },
+      {
+        id: 'sidebar-checkup',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="nav-checklist"]',
+        titulo: 'Check-up',
+        descricao: 'Aqui você realiza a Inspeção Predial completa — o Laudo Técnico de Inspeção Predial (LTIP), conforme a ABNT NBR 16747:2020.',
+      },
+      {
+        id: 'sidebar-cautelar',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="nav-cautelar"]',
+        titulo: 'Cautelar',
+        descricao: 'A Vistoria Cautelar de Vizinhança, para registrar o estado de imóveis vizinhos antes do início de uma obra.',
+      },
+      {
+        id: 'sidebar-orcamento',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="nav-orcamento"]',
+        titulo: 'Orçamento',
+        descricao: 'Módulo de Orçamento e Planejamento — em desenvolvimento, com o roadmap do que está por vir.',
+      },
+      {
+        id: 'sidebar-perfil',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="btn-perfil"]',
+        titulo: 'Seu Perfil',
+        descricao: 'Complete seus dados profissionais (nome, CAU/CREA, empresa) aqui — eles aparecem automaticamente em todos os laudos que você emitir.',
+      },
+      {
+        id: 'visao-geral-vistorias-recentes',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="secao-vistorias-recentes"]',
+        titulo: 'Suas Vistorias',
+        descricao: 'Acompanhe aqui as vistorias que você já iniciou, continue de onde parou ou acesse os laudos já emitidos.',
+      },
+      {
+        id: 'visao-geral-funcionalidades',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="secao-funcionalidades"]',
+        titulo: 'O que o Predial 4.0 entrega',
+        descricao: 'Conheça as funcionalidades reais do ecossistema: laudos completos, vistoria cautelar, inteligência artificial e sincronização em nuvem.',
+      },
+      {
+        id: 'visao-geral-comunidade',
+        view: 'visao-geral',
+        targetSelector: '[data-tour-id="card-comunidade"]',
+        titulo: 'Comunidade Business 4.0',
+        descricao: 'Conecte-se com outros engenheiros, gestores prediais e peritos na nossa comunidade exclusiva.',
+      },
+    ];
+  }
+
+  private montarPassosCheckup(): TourStep[] {
+    return [
+      {
+        id: 'checkup-intro',
+        view: 'checklist',
+        targetSelector: null,
+        titulo: '📋 Check-up: Laudo Técnico de Inspeção Predial',
+        descricao: 'Este é o coração do Predial 4.0. Aqui você realiza vistorias completas seguindo a ABNT NBR 16747:2020, com diagnóstico por IA e geração de laudos técnicos.',
+        posicaoBalao: 'center',
+      },
+      {
+        id: 'checkup-sincronizar',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="checkup-btn-sincronizar"]',
+        titulo: 'Sincronização em Nuvem',
+        descricao: 'O app funciona 100% offline em campo. Quando tiver internet, sincronize com a nuvem para salvar ou baixar suas vistorias e fotos no Supabase.',
+      },
+      {
+        id: 'checkup-lista-vistorias',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="checkup-lista-vistorias"]',
+        titulo: 'Vistorias em Andamento',
+        descricao: 'Aqui ficam salvas as suas vistorias de campo. Você pode retomar a inspeção a qualquer momento, editar dados ou sincronizar individualmente.',
+      },
+      {
+        id: 'checkup-nova-vistoria',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="checkup-btn-nova-vistoria"]',
+        titulo: 'Criar Nova Vistoria',
+        descricao: 'Clique aqui para iniciar uma nova inspeção predial. Vamos abrir o formulário para você ver como é fácil configurar.',
+        acaoAoEntrar: 'abrir-criacao-vistoria',
+      },
+      {
+        id: 'checkup-dados-basicos',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="checkup-dados-basicos"]',
+        titulo: 'Dados Básicos e Localização',
+        descricao: 'Identifique o edifício, endereço e dados do contratante. O GPS é capturado automaticamente para garantir a veracidade do laudo.',
+      },
+      {
+        id: 'checkup-gerador-caracterizacao',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="checkup-gerador-caracterizacao"]',
+        titulo: 'Caracterização do Imóvel & IA',
+        descricao: 'Economize tempo gerando o memorial descritivo com IA, croqui e mapa interativo de localização da edificação.',
+      },
+      {
+        id: 'checkup-fotos-gerais',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="checkup-fotos-gerais"]',
+        titulo: 'Fotos Gerais da Edificação',
+        descricao: 'Adicione fotos da fachada, cobertura e entorno. Elas são comprimidas automaticamente e compõem a Seção 4 do seu laudo.',
+      },
+      {
+        id: 'checkup-selecao-sistemas',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="checkup-selecao-sistemas"]',
+        titulo: 'Sistemas e Tipologias',
+        descricao: 'Selecione quais sistemas construtivos serão inspecionados: estrutura, vedações, impermeabilização, instalações elétricas, hidrossanitárias e mais.',
+      },
+      {
+        id: 'checkup-gerar-prancheta',
+        view: 'checklist',
+        targetSelector: '[data-tour-id="checkup-btn-gerar-prancheta"]',
+        titulo: 'Prancheta Digital de Campo',
+        descricao: 'Ao clicar aqui, o sistema gera a prancheta de campo personalizada com todas as patologias catalogadas para sua vistoria no local.',
+      },
+    ];
   }
 
   private async carregarPerfilDoSupabase(userId: string): Promise<void> {
@@ -361,5 +498,11 @@ export class AppComponent implements OnInit {
 
     this.notificationService.gerarLembretesLocais(this.todasVistorias(), this.userProfile());
     void this.notificationService.checarAvisosExternos();
+
+    // Inicializar passos do Tour Guiado
+    this.tourService.registrarPassos([
+      ...this.montarPassosVisaoGeralESidebar(),
+      ...this.montarPassosCheckup()
+    ]);
   }
 }

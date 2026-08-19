@@ -1,7 +1,8 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, effect, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService, NormaRef } from '../../services/data.service';
 import { ToastService } from '../../services/toast.service';
+import { TourService } from '../../services/tour.service';
 import { UserProfile } from '../../models/user-profile.model';
 import { registroValido, generateStandardFooter, GeminiService } from '../../services/gemini.service';
 import { VistoriaDbService, Evidencia } from '../../services/vistoria-db.service';
@@ -246,6 +247,39 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   private geminiService = inject(GeminiService);
   orcamentoService = inject(OrcamentoService);
   public syncService = inject(SyncService);
+  public tourService = inject(TourService);
+
+  constructor() {
+    effect(() => {
+      const isAtivo = this.tourService.isTourAtivo();
+      const passo = this.tourService.passoAtual();
+      if (!isAtivo || !passo) return;
+
+      if (passo.view === 'checklist') {
+        const passosCriacao = [
+          'checkup-dados-basicos',
+          'checkup-gerador-caracterizacao',
+          'checkup-fotos-gerais',
+          'checkup-selecao-sistemas',
+          'checkup-gerar-prancheta'
+        ];
+        if (passo.acaoAoEntrar === 'abrir-criacao-vistoria' || passosCriacao.includes(passo.id)) {
+          if (this.modoExibicao() !== 'CRIACAO') {
+            this.abrirCriacao();
+          }
+        } else if ([
+          'checkup-intro',
+          'checkup-sincronizar',
+          'checkup-lista-vistorias',
+          'checkup-nova-vistoria'
+        ].includes(passo.id)) {
+          if (this.modoExibicao() !== 'LISTA') {
+            this.modoExibicao.set('LISTA');
+          }
+        }
+      }
+    });
+  }
 
   vistoriaEmSincronizacaoId = signal<string | null>(null);
   isSincronizandoGeral = signal<boolean>(false);

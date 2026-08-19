@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1520" />
+      <stop offset="50%" stop-color="#112233" />
+      <stop offset="100%" stop-color="#0d1b2a" />
+    </linearGradient>
+
+    <!-- Grid Pattern -->
+    <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e3a5f" stroke-width="1" stroke-opacity="0.3" />
+    </pattern>
+
+    <!-- Radial Glows -->
+    <radialGradient id="glowTopLeft" cx="10%" cy="10%" r="50%">
+      <stop offset="0%" stop-color="#1e3a5f" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#0a1520" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="glowRight" cx="90%" cy="20%" r="40%">
+      <stop offset="0%" stop-color="#e27832" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#0a1520" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
+  <rect width="1200" height="630" fill="url(#gridPattern)" />
+  <rect width="1200" height="630" fill="url(#glowTopLeft)" />
+  <rect width="1200" height="630" fill="url(#glowRight)" />
+
+  <!-- Outer Border / Vignette frame -->
+  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#1e293b" stroke-width="2" />
+
+  <!-- Top Left Pill Badge: ECOSSISTEMA DE ENGENHARIA DIAGNÓSTICA -->
+  <g transform="translate(90, 80)">
+    <rect x="0" y="0" width="490" height="38" rx="19" fill="#16283d" stroke="#e27832" stroke-opacity="0.5" stroke-width="1.5" />
+    <!-- Sparkle icon -->
+    <path d="M 24 19 L 26 13 L 28 19 L 34 21 L 28 23 L 26 29 L 24 23 L 18 21 Z" fill="#e27832" />
+    <text x="44" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#e27832" letter-spacing="2.5">ECOSSISTEMA DE ENGENHARIA DIAGNÓSTICA</text>
+  </g>
+
+  <!-- Top Right Building Card -->
+  <g transform="translate(1020, 75)">
+    <rect x="0" y="0" width="90" height="90" rx="20" fill="#1b2a3d" stroke="#334a66" stroke-width="1.5" />
+    <!-- Building Icon -->
+    <g transform="translate(25, 22)">
+      <rect x="5" y="5" width="30" height="36" rx="3" fill="none" stroke="#e27832" stroke-width="2.5" />
+      <rect x="11" y="11" width="5" height="5" rx="1" fill="#e27832" />
+      <rect x="24" y="11" width="5" height="5" rx="1" fill="#e27832" />
+      <rect x="11" y="21" width="5" height="5" rx="1" fill="#e27832" />
+      <rect x="24" y="21" width="5" height="5" rx="1" fill="#e27832" />
+      <rect x="17" y="31" width="6" height="10" fill="#e27832" />
+    </g>
+  </g>
+
+  <!-- Brand Subtitle: AmorimTech -->
+  <text x="92" y="195" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="800">
+    <tspan fill="#94a3b8">Amorim</tspan><tspan fill="#e27832">Tech</tspan>
+  </text>
+
+  <!-- Main Title: Predial 4.0 -->
+  <text x="92" y="305" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="108" font-weight="900" letter-spacing="-1.5">
+    <tspan fill="#ffffff">Predial</tspan> <tspan fill="#e27832">4.0</tspan>
+  </text>
+
+  <!-- Description text -->
+  <text x="92" y="375" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="23" font-weight="400" fill="#94a3b8" line-height="1.6">
+    <tspan x="92" dy="0">Laudos técnicos, vistoria cautelar e diagnóstico por</tspan>
+    <tspan x="92" dy="36" fill="#f8fafc" font-weight="700">inteligência artificial</tspan><tspan fill="#94a3b8" font-weight="400"> — tudo em um só app, com</tspan>
+    <tspan x="92" dy="36" fill="#f8fafc" font-weight="700">sincronização em nuvem</tspan><tspan fill="#94a3b8" font-weight="400"> e funcionamento </tspan><tspan fill="#f8fafc" font-weight="700">100% offline</tspan><tspan fill="#94a3b8" font-weight="400">.</tspan>
+  </text>
+
+  <!-- Bottom Pills (Features) -->
+  <!-- Pill 1: ABNT NBR 16747 -->
+  <g transform="translate(90, 520)">
+    <rect x="0" y="0" width="185" height="38" rx="19" fill="#132235" stroke="#253a52" stroke-width="1.2" />
+    <circle cx="20" cy="19" r="4.5" fill="#e27832" />
+    <text x="34" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#cbd5e1">ABNT NBR 16747</text>
+  </g>
+
+  <!-- Pill 2: IA Integrada -->
+  <g transform="translate(290, 520)">
+    <rect x="0" y="0" width="145" height="38" rx="19" fill="#132235" stroke="#253a52" stroke-width="1.2" />
+    <circle cx="20" cy="19" r="4.5" fill="#e27832" />
+    <text x="34" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#cbd5e1">IA Integrada</text>
+  </g>
+
+  <!-- Pill 3: Offline First -->
+  <g transform="translate(450, 520)">
+    <rect x="0" y="0" width="145" height="38" rx="19" fill="#132235" stroke="#253a52" stroke-width="1.2" />
+    <circle cx="20" cy="19" r="4.5" fill="#e27832" />
+    <text x="34" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#cbd5e1">Offline First</text>
+  </g>
+
+  <!-- Bottom Right Domain -->
+  <text x="1110" y="545" text-anchor="end" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="500" fill="#64748b" letter-spacing="0.5">
+    app-predial.emanoelamorim.com
+  </text>
+</svg>
