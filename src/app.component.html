@@ -173,7 +173,7 @@
           @switch (activeView()) {
             @case ('visao-geral') { <app-visao-geral /> }
             @case ('checklist') { <app-checklist-inspecao /> }
-            @case ('cautelar') { <app-vistoria-cautelar /> }
+            @case ('cautelar') { <app-vistoria-cautelar [profile]="userProfile()" /> }
             @case ('orcamento') { <app-orcamento-roadmap /> }
             @case ('admin') { <app-admin-panel /> }
             @default { <app-visao-geral /> }

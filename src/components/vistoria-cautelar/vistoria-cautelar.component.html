@@ -782,15 +782,20 @@
       </div>
 
       <div class="space-y-2.5">
-        <p class="text-xs font-bold text-slate-600">Vistoriador *</p>
-        <div class="grid sm:grid-cols-3 gap-2.5">
-          <input type="text" [(ngModel)]="edAssVistoriadorNome" name="assVistNome" placeholder="Nome completo"
-                 class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-          <input type="text" [(ngModel)]="edAssVistoriadorRegistro" name="assVistReg" placeholder="Registro (CAU/CREA)"
-                 class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-          <input type="text" [(ngModel)]="edAssVistoriadorArtRrt" name="assVistArt" placeholder="Nº da ART/RRT"
-                 class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        <p class="text-xs font-bold text-slate-600">Vistoriador</p>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold text-slate-800">{{ profile?.fullName || 'Perfil não carregado' }}</p>
+            <p class="text-xs text-slate-500">{{ profile?.professionalId || 'Registro não informado no perfil' }}</p>
+          </div>
+          @if (!profile?.professionalId) {
+            <span class="text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded-lg">
+              Complete seu registro profissional no Perfil
+            </span>
+          }
         </div>
+        <input type="text" [(ngModel)]="edAssVistoriadorArtRrt" name="assVistArt" placeholder="Nº da ART/RRT desta vistoria"
+               class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
         <div class="mt-2">
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Comprovante da ART/RRT (opcional)</label>
           <input type="file" accept="image/*,application/pdf" (change)="onAnexoArtRrtChange($event)" class="w-full text-xs text-slate-600">

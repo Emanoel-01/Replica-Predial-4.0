@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, WritableSignal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, WritableSignal, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
@@ -6,6 +6,7 @@ import { GeminiService } from '../../services/gemini.service';
 import { SyncService } from '../../services/sync.service';
 import { FotoObra, DadosCaracterizacao } from '../../models/caracterizacao.model';
 import { GeradorCaracterizacaoComponent } from '../gerador-caracterizacao/gerador-caracterizacao.component';
+import { UserProfile } from '../../models/user-profile.model';
 
 // ═══════════════════════════════════════════════════════════════════
 // VISTORIA CAUTELAR DE VIZINHANÇA — MODELO DE DADOS
@@ -241,6 +242,8 @@ export interface LaudoCautelarEmitido {
   imports: [FormsModule, GeradorCaracterizacaoComponent],
 })
 export class VistoriaCautelarComponent implements OnInit {
+  @Input() profile: UserProfile | null = null;
+
   readonly ELEMENTOS_CONSTRUTIVOS = ELEMENTOS_CONSTRUTIVOS;
 
   readonly OPCOES_ESTRUTURA = [
@@ -424,8 +427,6 @@ export class VistoriaCautelarComponent implements OnInit {
   edInstrumInclinometros = signal('');
 
   // ─── VC-8: Assinaturas ───
-  edAssVistoriadorNome = signal('');
-  edAssVistoriadorRegistro = signal('');
   edAssVistoriadorArtRrt = signal('');
   edAnexoArtRrt = signal<string | null>(null);
 
@@ -964,7 +965,13 @@ export class VistoriaCautelarComponent implements OnInit {
       caracteristicasConstrutivas: {},
       estadoConservacao: { classificacao: 'BOM', fonteNormativa: 'VEIU_IUP_IBAPE_SP' },
       ambientes: [],
-      assinaturas: { vistoriador: { nome: '', registro: '', artRrt: '' } },
+      assinaturas: {
+        vistoriador: {
+          nome: this.profile?.fullName || '',
+          registro: this.profile?.professionalId || '',
+          artRrt: '',
+        },
+      },
     };
     const atualizada: VistoriaCautelar = {
       ...vistoria,
@@ -1134,8 +1141,6 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edInstrumInclinometros.set(instrum?.inclinometros ?? '');
 
     const ass = imovel.assinaturas;
-    this.edAssVistoriadorNome.set(ass?.vistoriador?.nome ?? '');
-    this.edAssVistoriadorRegistro.set(ass?.vistoriador?.registro ?? '');
     this.edAssVistoriadorArtRrt.set(ass?.vistoriador?.artRrt ?? '');
     this.edAnexoArtRrt.set((ass as any)?.vistoriador?.anexoArtRrt ?? null);
     this.edAssOcupanteNome.set(ass?.ocupante?.nome ?? '');
@@ -1239,8 +1244,8 @@ export class VistoriaCautelarComponent implements OnInit {
         } : undefined,
         assinaturas: {
           vistoriador: {
-            nome: this.edAssVistoriadorNome(),
-            registro: this.edAssVistoriadorRegistro(),
+            nome: this.profile?.fullName || '',
+            registro: this.profile?.professionalId || '',
             artRrt: this.edAssVistoriadorArtRrt(),
             anexoArtRrt: this.edAnexoArtRrt() || undefined,
           },
@@ -1870,12 +1875,7 @@ sem inventar conteúdo.`;
         id: crypto.randomUUID(),
         numeroEmissao,
         snapshotVistoria: JSON.parse(JSON.stringify(vistoria)),
-        snapshotProfile: (() => {
-          try {
-            const saved = localStorage.getItem('user_profile');
-            return saved ? JSON.parse(saved) : null;
-          } catch { return null; }
-        })(),
+        snapshotProfile: this.profile ? JSON.parse(JSON.stringify(this.profile)) : null,
         taxaCalculada: 0,
         dataEmissao: new Date().toISOString(),
       };
@@ -1902,11 +1902,15 @@ sem inventar conteúdo.`;
     const numeroOuProvisorio = documentoRegistrado ? numeroDocumentoFormatado : '⚠ Documento Provisório';
 
     // ─── CAPA ───
+    const p = this.profile;
     const capaHtml = `
       <div class="capa">
         <div>
-          <div class="capa-logo">Amorim<span>Tech</span></div>
-          <div class="capa-logo-sub">Ecossistema 4.0</div>
+          ${p?.companyLogoBase64
+            ? `<img src="${p.companyLogoBase64}" style="max-height: 16mm; max-width: 65mm; object-fit: contain; margin-bottom: 2mm;" alt="Logo">`
+            : `<div class="capa-logo">${this.formatarLogoMarca(p?.companyName)}</div>
+               <div class="capa-logo-sub">${p?.companyName ? (p.companyCnpj ? `CNPJ ${p.companyCnpj}` : '') : 'Ecossistema 4.0'}</div>`
+          }
           <div class="capa-rule"></div>
         </div>
         <div>
@@ -2265,20 +2269,21 @@ sem inventar conteúdo.`;
     this.carregandoPreviewPdf.set(false);
   }
 
+  private formatarLogoMarca(nome: string | undefined): string {
+    if (!nome || nome === 'AmorimTech') return 'Amorim<span>Tech</span>';
+    return nome;
+  }
+
   private headerLaudoCautelar(): string {
-    let rtNome = '';
-    let rtRegistro = '';
-    let empresa = '';
-    try {
-      const saved = localStorage.getItem('user_profile');
-      if (saved) {
-        const p = JSON.parse(saved);
-        rtNome = p.fullName || '';
-        rtRegistro = p.professionalId || '';
-        empresa = p.companyName || '';
-        if (p.companyCnpj) empresa += ` · CNPJ: ${p.companyCnpj}`;
-      }
-    } catch { /* perfil ausente: cabeçalho cai para a versão institucional */ }
+    const p = this.profile;
+    const rtNome = p?.fullName || '';
+    const rtRegistro = p?.professionalId || '';
+    let empresa = p?.companyName || '';
+    if (p?.companyCnpj) empresa += ` · CNPJ: ${p.companyCnpj}`;
+
+    const logoHtml = p?.companyLogoBase64
+      ? `<img src="${p.companyLogoBase64}" style="max-height: 13mm; max-width: 60mm; object-fit: contain;" alt="Logo">`
+      : `<span class="rh-brand">${this.formatarLogoMarca(p?.companyName)}</span>`;
 
     const blocoRT = rtNome
       ? `<div class="rh-right">
@@ -2288,9 +2293,8 @@ sem inventar conteúdo.`;
       : '';
 
     return `<div class="rh-wrap">
-      <div>
-        <div class="rh-brand">Amorim<span>Tech</span></div>
-        <div class="rh-sub">Ecossistema 4.0 · Predial 4.0</div>
+      <div class="rh-left">
+        ${logoHtml}
       </div>
       ${blocoRT}
     </div>`;
