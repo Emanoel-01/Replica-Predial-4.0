@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, W
 import { FormsModule } from '@angular/forms';
 import { VistoriaDbService } from '../../services/vistoria-db.service';
 import { ToastService } from '../../services/toast.service';
-import { GeminiService } from '../../services/gemini.service';
+import { GeminiService, registroValido } from '../../services/gemini.service';
 import { SyncService } from '../../services/sync.service';
 import { TourService } from '../../services/tour.service';
 import { FotoObra, DadosCaracterizacao } from '../../models/caracterizacao.model';
@@ -1900,6 +1900,11 @@ sem inventar conteúdo.`;
   }
 
   iniciarGeracaoPDF(): void {
+    if (!this.profile || !registroValido(this.profile.professionalId)) {
+      this.toastService.show('Emissão bloqueada. É necessário possuir um registro profissional (CAU/CREA) válido cadastrado no seu perfil para emitir documentos técnicos.', 'error');
+      return;
+    }
+
     const vistoria = this.vistoriaAtiva();
     if (!vistoria) return;
     if (!this.imoveisProntosParaConsolidar()) {
