@@ -52,7 +52,7 @@
               <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
               Vistorias no Dispositivo &amp; Sincronização em Nuvem
             </h3>
-            <p class="text-slate-500 text-xs sm:text-sm">Sincronize o Rascunho Local do IndexedDB com o banco Supabase</p>
+            <p class="text-slate-500 text-xs sm:text-sm">Sincronize suas vistorias salvas neste aparelho com a nuvem</p>
           </div>
           <button type="button"
                   (click)="sincronizarTudo()"
@@ -117,7 +117,7 @@
                         (click)="sincronizarNuvem($event, vistoria)"
                         [disabled]="syncService.status() === 'syncing'"
                         class="inline-flex items-center gap-1 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs transition-all shadow-xs active:scale-95 cursor-pointer"
-                        title="Salvar esta vistoria e fotos no banco Supabase">
+                        title="Salvar esta vistoria e fotos na nuvem">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                   <span>Salvar na Nuvem</span>
                 </button>
@@ -244,7 +244,7 @@
           </div>
           <h4 class="text-lg font-bold text-slate-800">Funciona 100% offline</h4>
           <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
-            Toda a coleta de campo funciona sem internet (armazenamento local seguro via IndexedDB), sincronizando automaticamente assim que a conexão voltar.
+            Toda a coleta de campo funciona sem internet, com armazenamento local seguro no seu aparelho, sincronizando automaticamente assim que a conexão voltar.
           </p>
         </div>
       </div>
@@ -260,7 +260,7 @@
           </div>
           <h4 class="text-lg font-bold text-slate-800">Login seguro e identidade profissional real</h4>
           <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
-            Autenticação com e-mail e senha (Supabase Auth), cada documento gerado carrega a identidade real do profissional responsável (nome, CAU/CREA, empresa), nunca uma marca genérica.
+            Login seguro com e-mail e senha — cada documento gerado carrega a identidade real do profissional responsável (nome, CAU/CREA, empresa), nunca uma marca genérica.
           </p>
         </div>
       </div>

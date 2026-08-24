@@ -172,8 +172,8 @@
         <main>
           @switch (activeView()) {
             @case ('visao-geral') { <app-visao-geral /> }
-            @case ('checklist') { <app-checklist-inspecao /> }
-            @case ('cautelar') { <app-vistoria-cautelar [profile]="userProfile()" /> }
+            @case ('checklist') { <app-checklist-inspecao [isLoggedIn]="isLoggedIn()" [profile]="userProfile()" /> }
+            @case ('cautelar') { <app-vistoria-cautelar [isLoggedIn]="isLoggedIn()" [profile]="userProfile()" /> }
             @case ('orcamento') { <app-orcamento-roadmap /> }
             @case ('modulos-futuros') { <app-modulos-futuros /> }
             @case ('admin') { <app-admin-panel /> }

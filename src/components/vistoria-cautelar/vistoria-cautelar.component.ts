@@ -244,6 +244,11 @@ export interface LaudoCautelarEmitido {
 })
 export class VistoriaCautelarComponent implements OnInit {
   @Input() profile: UserProfile | null = null;
+  @Input('isLoggedIn') isUserLoggedIn = false;
+
+  isLoggedIn(): boolean {
+    return this.isUserLoggedIn;
+  }
 
   readonly ELEMENTOS_CONSTRUTIVOS = ELEMENTOS_CONSTRUTIVOS;
 
@@ -823,6 +828,10 @@ export class VistoriaCautelarComponent implements OnInit {
   }
 
   async salvarVistoriaCautelar(): Promise<void> {
+    if (!this.isLoggedIn()) {
+      this.toastService.show('Faça login para criar e salvar uma vistoria cautelar. Você pode continuar explorando o tour guiado sem login.', 'info');
+      return;
+    }
     if (!this.podeSalvarObra()) {
       this.toastService.show('Preencha ao menos Solicitante e Obra Geradora antes de salvar.', 'error');
       return;

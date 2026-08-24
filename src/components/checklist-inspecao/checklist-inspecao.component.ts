@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, effect, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, effect, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService, NormaRef } from '../../services/data.service';
 import { ToastService } from '../../services/toast.service';
@@ -410,6 +410,17 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
 
   // Controle de carregamento das vistorias
   carregandoVistorias = signal(true);
+
+  @Input('isLoggedIn') isUserLoggedIn = false;
+  @Input() set profile(val: UserProfile | null) {
+    if (val) {
+      this.userProfile.set(val);
+    }
+  }
+
+  isLoggedIn(): boolean {
+    return this.isUserLoggedIn;
+  }
 
   // Perfil do profissional (pode vir local ou via input, vamos carregar do localStorage ou usar padrão)
   userProfile = signal<UserProfile | null>(null);
@@ -1189,6 +1200,11 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   }
 
   criarVistoria(): void {
+    if (!this.isLoggedIn()) {
+      this.toastService.show('Faça login para criar e salvar uma vistoria. Você pode continuar explorando o tour guiado sem login.', 'info');
+      return;
+    }
+
     const name = this.novoBuildingName().trim();
     const address = this.novoAddress().trim();
 
