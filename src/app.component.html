@@ -129,7 +129,7 @@
 
                   <!-- Notifications Popover Card -->
                   @if (isNotificationDropdownOpen()) {
-                    <div class="absolute right-0 mt-2.5 w-80 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
+                    <div class="absolute right-0 mt-2.5 w-[min(20rem,calc(100vw-2rem))] bg-white border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
                       <div class="p-3.5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
                         <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">Alertas ({{ notificationService.unreadCount() }})</h4>
                         <button (click)="notificationService.markAllAsRead(); isNotificationDropdownOpen.set(false)" class="text-[10px] text-sky-600 hover:underline font-bold cursor-pointer">Marcar Lidas</button>

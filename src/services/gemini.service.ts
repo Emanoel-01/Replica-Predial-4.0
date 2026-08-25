@@ -50,18 +50,27 @@ export class GeminiService {
 
   private async invocarEdgeFunction<T>(operation: 'texto' | 'estruturado', contents: any, responseSchema?: object): Promise<T> {
     this.loading.set(true);
-    try {
+    const tentarChamada = async (): Promise<T> => {
       const { data, error } = await this.supabaseService.client.functions.invoke('diagnostico-ia', {
         body: { operation, contents, responseSchema },
       });
       if (error) {
-        console.warn('Função de IA retornou alerta/erro:', error.message || error);
         throw error;
       }
       if (data?.error) throw new Error(data.error);
       return data as T;
+    };
+
+    try {
+      try {
+        return await tentarChamada();
+      } catch (primeiroErro) {
+        console.warn('Primeira tentativa de IA falhou, tentando novamente em 1.5s:', (primeiroErro as any)?.message || primeiroErro);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        return await tentarChamada();
+      }
     } catch (error: any) {
-      console.warn('Serviço de IA indisponível ou não autenticado:', error?.message || error);
+      console.warn('Serviço de IA indisponível ou não autenticado (após retry):', error?.message || error);
       throw new Error(this.errorMessage);
     } finally {
       this.loading.set(false);
