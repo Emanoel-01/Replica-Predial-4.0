@@ -33,6 +33,16 @@ function buildCorsHeaders(requestOrigin: string | null): Record<string, string> 
   };
 }
 
+async function chamarGeminiComRetry(ai: any, params: any): Promise<any> {
+  try {
+    return await ai.models.generateContent(params);
+  } catch (primeiroErro) {
+    console.warn('Primeira tentativa de IA (chat-sindico) falhou, tentando novamente em 1.5s:', primeiroErro);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return await ai.models.generateContent(params);
+  }
+}
+
 serve(async (req) => {
   const corsHeaders = buildCorsHeaders(req.headers.get('origin'));
 
@@ -137,7 +147,7 @@ serve(async (req) => {
       }
       const ai = new GoogleGenAI({ apiKey: geminiApiKey });
 
-      const response = await ai.models.generateContent({
+      const response = await chamarGeminiComRetry(ai, {
         model: 'gemini-3.5-flash',
         contents: historico,
         config: {

@@ -24,6 +24,7 @@ export class UserProfileModalComponent {
   };
 
   saveState = signal<'idle' | 'saving' | 'saved'>('idle');
+  checklistPendenteConfirmacaoReset = signal(false);
 
   constructor() {
     effect(() => {
@@ -103,5 +104,16 @@ export class UserProfileModalComponent {
 
   onLogout(): void {
     this.logout.emit();
+  }
+
+  resetLocalChecklist(): void {
+    if (this.checklistPendenteConfirmacaoReset()) {
+      localStorage.removeItem('inspections_checklist_progress');
+      this.toastService.show('Progresso do Checklist de Campo limpo com sucesso!', 'success');
+      this.checklistPendenteConfirmacaoReset.set(false);
+    } else {
+      this.checklistPendenteConfirmacaoReset.set(true);
+      setTimeout(() => this.checklistPendenteConfirmacaoReset.set(false), 3000);
+    }
   }
 }

@@ -1,6 +1,7 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Vistoria } from '../components/checklist-inspecao/checklist-inspecao.component';
 import { UserProfile } from '../models/user-profile.model';
+import { SupabaseService } from './supabase.service';
 
 export interface NotificationItem {
   id: string;
@@ -15,6 +16,7 @@ export interface NotificationItem {
 })
 export class NotificationService {
   private items = signal<NotificationItem[]>([]);
+  private supabaseService = inject(SupabaseService);
 
   private readonly STORAGE_KEY = 'predial4_notificacoes_lidas';
 
@@ -80,11 +82,25 @@ export class NotificationService {
 
   async checarAvisosExternos(): Promise<void> {
     try {
-      const resp = await fetch('https://raw.githubusercontent.com/Emanoel-01/Replica-Predial-4.0/main/avisos.json', { cache: 'no-store' });
-      if (!resp.ok) return;
-      const avisos: { id: string; title: string; message: string; date: string }[] = await resp.json();
+      const { data, error } = await this.supabaseService.client
+        .from('notificacoes')
+        .select('id, titulo, mensagem, criado_em')
+        .order('criado_em', { ascending: false })
+        .limit(20);
+
+      if (error || !data) return;
+
       const lidas = this.carregarLidas();
-      const novos = avisos.filter(a => !lidas.has(a.id)).map(a => ({ ...a, read: false }));
+      const novos = data
+        .filter((a: any) => !lidas.has(a.id))
+        .map((a: any) => ({
+          id: a.id,
+          title: a.titulo,
+          message: a.mensagem,
+          date: new Date(a.criado_em).toLocaleString('pt-BR'),
+          read: false,
+        }));
+
       if (novos.length > 0) {
         this.items.update(atuais => {
           const filtradosNovos = novos.filter(n => !atuais.some(a => a.id === n.id));
@@ -92,7 +108,7 @@ export class NotificationService {
         });
       }
     } catch {
-      // Falha silenciosa — sem internet ou arquivo indisponível não deve quebrar o app
+      // Falha silenciosa — sem internet ou tabela indisponível não deve quebrar o app
     }
   }
 

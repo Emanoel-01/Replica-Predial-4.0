@@ -189,7 +189,6 @@
             @case ('cautelar') { <app-vistoria-cautelar [isLoggedIn]="isLoggedIn()" [profile]="userProfile()" /> }
             @case ('orcamento') { <app-orcamento-roadmap /> }
             @case ('modulos-futuros') { <app-modulos-futuros /> }
-            @case ('admin') { <app-admin-panel /> }
             @default { <app-visao-geral /> }
           }
         </main>
@@ -207,75 +206,3 @@
 <!-- TOUR GUIDADO REAL COM SPOTLIGHT -->
 <app-tour-overlay (tourEnded)="onTourEnded()" />
 
-<!-- MODAL ADMIN / PREFERÊNCIAS DO SISTEMA -->
-@if (isAdminModalOpen()) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-fade-in">
-    <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
-      
-      <div class="bg-gradient-to-r from-slate-900 to-slate-950 text-white p-6 relative">
-        <h4 class="text-lg font-bold">Ferramentas de Desenvolvedor &amp; Admin</h4>
-        <p class="text-slate-300 text-xs mt-1">Configure parâmetros do ecossistema e limpe estados locais.</p>
-        <button (click)="isAdminModalOpen.set(false)" class="absolute top-6 right-6 text-slate-300 hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-        </button>
-      </div>
-
-      <div class="p-6 space-y-6">
-        
-        <!-- Estado de Sincronização -->
-        <div class="space-y-2">
-          <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Modo de Operação</h5>
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs font-bold text-slate-700">Simular Sincronização Local</p>
-                <p class="text-[10px] text-slate-400">Guarda dados exclusivamente no navegador</p>
-              </div>
-              <button 
-                (click)="simulateOffline.set(!simulateOffline())"
-                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-hidden"
-                [class.bg-sky-600]="simulateOffline()"
-                [class.bg-slate-200]="!simulateOffline()">
-                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200"
-                      [class.translate-x-5]="simulateOffline()"
-                      [class.translate-x-0]="!simulateOffline()"></span>
-              </button>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs font-bold text-slate-700">Sincronização Nuvem 4.0</p>
-                <p class="text-[10px] text-slate-400">Permite sincronização futura com AmorimTech Cloud</p>
-              </div>
-              <button 
-                (click)="advancedSyncMode.set(!advancedSyncMode())"
-                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-hidden"
-                [class.bg-sky-600]="advancedSyncMode()"
-                [class.bg-slate-200]="!advancedSyncMode()">
-                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200"
-                      [class.translate-x-5]="advancedSyncMode()"
-                      [class.translate-x-0]="!advancedSyncMode()"></span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ação Destrutiva -->
-        <div class="space-y-2">
-          <h5 class="text-xs font-bold text-rose-500 uppercase tracking-wider">Ações Críticas</h5>
-          <div class="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 space-y-2">
-            <p class="text-xs text-rose-800 leading-normal">
-              Esta ação removerá todas as vistorias, registros de conformidade e evidências salvas localmente neste dispositivo.
-            </p>
-            <button 
-              (click)="resetLocalState()"
-              class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-colors duration-200 cursor-pointer">
-              Limpar Vistorias Locais
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-}
