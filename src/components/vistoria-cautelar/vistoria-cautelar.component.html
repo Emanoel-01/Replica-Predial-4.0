@@ -44,7 +44,7 @@
           <div (click)="abrirDetalhe(v.id)" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-sky-200 transition-all cursor-pointer">
             <div class="flex justify-between items-start gap-2 mb-2">
               <h4 class="font-bold text-slate-800">{{ v.obraGeradora.nome }}</h4>
-              <span class="text-[10px] font-bold uppercase tracking-wider bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full shrink-0">Nível {{ v.nivelVistoriaCautelar }}</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full shrink-0">Nível {{ v.nivelVistoriaCautelar }}</span>
             </div>
             <p class="text-xs text-slate-500 mb-3">{{ v.obraGeradora.endereco }}</p>
             <div class="flex justify-between items-center text-xs text-slate-400">
@@ -162,7 +162,7 @@
                   <img [src]="foto.dataUrl" alt="Foto da obra geradora" class="w-full h-full object-cover">
                   <button type="button" (click)="removerFotoObra(i)"
                           title="Remover foto"
-                          class="absolute top-1.5 right-1.5 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-rose-700 cursor-pointer shadow-sm">
+                          class="absolute top-1.5 right-1.5 bg-rose-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold hover:bg-rose-700 cursor-pointer shadow-sm">
                     ×
                   </button>
                 </div>
@@ -296,19 +296,19 @@
         <div class="flex flex-wrap gap-4">
           <div>
             <p class="text-2xl font-black text-slate-800">{{ resumoStatusImoveis().total }}</p>
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total de imóveis</p>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total de imóveis</p>
           </div>
           <div>
             <p class="text-2xl font-black text-emerald-600">{{ resumoStatusImoveis().concluidos }}</p>
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Concluídos</p>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Concluídos</p>
           </div>
           <div>
             <p class="text-2xl font-black text-red-500">{{ resumoStatusImoveis().negados }}</p>
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Acesso negado</p>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Acesso negado</p>
           </div>
           <div>
             <p class="text-2xl font-black text-amber-600">{{ resumoStatusImoveis().pendentes }}</p>
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pendentes</p>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pendentes</p>
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -404,12 +404,12 @@
               <div class="flex justify-between items-start gap-2 mb-1.5">
                 <h4 class="font-bold text-slate-800 text-sm">{{ im.endereco }}</h4>
                 <div class="flex items-center gap-1.5 shrink-0">
-                  <span [class]="'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + corStatusImovel(im.status)">
+                  <span [class]="'text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + corStatusImovel(im.status)">
                     {{ labelStatusImovel(im.status) }}
                   </span>
                   <button type="button"
                           (click)="removerImovel(im.id, $event)"
-                          [class]="'p-1 rounded-md transition-all ' + (imovelPendenteConfirmacaoExclusao() === im.id ? 'bg-red-600 text-white font-bold text-[10px] px-2' : 'text-slate-400 hover:text-red-600 hover:bg-red-50')"
+                          [class]="'p-1 rounded-md transition-all ' + (imovelPendenteConfirmacaoExclusao() === im.id ? 'bg-red-600 text-white font-bold text-[11px] px-2' : 'text-slate-400 hover:text-red-600 hover:bg-red-50')"
                           [title]="imovelPendenteConfirmacaoExclusao() === im.id ? 'Clique novamente para confirmar a exclusão' : 'Remover imóvel'">
                     @if (imovelPendenteConfirmacaoExclusao() === im.id) {
                       <span>Confirmar exclusão?</span>
@@ -433,7 +433,7 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-sky-900">{{ edImovelEndereco() || imovelEmEdicao()!.endereco }}</h2>
-        <span [class]="'inline-block mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + corStatusImovel(imovelEmEdicao()!.status)">
+        <span [class]="'inline-block mt-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + corStatusImovel(imovelEmEdicao()!.status)">
           {{ labelStatusImovel(imovelEmEdicao()!.status) }}
         </span>
       </div>
@@ -607,7 +607,7 @@
     <!-- SEÇÃO: ESTADO DE CONSERVAÇÃO -->
     <div data-tour-id="imovel-estado-conservacao" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
       <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Estado de Conservação</h3>
-      <div class="grid grid-cols-4 gap-2">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <label [class]="'border rounded-xl p-2.5 text-center cursor-pointer transition-all ' + (edImovelEstadoConservacao() === 'OTIMO' ? 'border-sky-500 bg-sky-50' : 'border-slate-200')">
           <input type="radio" name="estado" value="OTIMO" [(ngModel)]="edImovelEstadoConservacao" class="sr-only">
           <span class="block text-xs font-bold text-slate-700">Ótimo</span>
@@ -723,7 +723,7 @@
               </div>
               <div class="flex items-center gap-2">
                 @if (amb.ocorrencias.length > 0) {
-                  <span class="text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
+                  <span class="text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
                     {{ amb.ocorrencias.length }} ocorrência{{ amb.ocorrencias.length > 1 ? 's' : '' }}
                   </span>
                 }
@@ -738,7 +738,7 @@
                 @for (foto of amb.fotos; track $index) {
                   <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200">
                     <img [src]="foto" class="w-full h-full object-cover">
-                    <button (click)="removerFotoAmbiente(amb.id, $index)" class="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] leading-none">×</button>
+                    <button (click)="removerFotoAmbiente(amb.id, $index)" class="absolute top-0.5 right-0.5 bg-black/70 hover:bg-rose-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold leading-none cursor-pointer transition-colors shadow-xs">×</button>
                   </div>
                 }
               </div>
@@ -909,7 +909,7 @@
       </div>
       <p class="text-sm text-slate-500">{{ imovelEmEdicao()!.endereco }}</p>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Data do contato prévio</label>
           <input type="date" [(ngModel)]="edDataContatoPrevio" name="edData" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
@@ -960,7 +960,7 @@
 
       @if (edAutorizacaoStatus() === 'NEGADO') {
         <div class="space-y-3 bg-red-50/50 border border-red-100 rounded-xl p-3.5">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1.5">Data da recusa</label>
               <input type="date" [(ngModel)]="edRecusaData" name="edRecusaData" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
@@ -1011,7 +1011,7 @@
         aparente. Não inclui causa, responsabilidade ou solução.
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">Elemento construtivo</label>
           <select [(ngModel)]="edOcElementoConstrutivo" (ngModelChange)="onElementoConstrutivoChange()" name="ocElemento" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
@@ -1032,7 +1032,7 @@
 
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1.5">Natureza da manifestação</label>
-        <div class="grid grid-cols-2 gap-2 mb-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2.5">
           <label [class]="'border rounded-lg p-2 text-center cursor-pointer text-xs font-bold transition-all ' + (edOcUsaFamiliaAbertura() ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-500')">
             <input type="radio" name="ocNatureza" [value]="true" [(ngModel)]="edOcUsaFamiliaAbertura" class="sr-only">
             Abertura medida (fissura/trinca/...)
@@ -1109,7 +1109,7 @@
             @for (foto of edOcFotos(); track $index) {
               <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200">
                 <img [src]="foto" class="w-full h-full object-cover">
-                <button (click)="removerFotoOcorrencia($index)" class="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] leading-none">×</button>
+                <button (click)="removerFotoOcorrencia($index)" class="absolute top-0.5 right-0.5 bg-black/70 hover:bg-rose-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold leading-none cursor-pointer transition-colors shadow-xs">×</button>
               </div>
             }
           </div>
@@ -1277,13 +1277,13 @@
                 <p class="font-bold text-slate-800 text-sm">{{ vistoriaAtiva()?.obraGeradora?.nome }}</p>
                 <p class="text-slate-600">{{ vistoriaAtiva()?.obraGeradora?.endereco }}</p>
               </div>
-              <div class="pt-2 border-t border-slate-200/60 grid grid-cols-2 gap-2 text-xs">
+              <div class="pt-2 border-t border-slate-200/60 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span class="text-slate-400 block text-[10px] uppercase font-bold">Solicitante</span>
+                  <span class="text-slate-400 block text-[11px] uppercase font-bold">Solicitante</span>
                   <span class="font-bold text-slate-700 truncate block">{{ vistoriaAtiva()?.solicitante?.nome || '—' }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 block text-[10px] uppercase font-bold">Imóveis no Laudo</span>
+                  <span class="text-slate-400 block text-[11px] uppercase font-bold">Imóveis no Laudo</span>
                   <span class="font-bold text-slate-700">{{ vistoriaAtiva()?.imoveis?.length || 0 }} imóvel(is)</span>
                 </div>
               </div>

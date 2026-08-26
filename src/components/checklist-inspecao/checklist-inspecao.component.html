@@ -86,7 +86,7 @@
                        [class.bg-sky-600]="vistoria.progress < 100"
                        [style.width.%]="vistoria.progress"></div>
                 </div>
-                <div class="flex justify-between items-center text-[10px] text-slate-400 pt-2 border-t border-slate-50">
+                <div class="flex justify-between items-center text-[11px] text-slate-400 pt-2 border-t border-slate-50">
                   <span>Itens: {{ vistoria.items.length }}</span>
                   <span>Atualizado: {{ vistoria.dateUpdated | date:'dd/MM HH:mm' }}</span>
                 </div>
@@ -94,29 +94,29 @@
                 <!-- Status de Sincronização e Botão Salvar na Nuvem -->
                 <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                   @if (vistoriaEmSincronizacaoId() === vistoria.id) {
-                    <span class="inline-flex items-center gap-1.5 text-sky-700 bg-sky-50 px-2 py-1 rounded-md text-[10px] font-bold border border-sky-200">
+                    <span class="inline-flex items-center gap-1.5 text-sky-700 bg-sky-50 px-2 py-1 rounded-md text-[11px] font-bold border border-sky-200">
                       <span class="w-2.5 h-2.5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin"></span>
                       <span>Sincronizando...</span>
                     </span>
                   } @else if (vistoria.sincronizadoEm) {
                     @if (syncService.evidenciasComFalha() > 0 && vistoriaEmSincronizacaoId() === null && vistoriaAtiva()?.id === vistoria.id) {
-                      <span class="inline-flex items-center gap-1 text-amber-800 bg-amber-50 px-2 py-1 rounded-md text-[10px] font-bold border border-amber-200" title="Algumas fotos falharam no upload. Tente salvar na nuvem novamente.">
+                      <span class="inline-flex items-center gap-1 text-amber-800 bg-amber-50 px-2 py-1 rounded-md text-[11px] font-bold border border-amber-200" title="Algumas fotos falharam no upload. Tente salvar na nuvem novamente.">
                         <svg class="w-3 h-3 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         <span>Sincronizado ({{ syncService.evidenciasComFalha() }} foto(s) pendente(s))</span>
                       </span>
                     } @else {
-                      <span class="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2 py-1 rounded-md text-[10px] font-bold border border-emerald-200">
+                      <span class="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2 py-1 rounded-md text-[11px] font-bold border border-emerald-200">
                         <svg class="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                         <span>Sincronizado {{ vistoria.sincronizadoEm | date:'HH:mm' }}</span>
                       </span>
                     }
                   } @else if (syncService.status() === 'error' && vistoriaEmSincronizacaoId() === null && vistoriaAtiva()?.id === vistoria.id) {
-                    <span class="inline-flex items-center gap-1 text-red-800 bg-red-50 px-2 py-1 rounded-md text-[10px] font-bold border border-red-200">
+                    <span class="inline-flex items-center gap-1 text-red-800 bg-red-50 px-2 py-1 rounded-md text-[11px] font-bold border border-red-200">
                       <svg class="w-3 h-3 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                       <span>Falha no envio</span>
                     </span>
                   } @else {
-                    <span class="inline-flex items-center gap-1 text-slate-500 bg-slate-100 px-2 py-1 rounded-md text-[10px] font-medium border border-slate-200">
+                    <span class="inline-flex items-center gap-1 text-slate-500 bg-slate-100 px-2 py-1 rounded-md text-[11px] font-medium border border-slate-200">
                       <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                       <span>Somente local</span>
                     </span>
@@ -160,7 +160,7 @@
             <div (click)="verDetalhesLaudo(laudo)" class="bg-slate-50 rounded-xl border border-slate-200 p-5 flex flex-col gap-2 cursor-pointer hover:border-sky-400 hover:shadow-md transition-all">
               <div class="flex justify-between items-start gap-2">
                 <span class="font-bold text-slate-800 text-sm">Laudo Nº {{ laudo.numeroEmissao.toString().padStart(3, '0') }}</span>
-                <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Emitido
                 </span>
               </div>
@@ -192,13 +192,13 @@
           <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">Nome do Edifício</label>
           <input [value]="vistoriaEmEdicao()?.buildingName" disabled
                  class="w-full px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-sm text-slate-500 shadow-none cursor-not-allowed">
-          <p class="text-[10px] text-slate-400">O nome do edifício não pode ser editado após a criação para manter a consistência histórica do banco de dados local.</p>
+          <p class="text-[11px] text-slate-400">O nome do edifício não pode ser editado após a criação para manter a consistência histórica do banco de dados local.</p>
         </div>
         <div class="space-y-1">
           <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">Endereço do Imóvel</label>
           <input [value]="vistoriaEmEdicao()?.address" disabled
                  class="w-full px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-sm text-slate-500 shadow-none cursor-not-allowed">
-          <p class="text-[10px] text-slate-400">O endereço não pode ser editado após a criação para manter a consistência histórica do banco de dados local.</p>
+          <p class="text-[11px] text-slate-400">O endereço não pode ser editado após a criação para manter a consistência histórica do banco de dados local.</p>
         </div>
         <div class="space-y-1">
           <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider">Tipo de Uso / Tipologia</label>
@@ -382,10 +382,10 @@
                 <div class="relative rounded-lg overflow-hidden border border-slate-200 bg-white group aspect-video shadow-xs">
                   <img [src]="foto.dataUrl" class="w-full h-full object-cover">
                   <button type="button" (click)="removerFotoGeral($index)" 
-                          class="absolute top-1.5 right-1.5 bg-red-600/90 hover:bg-red-700 text-white p-1 rounded-full transition-all shadow-sm active:scale-90 flex items-center justify-center">
+                          class="absolute top-1.5 right-1.5 bg-red-600/90 hover:bg-red-700 text-white w-7 h-7 rounded-full transition-all shadow-sm active:scale-90 flex items-center justify-center cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                   </button>
-                  <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] px-1.5 py-0.5 truncate">
+                  <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[11px] px-1.5 py-0.5 truncate">
                     {{ foto.timestamp | date:'HH:mm:ss' }}
                   </div>
                 </div>
@@ -660,12 +660,12 @@
                  (change)="onFotoGeralChange($event)"
                  class="block w-full text-xs text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-slate-300 rounded-lg bg-white px-2 py-1.5">
           @if (novoFotosGerais().length > 0) {
-            <div class="grid grid-cols-4 gap-2 mt-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
               @for (foto of novoFotosGerais(); track foto.timestamp; let i = $index) {
                 <div class="relative rounded-lg overflow-hidden border border-slate-200 aspect-video bg-slate-50">
                   <img [src]="foto.dataUrl" alt="Foto geral" class="w-full h-full object-cover">
                   <button type="button" (click)="removerFotoGeral(i)"
-                          class="absolute top-1 right-1 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-rose-700 cursor-pointer">
+                          class="absolute top-1 right-1 bg-rose-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold hover:bg-rose-700 cursor-pointer shadow-sm">
                     ×
                   </button>
                 </div>
@@ -752,7 +752,7 @@
                                    class="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-500 cursor-pointer">
                             <div class="text-xs">
                               <p class="font-semibold text-slate-800">{{ tipo.title }}</p>
-                              <p class="text-slate-400 text-[10px] mt-0.5">{{ tipo.patologiasCount }} patologias cadastradas para inspeção</p>
+                              <p class="text-slate-400 text-[11px] mt-0.5">{{ tipo.patologiasCount }} patologias cadastradas para inspeção</p>
                             </div>
                           </label>
                         }
@@ -797,14 +797,14 @@
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
             <div class="flex flex-wrap items-center gap-2 mb-1">
-              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-pulse"></span>
                 Inspeção Ativa
               </span>
               <span class="text-xs text-slate-400 font-mono">ID: {{ vistoriaAtiva()?.id }}</span>
 
               @if (itemSalvoFeedback()) {
-                <span class="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                <span class="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                   <span>Salvo</span>
                 </span>
@@ -812,29 +812,29 @@
 
               <!-- Badge de Sincronização em Nuvem na Execução -->
               @if (vistoriaEmSincronizacaoId() === vistoriaAtiva()?.id) {
-                <span class="bg-sky-100 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-sky-200 flex items-center gap-1">
+                <span class="bg-sky-100 text-sky-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-sky-200 flex items-center gap-1">
                   <span class="w-2 h-2 border-2 border-sky-600 border-t-transparent rounded-full animate-spin"></span>
                   <span>Sincronizando...</span>
                 </span>
               } @else if (vistoriaAtiva()?.sincronizadoEm) {
                 @if (syncService.evidenciasComFalha() > 0 && vistoriaEmSincronizacaoId() === null) {
-                  <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1" title="Fotos pendentes de envio. Clique em Salvar na Nuvem para tentar novamente.">
+                  <span class="bg-amber-100 text-amber-900 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1" title="Fotos pendentes de envio. Clique em Salvar na Nuvem para tentar novamente.">
                     <svg class="w-3 h-3 text-amber-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     <span>Sincronizado ({{ syncService.evidenciasComFalha() }} foto(s) pendente(s))</span>
                   </span>
                 } @else {
-                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                  <span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
                     <svg class="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     <span>Sincronizado às {{ vistoriaAtiva()?.sincronizadoEm | date:'HH:mm' }}</span>
                   </span>
                 }
               } @else if (syncService.status() === 'error' && vistoriaEmSincronizacaoId() === null) {
-                <span class="bg-red-100 text-red-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-red-200 flex items-center gap-1">
+                <span class="bg-red-100 text-red-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-red-200 flex items-center gap-1">
                   <svg class="w-3 h-3 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                   <span>Falha no envio</span>
                 </span>
               } @else {
-                <span class="bg-slate-100 text-slate-600 text-[10px] font-medium px-2.5 py-0.5 rounded-full border border-slate-200 flex items-center gap-1">
+                <span class="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-slate-200 flex items-center gap-1">
                   <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>
                   <span>Somente local</span>
                 </span>
@@ -948,17 +948,17 @@
                    [class.bg-sky-600]="estatisticasAtivas().percentualConclusao < 100"
                    [style.width.%]="estatisticasAtivas().percentualConclusao"></div>
             </div>
-            <p class="text-[10px] text-slate-400 font-medium">Inspecionados: {{ estatisticasAtivas().avaliados }} de {{ estatisticasAtivas().total }} itens totais de inspeção.</p>
+            <p class="text-[11px] text-slate-400 font-medium">Inspecionados: {{ estatisticasAtivas().avaliados }} de {{ estatisticasAtivas().total }} itens totais de inspeção.</p>
           </div>
 
           <div class="bg-emerald-50 rounded-lg p-2 border border-emerald-100 text-center flex flex-col justify-center">
             <span class="text-emerald-800 font-extrabold text-lg">{{ estatisticasAtivas().conformes }}</span>
-            <span class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Aprovados (Pass)</span>
+            <span class="text-[11px] text-emerald-700 font-bold uppercase tracking-wider">Aprovados (Pass)</span>
           </div>
 
           <div class="bg-rose-50 rounded-lg p-2 border border-rose-100 text-center flex flex-col justify-center">
             <span class="text-rose-800 font-extrabold text-lg">{{ estatisticasAtivas().naoConformes }}</span>
-            <span class="text-[10px] text-rose-700 font-bold uppercase tracking-wider">Falhas (Fail)</span>
+            <span class="text-[11px] text-rose-700 font-bold uppercase tracking-wider">Falhas (Fail)</span>
           </div>
         </div>
       </div>
@@ -974,7 +974,7 @@
                     [class]="'w-full text-left px-3 py-2 text-xs font-semibold rounded-lg transition-colors flex justify-between items-center ' + 
                              (filtroSistema() === 'TODOS' ? 'bg-sky-100 text-sky-800' : 'text-slate-600 hover:bg-slate-50')">
               <span>Todos os Sistemas</span>
-              <span class="bg-slate-200 text-slate-700 font-mono text-[10px] px-2 py-0.5 rounded-full">{{ vistoriaAtiva()?.items?.length }}</span>
+              <span class="bg-slate-200 text-slate-700 font-mono text-[11px] px-2 py-0.5 rounded-full">{{ vistoriaAtiva()?.items?.length }}</span>
             </button>
             @for (sistema of sistemasNoChecklistAtivo(); track sistema) {
               <button (click)="filtroSistema.set(sistema)" 
@@ -997,7 +997,7 @@
                              (filtroStatus() === 'PENDENTE' ? 'bg-amber-100 text-amber-800' : 'text-slate-600 hover:bg-slate-50')">
               <span>⏳ Pendentes</span>
               @if (estatisticasAtivas().pendentes > 0) {
-                <span class="bg-amber-200 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-bold">{{ estatisticasAtivas().pendentes }}</span>
+                <span class="bg-amber-200 text-amber-900 text-[11px] px-2 py-0.5 rounded-full font-bold">{{ estatisticasAtivas().pendentes }}</span>
               }
             </button>
             <button (click)="filtroStatus.set('PASS')" 
@@ -1010,7 +1010,7 @@
                              (filtroStatus() === 'FAIL' ? 'bg-rose-100 text-rose-800' : 'text-slate-600 hover:bg-slate-50')">
               <span>❌ Falhas (Fail)</span>
               @if (estatisticasAtivas().naoConformes > 0) {
-                <span class="bg-rose-200 text-rose-900 text-[10px] px-2 py-0.5 rounded-full font-bold">{{ estatisticasAtivas().naoConformes }}</span>
+                <span class="bg-rose-200 text-rose-900 text-[11px] px-2 py-0.5 rounded-full font-bold">{{ estatisticasAtivas().naoConformes }}</span>
               }
             </button>
             <button (click)="filtroStatus.set('NA')" 
@@ -1065,7 +1065,7 @@
                 
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-2.5">
                   <div>
-                    <span class="text-[10px] font-mono font-bold tracking-wider text-slate-400 uppercase">
+                    <span class="text-[11px] font-mono font-bold tracking-wider text-slate-400 uppercase">
                        {{ item.systemTitle }} &bull; {{ item.typologyTitle }}
                     </span>
                     <h4 class="font-bold text-slate-800 text-sm md:text-base mt-0.5">{{ item.title }}</h4>
@@ -1074,7 +1074,7 @@
                   <!-- Badge do Status Atual -->
                   <div class="flex items-center gap-2">
                     @if (itemSalvoFeedback() === item.id) {
-                      <span class="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-extrabold animate-pulse bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                      <span class="inline-flex items-center gap-1 text-emerald-600 text-[11px] font-extrabold animate-pulse bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>
@@ -1082,20 +1082,20 @@
                       </span>
                     }
                     @if (item.status === 'PENDENTE') {
-                      <span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase border border-amber-200">
+                      <span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 font-bold text-[11px] px-2.5 py-1 rounded-full uppercase border border-amber-200">
                         <span class="w-1 h-1 bg-amber-600 rounded-full animate-ping"></span>
                         Aguardando Inspeção
                       </span>
                     } @else if (item.status === 'CONFORME' || item.status === 'PASS') {
-                      <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase border border-emerald-200">
+                      <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 font-bold text-[11px] px-2.5 py-1 rounded-full uppercase border border-emerald-200">
                         Pass (Conforme)
                       </span>
                     } @else if (item.status === 'NAO_CONFORME' || item.status === 'FAIL') {
-                      <span class="inline-flex items-center gap-1 bg-rose-50 text-rose-700 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase border border-rose-200">
+                      <span class="inline-flex items-center gap-1 bg-rose-50 text-rose-700 font-bold text-[11px] px-2.5 py-1 rounded-full uppercase border border-rose-200">
                         Fail (Falha)
                       </span>
                     } @else {
-                      <span class="inline-flex items-center gap-1 bg-slate-50 text-slate-600 font-bold text-[10px] px-2.5 py-1 rounded-full uppercase border border-slate-200">
+                      <span class="inline-flex items-center gap-1 bg-slate-50 text-slate-600 font-bold text-[11px] px-2.5 py-1 rounded-full uppercase border border-slate-200">
                         Não Aplicável (N/A)
                       </span>
                     }
@@ -1106,7 +1106,7 @@
 
                 <!-- Botoes de Acao de Status -->
                 <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
-                  <span class="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider w-full sm:w-auto mb-1 sm:mb-0 block">Avaliação de Campo:</span>
+                  <span class="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider w-full sm:w-auto mb-1 sm:mb-0 block">Avaliação de Campo:</span>
                   
                   <div class="flex gap-2 w-full sm:w-auto flex-1 sm:flex-initial">
                     <button (click)="alterarStatusItem(item.id, 'PASS')"
@@ -1139,12 +1139,12 @@
                 <!-- Lista de Ocorrências (Opcional se houver alguma) -->
                 @if ((item.ocorrencias ?? []).length > 0) {
                   <div class="mt-3 space-y-2">
-                    <div class="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Ocorrências registradas ({{ item.ocorrencias.length }}):</div>
+                    <div class="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider">Ocorrências registradas ({{ item.ocorrencias.length }}):</div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                       @for (f of item.ocorrencias; track f.id) {
                         <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-col justify-between gap-2 shadow-sm">
                           <div class="flex items-center justify-between">
-                            <span class="inline-flex items-center gap-1 bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                            <span class="inline-flex items-center gap-1 bg-slate-200 text-slate-700 text-[11px] font-bold px-2 py-0.5 rounded uppercase">
                               Ficha nº {{ f.numeroFicha }}
                             </span>
                             <div class="flex items-center gap-1">
@@ -1162,7 +1162,7 @@
                                       title="Excluir ocorrência">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 @if (fichaPendenteConfirmacaoExclusao() === f.id) {
-                                  <span class="text-[9px] font-bold">Confirmar exclusão?</span>
+                                  <span class="text-[11px] font-bold">Confirmar exclusão?</span>
                                 }
                               </button>
                             </div>
@@ -1173,24 +1173,24 @@
 
                               <!-- Banner de contexto: mostra que esta ficha pertence a um item maior, com 3 estados possíveis -->
                               <div class="bg-slate-800 rounded-lg p-3 text-white">
-                                <p class="text-[9px] uppercase font-semibold text-slate-400 tracking-wide mb-0.5">
+                                <p class="text-[11px] uppercase font-semibold text-slate-400 tracking-wide mb-0.5">
                                   {{ item.systemTitle }} &bull; {{ item.typologyTitle }}
                                 </p>
                                 <p class="font-bold text-xs mb-2.5">{{ item.title }}</p>
                                 <div class="flex gap-1.5">
-                                  <div [class]="'flex-1 text-center text-[10px] font-bold py-1.5 rounded-md border ' +
+                                  <div [class]="'flex-1 text-center text-[11px] font-bold py-1.5 rounded-md border ' +
                                                ((item.status === 'CONFORME' || item.status === 'PASS') && (item.ocorrencias ?? []).length === 0
                                                  ? 'bg-emerald-600 border-emerald-600 text-white'
                                                  : 'border-white/15 text-slate-300')">
                                     ✓ Sem Dano
                                   </div>
-                                  <div [class]="'flex-1 text-center text-[10px] font-bold py-1.5 rounded-md border ' +
+                                  <div [class]="'flex-1 text-center text-[11px] font-bold py-1.5 rounded-md border ' +
                                                ((item.status === 'NAO_APLICAVEL' || item.status === 'NA') && (item.ocorrencias ?? []).length === 0
                                                  ? 'bg-slate-500 border-slate-500 text-white'
                                                  : 'border-white/15 text-slate-300')">
                                     – N/A
                                   </div>
-                                  <div [class]="'flex-1 text-center text-[10px] font-bold py-1.5 rounded-md border ' +
+                                  <div [class]="'flex-1 text-center text-[11px] font-bold py-1.5 rounded-md border ' +
                                                ((item.ocorrencias ?? []).length > 0
                                                  ? 'bg-rose-600 border-rose-600 text-white'
                                                  : 'border-white/15 text-slate-300')">
@@ -1199,15 +1199,15 @@
                                 </div>
                               </div>
 
-                              <div class="grid grid-cols-2 gap-2">
+                              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div class="space-y-1">
-                                  <label class="block text-[9px] font-bold uppercase text-slate-500">Pavimento</label>
+                                  <label class="block text-[11px] font-bold uppercase text-slate-500">Pavimento</label>
                                   <input #pavInput [value]="f.pavimento || ''"
                                          placeholder="Ex: Térreo, 2º andar"
                                          class="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500">
                                 </div>
                                 <div class="space-y-1">
-                                  <label class="block text-[9px] font-bold uppercase text-slate-500">Ambiente</label>
+                                  <label class="block text-[11px] font-bold uppercase text-slate-500">Ambiente</label>
                                   <input #ambInput [value]="f.ambiente || ''"
                                          placeholder="Ex: Hall, Banheiro"
                                          class="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500">
@@ -1218,43 +1218,43 @@
                               <div class="p-2.5 bg-rose-50/50 border border-rose-100 rounded-lg space-y-2">
                                 <div class="flex items-center gap-2">
                                   <button type="button" (click)="abrirCaptura(item, 'contexto')"
-                                          class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-[10px] font-bold rounded-lg uppercase tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer">
+                                          class="px-3 py-2 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-bold rounded-lg uppercase tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs">
                                     <span>+ Foto de Contexto</span>
                                   </button>
                                   <button type="button" (click)="abrirCaptura(item, 'detalhe')"
-                                          class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-[10px] font-bold rounded-lg uppercase tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer">
+                                          class="px-3 py-2 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-bold rounded-lg uppercase tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs">
                                     <span>+ Foto de Detalhe</span>
                                   </button>
                                 </div>
                                 @if (f.id_evidencias?.length) {
-                                  <p class="text-[10px] text-slate-500 font-semibold">{{ f.id_evidencias?.length }} evidência(s) anexada(s)</p>
+                                  <p class="text-[11px] text-slate-500 font-semibold">{{ f.id_evidencias?.length }} evidência(s) anexada(s)</p>
                                 }
                               </div>
 
                               <!-- Sugestão da IA — card separado, nunca escreve direto nos campos abaixo -->
                               @if (f.sugestaoIaPendente) {
                                 <div class="p-3 border-2 border-dashed border-amber-500 bg-amber-50 rounded-lg space-y-2">
-                                  <p class="text-[9px] font-bold uppercase text-amber-700">Sugestão da IA — não é o texto final</p>
+                                  <p class="text-[11px] font-bold uppercase text-amber-700">Sugestão da IA — não é o texto final</p>
                                   <p class="text-xs text-slate-700 leading-snug">{{ f.sugestaoIaPendente.manifestacao }}</p>
                                   @if (f.sugestaoIaPendente.causaProvavel) {
                                     <p class="text-xs text-slate-600 leading-snug"><span class="font-semibold">Causa provável:</span> {{ f.sugestaoIaPendente.causaProvavel }}</p>
                                   }
                                   <div class="flex justify-end gap-1.5 pt-1">
                                     <button type="button" (click)="descartarSugestaoIa(item.id, f.id)"
-                                            class="px-2 py-1 text-[10px] font-bold text-slate-500 hover:bg-slate-200 rounded transition-colors cursor-pointer border border-slate-200 bg-white">
+                                            class="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer border border-slate-200 bg-white">
                                       Descartar
                                     </button>
                                     <button type="button" (click)="aceitarSugestaoIa(item.id, f.id)"
-                                            class="px-2 py-1 text-[10px] font-bold bg-amber-600 hover:bg-amber-700 text-white rounded transition-colors cursor-pointer border border-amber-600">
+                                            class="px-3 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors cursor-pointer border border-amber-600 shadow-xs">
                                       Usar como base
                                     </button>
                                   </div>
                                 </div>
                               }
 
-                              <div class="grid grid-cols-2 gap-2">
+                              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div class="space-y-1">
-                                  <label class="block text-[9px] font-bold uppercase text-slate-500">Classificação (Tipo)</label>
+                                  <label class="block text-[11px] font-bold uppercase text-slate-500">Classificação (Tipo)</label>
                                   <select #classTipoSelect [value]="f.classificacao?.tipo || 'INDETERMINADO'"
                                           class="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500">
                                     <option value="INDETERMINADO">INDETERMINADO</option>
@@ -1263,7 +1263,7 @@
                                   </select>
                                 </div>
                                 <div class="space-y-1">
-                                  <label class="block text-[9px] font-bold uppercase text-slate-500">Subtipo</label>
+                                  <label class="block text-[11px] font-bold uppercase text-slate-500">Subtipo</label>
                                   <select #classSubtipoInput [value]="f.classificacao?.subtipo || ''"
                                           class="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500">
                                     <option value="">Selecione…</option>
@@ -1284,7 +1284,7 @@
                               </div>
 
                               <div class="space-y-1">
-                                <label class="block text-[9px] font-bold uppercase text-slate-500">Manifestação Patológica</label>
+                                <label class="block text-[11px] font-bold uppercase text-slate-500">Manifestação Patológica</label>
                                 <textarea #manifestacaoInput [value]="f.manifestacao || ''"
                                           placeholder="Ex: Fissuras verticais na base do pilar..."
                                           rows="2"
@@ -1292,7 +1292,7 @@
                               </div>
 
                               <div class="space-y-1">
-                                <label class="block text-[9px] font-bold uppercase text-slate-500">Causa Provável</label>
+                                <label class="block text-[11px] font-bold uppercase text-slate-500">Causa Provável</label>
                                 <textarea #causaProvavelInput [value]="f.causaProvavel || ''"
                                           placeholder="Ex: Infiltração de água, recalque diferencial..."
                                           rows="2"
@@ -1300,7 +1300,7 @@
                               </div>
 
                               <div class="space-y-1">
-                                <label class="block text-[9px] font-bold uppercase text-slate-500">Recomendação Técnica</label>
+                                <label class="block text-[11px] font-bold uppercase text-slate-500">Recomendação Técnica</label>
                                 <textarea #recomendacaoInput [value]="f.recomendacaoTecnica || ''"
                                           placeholder="Ex: Realizar injeção de poliuretano..."
                                           rows="2"
@@ -1308,7 +1308,7 @@
                               </div>
 
                               <div class="space-y-1">
-                                <label class="block text-[9px] font-bold uppercase text-slate-500">Criticidade Sugerida</label>
+                                <label class="block text-[11px] font-bold uppercase text-slate-500">Criticidade Sugerida</label>
                                 <select #criticidadeSelect [value]="f.criticidade || ''"
                                         class="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500">
                                   <option value="">Não definida</option>
@@ -1319,8 +1319,8 @@
                               </div>
 
                               <div class="space-y-1 bg-slate-50 p-2 rounded border border-slate-200/50">
-                                <label class="block text-[9px] font-bold uppercase text-slate-500">Normas Aplicáveis (Normas sugeridas pela IA)</label>
-                                <div class="text-[10px] text-slate-600 space-y-1 font-mono">
+                                <label class="block text-[11px] font-bold uppercase text-slate-500">Normas Aplicáveis (Normas sugeridas pela IA)</label>
+                                <div class="text-[11px] text-slate-600 space-y-1 font-mono">
                                   @if (f.normasAplicaveis && f.normasAplicaveis.length > 0) {
                                     @for (norma of f.normasAplicaveis; track norma.codigo) {
                                       <div class="flex items-start gap-1">
@@ -1336,11 +1336,11 @@
 
                               <div class="flex justify-end gap-1.5 pt-1">
                                 <button type="button" (click)="fichaEmEdicaoId.set(null); itemDaFichaEmEdicaoId.set(null)"
-                                        class="px-2 py-1 text-[10px] font-bold text-slate-500 hover:bg-slate-200 rounded transition-colors cursor-pointer border border-slate-200 bg-white">
+                                        class="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer border border-slate-200 bg-white">
                                   Cancelar
                                 </button>
                                 <button type="button" (click)="salvarCamposBasicosFicha(item.id, f.id, pavInput.value, ambInput.value); salvarCamposDiagnosticoFicha(item.id, f.id, { classificacaoTipo: classTipoSelect.value, classificacaoSubtipo: classSubtipoInput.value, manifestacao: manifestacaoInput.value, causaProvavel: causaProvavelInput.value, recomendacaoTecnica: recomendacaoInput.value, criticidade: criticidadeSelect.value }); fichaEmEdicaoId.set(null); itemDaFichaEmEdicaoId.set(null)"
-                                        class="px-2 py-1 text-[10px] font-bold bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors cursor-pointer border border-sky-600">
+                                        class="px-3 py-1.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors cursor-pointer border border-sky-600 shadow-xs">
                                   Concluir edição
                                 </button>
                               </div>
@@ -1369,7 +1369,7 @@
                       <div class="flex flex-wrap items-center justify-end gap-2">
                         @if (obterOcorrenciaAtiva(item).id_evidencias?.length) {
                           <button type="button" (click)="abrirGaleria(item)"
-                                  class="text-[10px] font-semibold text-rose-700 bg-rose-100/60 px-2 py-1 rounded-md hover:bg-rose-200/60 transition-colors cursor-pointer">
+                                  class="text-[11px] font-semibold text-rose-700 bg-rose-100/60 px-2 py-1 rounded-md hover:bg-rose-200/60 transition-colors cursor-pointer">
                             {{ obterOcorrenciaAtiva(item).id_evidencias?.length }} evidência(s) —
                             {{ itemGaleriaAberta() === item.id ? 'ocultar' : 'ver fotos' }}
                           </button>
@@ -1382,7 +1382,7 @@
                             <div class="border border-rose-100 rounded-lg overflow-hidden bg-white">
                               <img [src]="e.url" alt="Evidência fotográfica"
                                    class="w-full max-h-56 object-contain bg-slate-50" />
-                              <div class="p-2 text-[10px] text-slate-600 space-y-0.5">
+                              <div class="p-2 text-[11px] text-slate-600 space-y-0.5">
                                 <p class="font-semibold uppercase tracking-wide text-rose-700">
                                   {{ e.ev.tipo === 'contexto' ? 'Contexto' : 'Detalhe' }}
                                   · {{ e.ev.timestamp | date:'dd/MM/yy HH:mm' }}
@@ -1400,7 +1400,7 @@
 
                       @if (obterOcorrenciaAtiva(item).correlacaoFotoPatologia === 'DIVERGENTE' || obterOcorrenciaAtiva(item).correlacaoFotoPatologia === 'INCONCLUSIVA') {
                         <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs space-y-1.5">
-                          <div class="flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wide text-amber-800">
+                          <div class="flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wide text-amber-800">
                             <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" />
                             </svg>
@@ -1417,7 +1417,7 @@
                         </div>
                       } @else if (obterOcorrenciaAtiva(item).falhaAnaliseIa) {
                         <div class="p-3 bg-slate-100 border border-slate-300 rounded-lg text-xs space-y-1">
-                          <div class="flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wide text-slate-700">
+                          <div class="flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wide text-slate-700">
                             <svg class="w-3.5 h-3.5 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                             </svg>
@@ -1431,7 +1431,7 @@
 
                       @if (obterOcorrenciaAtiva(item).diagnostico_ia) {
                         <div class="p-3 bg-white border border-rose-100 rounded-lg text-xs space-y-1">
-                          <div class="flex items-center gap-1.5 text-rose-800 font-extrabold text-[10px] uppercase tracking-wider">
+                          <div class="flex items-center gap-1.5 text-rose-800 font-extrabold text-[11px] uppercase tracking-wider">
                             <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l3.582-1.341c.218-.081.44-.122.664-.122h1.5a1.5 1.5 0 001.5-1.5V14.5A1.5 1.5 0 0014.5 13H10.4a1 1 0 01-.588-.188L7.5 11.5M12 2.25c4.136 0 7.5 3.124 7.5 7.5 0 2.288-.95 4.316-2.457 5.711A6.733 6.733 0 0112 18c-1.848 0-3.53-.74-4.81-1.95A7.481 7.481 0 014.5 9.75c0-4.376 3.364-7.5 7.5-7.5z"/>
                             </svg>
@@ -1445,7 +1445,7 @@
                     <!-- (2º) Bloco de GRAU DE CRITICIDADE -->
                     <div class="pt-3 border-t border-rose-100/60 flex flex-col gap-2.5">
                       @if (!obterOcorrenciaAtiva(item).severity) {
-                        <p class="text-[10px] text-slate-500 italic flex items-center gap-1.5">
+                        <p class="text-[11px] text-slate-500 italic flex items-center gap-1.5">
                           <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                           </svg>
@@ -1464,7 +1464,7 @@
                         <div class="flex gap-2">
                           @for (gravidade of ['Mínimo', 'Regular', 'Crítico']; track gravidade) {
                             <button (click)="alterarGravidadeItem(item.id, $any(gravidade))"
-                                    [class]="'px-2.5 py-1 text-[10px] font-extrabold rounded-md uppercase border transition-all cursor-pointer ' + 
+                                    [class]="'px-2.5 py-1 text-[11px] font-extrabold rounded-md uppercase border transition-all cursor-pointer ' + 
                                              (obterOcorrenciaAtiva(item).severity === gravidade ? 
                                                (gravidade === 'Mínimo' ? 'bg-amber-100 text-amber-800 border-amber-300' : 
                                                 gravidade === 'Regular' ? 'bg-orange-100 text-orange-800 border-orange-300' : 
@@ -1493,7 +1493,7 @@
                          placeholder="Anote o que observou — sempre, mesmo em itens Conformes ou N/A (a IA usará isto no laudo)..." 
                          class="w-full px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 hover:bg-white focus:bg-white transition-all">
                   <div class="flex justify-end mt-0.5">
-                    <span class="text-[10px] tabular-nums"
+                    <span class="text-[11px] tabular-nums"
                           [class.text-slate-400]="notesInput.value.length < 400"
                           [class.text-amber-500]="notesInput.value.length >= 400 && notesInput.value.length < 480"
                           [class.text-red-500]="notesInput.value.length >= 480">
@@ -1596,7 +1596,7 @@
         <!-- Alternar para upload se desejado -->
         @if (!cameraIndisponivel() && !capturando() && !analisandoIa()) {
           <button type="button" (click)="cameraIndisponivel.set(true); camera.parar(); streamCamera.set(null)"
-                  class="absolute top-3 right-3 px-2 py-1 bg-slate-900/80 hover:bg-slate-900 text-white text-[10px] font-bold rounded-lg uppercase tracking-wide flex items-center gap-1 transition-colors cursor-pointer backdrop-blur-sm z-10">
+                  class="absolute top-3 right-3 px-2 py-1 bg-slate-900/80 hover:bg-slate-900 text-white text-[11px] font-bold rounded-lg uppercase tracking-wide flex items-center gap-1 transition-colors cursor-pointer backdrop-blur-sm z-10">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/>
             </svg>
@@ -1618,7 +1618,7 @@
             </div>
             
             <p class="text-xs font-bold text-slate-200">Arraste a foto da evidência ou clique aqui</p>
-            <p class="text-[10px] text-slate-400 mt-1">Suporta imagens JPEG, PNG, WEBP</p>
+            <p class="text-[11px] text-slate-400 mt-1">Suporta imagens JPEG, PNG, WEBP</p>
           </div>
         } @else if (streamCamera()) {
           @if (camera.simulacaoAtiva()) {
@@ -1695,7 +1695,7 @@
       <!-- Cabeçalho de Navegação -->
       <div data-tour-id="norteadores-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span class="bg-sky-100 text-sky-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
+          <span class="bg-sky-100 text-sky-800 text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Anexo I
           </span>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Documentos Norteadores</h2>
@@ -1747,7 +1747,7 @@
                     
                     <!-- Descrição/Nome do Documento -->
                     <div class="md:col-span-4 space-y-1">
-                      <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Descrição do Documento</label>
+                      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Descrição do Documento</label>
                       @if (doc.seed) {
                         <div class="text-xs text-slate-800 font-medium py-2 bg-slate-50 border border-slate-100 rounded-lg px-3">
                           {{ doc.descricao }}
@@ -1762,7 +1762,7 @@
 
                     <!-- Status de Disponibilidade -->
                     <div class="md:col-span-2 space-y-1">
-                      <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Disponibilidade</label>
+                      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Disponibilidade</label>
                       <select [value]="doc.disponibilidade" 
                               (change)="setDisponibilidade(doc.id, $event)"
                               class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all cursor-pointer">
@@ -1776,7 +1776,7 @@
                     <!-- Conformidade (Condicional) -->
                     <div class="md:col-span-2 space-y-1">
                       @if (doc.disponibilidade === 'DD') {
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Conformidade</label>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Conformidade</label>
                         <select [value]="doc.conformidade ?? ''" 
                                 (change)="setConformidade(doc.id, $event)"
                                 class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all cursor-pointer">
@@ -1786,7 +1786,7 @@
                         </select>
                       } @else {
                         <div class="hidden md:block">
-                          <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Conformidade</span>
+                          <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Conformidade</span>
                           <div class="text-xs text-slate-400 py-2 italic">—</div>
                         </div>
                       }
@@ -1794,7 +1794,7 @@
 
                     <!-- Selo Visual -->
                     <div class="md:col-span-2 space-y-1">
-                      <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Status Efetivo</label>
+                      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Status Efetivo</label>
                       <div class="pt-1.5">
                         @if (doc.disponibilidade === 'A_AVALIAR') {
                           <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
@@ -1865,7 +1865,7 @@
                   <!-- Seção de Anexos / Arquivos Anexados nesta linha -->
                   @if (doc.anexos && doc.anexos.length > 0) {
                     <div class="pt-3 border-t border-slate-100 space-y-2">
-                      <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Arquivos Anexados</h4>
+                      <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Arquivos Anexados</h4>
                       
                       <div class="flex flex-wrap gap-2">
                         @for (anexo of doc.anexos; track anexo.id) {
@@ -1878,7 +1878,7 @@
                               </div>
                             } @else {
                               <!-- Ícone de Documento se PDF/Outro -->
-                              <div class="w-10 h-10 rounded border border-slate-300 bg-sky-50 flex items-center justify-center text-sky-600 flex-shrink-0 font-mono text-[10px] font-bold">
+                              <div class="w-10 h-10 rounded border border-slate-300 bg-sky-50 flex items-center justify-center text-sky-600 flex-shrink-0 font-mono text-[11px] font-bold">
                                 PDF
                               </div>
                             }
@@ -1886,12 +1886,12 @@
                             <!-- Detalhes do Anexo -->
                             <div class="min-w-0 pr-6">
                               <p class="font-medium text-slate-800 truncate text-[11px]" [title]="anexo.nome">{{ anexo.nome }}</p>
-                              <p class="text-[9px] text-slate-400 font-mono">{{ formatarBytes(anexo.tamanho) }}</p>
+                              <p class="text-[11px] text-slate-400 font-mono">{{ formatarBytes(anexo.tamanho) }}</p>
                             </div>
 
                             <!-- Botão de Deletar Anexo Individual por duplo clique -->
                             <button (click)="solicitarExcluirAnexo(doc.id, anexo.id)"
-                                    class="absolute top-1 right-1 w-5 h-5 flex items-center justify-center rounded-md border text-[10px] font-bold transition-all cursor-pointer"
+                                    class="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer shadow-xs"
                                     [class.bg-rose-600]="anexoPendenteConfirmacaoExclusao() === anexo.id"
                                     [class.border-rose-600]="anexoPendenteConfirmacaoExclusao() === anexo.id"
                                     [class.text-white]="anexoPendenteConfirmacaoExclusao() === anexo.id"
@@ -1924,7 +1924,7 @@
       <!-- Cabeçalho de Navegação -->
       <div data-tour-id="anamnese-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
+          <span class="bg-indigo-100 text-indigo-800 text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Histórico e Constatações
           </span>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Anamnese</h2>
@@ -2058,7 +2058,7 @@
               <div class="text-center py-16 text-slate-400">
                 <div class="text-4xl mb-2">📋</div>
                 <p class="text-xs font-bold text-slate-500">Nenhuma constatação registrada para esta anamnese</p>
-                <p class="text-[10px] text-slate-400 max-w-sm mx-auto mt-1">Utilize o formulário ao lado para cadastrar relatos, históricos de reformas e patologias recorrentes.</p>
+                <p class="text-[11px] text-slate-400 max-w-sm mx-auto mt-1">Utilize o formulário ao lado para cadastrar relatos, históricos de reformas e patologias recorrentes.</p>
               </div>
             } @else {
               <div class="space-y-3">
@@ -2067,7 +2067,7 @@
                     <div class="space-y-2">
                       <!-- Tag do Tipo -->
                       <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
                               [class.bg-blue-100]="c.tipo === 'RELATO_OCUPANTE'"
                               [class.text-blue-800]="c.tipo === 'RELATO_OCUPANTE'"
                               [class.bg-purple-100]="c.tipo === 'HISTORICO'"
@@ -2161,7 +2161,7 @@
             <div class="text-center py-8 text-slate-400">
               <div class="text-3xl mb-1.5">📎</div>
               <p class="text-xs font-medium">Nenhum anexo geral adicionado à Anamnese</p>
-              <p class="text-[10px] text-slate-400">Insira imagens ou documentos PDFs relevantes clicando em "Anexar Arquivos".</p>
+              <p class="text-[11px] text-slate-400">Insira imagens ou documentos PDFs relevantes clicando em "Anexar Arquivos".</p>
             </div>
           } @else {
             <div class="flex flex-wrap gap-4">
@@ -2184,7 +2184,7 @@
                     <!-- Detalhes do Anexo -->
                     <div class="min-w-0 flex-1">
                       <p class="font-bold text-slate-800 truncate text-xs" [title]="anexo.nome">{{ anexo.nome }}</p>
-                      <p class="text-[9px] text-slate-400 font-mono mt-0.5">{{ formatarBytes(anexo.tamanho) }}</p>
+                      <p class="text-[11px] text-slate-400 font-mono mt-0.5">{{ formatarBytes(anexo.tamanho) }}</p>
                     </div>
 
                     <!-- Botão de Deletar Anexo Individual -->
@@ -2205,7 +2205,7 @@
                   <div class="space-y-2 pt-2.5 border-t border-slate-200/60">
                     <!-- Legenda (sempre) -->
                     <div class="space-y-1">
-                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Legenda</label>
+                      <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Legenda</label>
                       <input type="text"
                              [value]="anexo.legenda || ''"
                              (blur)="salvarLegendaAnexoAnamnese(anexo.id, $any($event.target).value)"
@@ -2216,7 +2216,7 @@
                     <!-- Vincular a constatação (opcional) -->
                     @if (constatacoesLista().length > 0) {
                       <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Vincular a Constatação</label>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Vincular a Constatação</label>
                         <select (change)="vincularAnexoConstatacao(anexo.id, $any($event.target).value)"
                                 class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-700 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition-all bg-white shadow-sm">
                           <option value="" [selected]="!anexo.constatacaoId">— sem vínculo —</option>
@@ -2244,7 +2244,7 @@
       <!-- Cabeçalho de Navegação -->
       <div data-tour-id="avaliacao-manutencao-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
+          <span class="bg-indigo-100 text-indigo-800 text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Seção 11.0 do Laudo
           </span>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Avaliação da Manutenção e Uso</h2>
@@ -2341,7 +2341,7 @@
       <!-- Cabeçalho de Navegação -->
       <div data-tour-id="avaliacao-criticidade-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
+          <span class="bg-indigo-100 text-indigo-800 text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Seção 12.0 do Laudo
           </span>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Avaliação do Grau de Criticidade</h2>
@@ -2357,7 +2357,7 @@
 
       <!-- Números Agregados (Sintese Grid) -->
       @if (contagemCriticidadeTotal() > 0) {
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col items-center justify-center text-center">
             <span class="text-3xl font-extrabold text-rose-600">{{ contagemCriticidadeP1() }}</span>
             <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Prioridade 1</span>
@@ -2460,7 +2460,7 @@
       <!-- Cabeçalho de Navegação -->
       <div data-tour-id="conclusoes-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
+          <span class="bg-indigo-100 text-indigo-800 text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Seção 13.0 do Laudo
           </span>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Conclusões e Considerações Finais</h2>
@@ -2656,7 +2656,7 @@
       <!-- Cabeçalho de Navegação -->
       <div data-tour-id="anexo-art-cabecalho" class="bg-white rounded-xl shadow-lg p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span class="bg-indigo-100 text-indigo-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
+          <span class="bg-indigo-100 text-indigo-800 text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-1 inline-block">
             Anexo IV do Laudo
           </span>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Anexo IV — ART / RRT</h2>
@@ -2765,67 +2765,67 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div class="sm:col-span-2 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Nome do Edifício</span>
+              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Nome do Edifício</span>
               <span class="text-slate-800 font-bold text-sm">{{ laudo.snapshotVistoria.buildingName }}</span>
             </div>
 
             <div class="sm:col-span-2 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Endereço</span>
+              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Endereço</span>
               <span class="text-slate-800 font-medium">{{ laudo.snapshotVistoria.address }}</span>
             </div>
 
             @if (laudo.snapshotVistoria.tipoUso) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Uso Predominante</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Uso Predominante</span>
                 <span class="text-slate-800 font-semibold">{{ laudo.snapshotVistoria.tipoUso }}</span>
               </div>
             }
 
             @if (laudo.snapshotVistoria.areaConstruida) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Área Construída</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Área Construída</span>
                 <span class="text-slate-800 font-semibold">{{ laudo.snapshotVistoria.areaConstruida }}</span>
               </div>
             }
 
             @if (laudo.snapshotVistoria.idadeEdificacao) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Idade da Edificação</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Idade da Edificação</span>
                 <span class="text-slate-800 font-semibold">{{ laudo.snapshotVistoria.idadeEdificacao }}</span>
               </div>
             }
 
             @if (laudo.snapshotVistoria.padraoAcabamento) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Padrão de Acabamento</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Padrão de Acabamento</span>
                 <span class="text-slate-800 font-semibold">{{ laudo.snapshotVistoria.padraoAcabamento }}</span>
               </div>
             }
 
             @if (laudo.snapshotVistoria.numeroPavimentos) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Número de Pavimentos</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Número de Pavimentos</span>
                 <span class="text-slate-800 font-semibold">{{ laudo.snapshotVistoria.numeroPavimentos }}</span>
               </div>
             }
 
             @if (laudo.snapshotVistoria.sistemaEstruturalPredominante) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Sistema Estrutural</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Sistema Estrutural</span>
                 <span class="text-slate-800 font-semibold">{{ laudo.snapshotVistoria.sistemaEstruturalPredominante }}</span>
               </div>
             }
 
             @if (laudo.snapshotVistoria.sistemaFundacao) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Sistema de Fundação</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Sistema de Fundação</span>
                 <span class="text-slate-800 font-semibold">{{ laudo.snapshotVistoria.sistemaFundacao }}</span>
               </div>
             }
 
             @if (laudo.snapshotVistoria.nivelInspecao) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Nível de Inspeção</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Nível de Inspeção</span>
                 <span class="inline-flex items-center gap-1.5 font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-100 mt-1">
                   Nível {{ laudo.snapshotVistoria.nivelInspecao }}
                 </span>
@@ -2846,37 +2846,37 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Profissional</span>
+              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Profissional</span>
               <span class="text-slate-800 font-bold text-sm">{{ laudo.snapshotProfile.fullName }}</span>
             </div>
 
             <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Título Profissional</span>
+              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Título Profissional</span>
               <span class="text-slate-800 font-semibold">{{ laudo.snapshotProfile.professionalTitle }}</span>
             </div>
 
             <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Registro Profissional</span>
+              <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Registro Profissional</span>
               <span class="text-slate-800 font-mono font-bold">{{ laudo.snapshotProfile.professionalId }}</span>
             </div>
 
             @if (laudo.snapshotProfile.companyName) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Empresa</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Empresa</span>
                 <span class="text-slate-800 font-bold">{{ laudo.snapshotProfile.companyName }}</span>
               </div>
             }
 
             @if (laudo.snapshotProfile.companyCnpj) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">CNPJ</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">CNPJ</span>
                 <span class="text-slate-800 font-mono">{{ laudo.snapshotProfile.companyCnpj }}</span>
               </div>
             }
 
             @if (laudo.snapshotProfile.companyAddress) {
               <div class="bg-slate-50/50 p-2.5 rounded-lg border border-slate-100 sm:col-span-2">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Endereço Comercial</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Endereço Comercial</span>
                 <span class="text-slate-800 font-medium">{{ laudo.snapshotProfile.companyAddress }}</span>
               </div>
             }
@@ -2884,7 +2884,7 @@
             <!-- Links Úteis -->
             @if (laudo.snapshotProfile.companyPhone || laudo.snapshotProfile.companyEmail || laudo.snapshotProfile.companySite || (laudo.snapshotProfile.socialNetworkLabel && laudo.snapshotProfile.socialNetworkUrl)) {
               <div class="sm:col-span-2 pt-2 border-t border-slate-100 mt-2 space-y-2">
-                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[10px]">Canais de Contato</span>
+                <span class="text-slate-400 font-bold uppercase block tracking-wider text-[11px]">Canais de Contato</span>
                 <div class="flex flex-wrap gap-2">
                   @if (laudo.snapshotProfile.companyPhone) {
                     <a [href]="'tel:' + normalizarTel(laudo.snapshotProfile.companyPhone)" class="inline-flex items-center gap-1 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-150 px-2.5 py-1 rounded-full text-xs transition-colors font-semibold">
@@ -2929,39 +2929,39 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center flex flex-col justify-between">
-            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Total Itens</span>
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Total Itens</span>
             <span class="text-slate-800 font-extrabold text-2xl">{{ stats.total }}</span>
           </div>
 
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center flex flex-col justify-between">
-            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Avaliados</span>
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Avaliados</span>
             <span class="text-slate-800 font-extrabold text-2xl">{{ stats.avaliados }}</span>
           </div>
 
           <div class="bg-emerald-50 border border-emerald-150 rounded-xl p-3.5 text-center flex flex-col justify-between">
-            <span class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block mb-1">Aprovados</span>
+            <span class="text-[11px] text-emerald-700 font-bold uppercase tracking-wider block mb-1">Aprovados</span>
             <span class="text-emerald-800 font-extrabold text-2xl">{{ stats.conformes }}</span>
           </div>
 
           <div class="bg-rose-50 border border-rose-150 rounded-xl p-3.5 text-center flex flex-col justify-between">
-            <span class="text-[10px] text-rose-700 font-bold uppercase tracking-wider block mb-1">Falhas</span>
+            <span class="text-[11px] text-rose-700 font-bold uppercase tracking-wider block mb-1">Falhas</span>
             <span class="text-rose-800 font-extrabold text-2xl">{{ stats.naoConformes }}</span>
           </div>
 
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center flex flex-col justify-between">
-            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">N/A</span>
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-1">N/A</span>
             <span class="text-slate-800 font-extrabold text-2xl">{{ stats.naoAplicaveis }}</span>
           </div>
 
           <div class="bg-blue-50 border border-blue-150 rounded-xl p-3.5 text-center flex flex-col justify-between">
-            <span class="text-[10px] text-blue-700 font-bold uppercase tracking-wider block mb-1">Conclusão</span>
+            <span class="text-[11px] text-blue-700 font-bold uppercase tracking-wider block mb-1">Conclusão</span>
             <span class="text-blue-800 font-extrabold text-2xl">{{ stats.percentualConclusao }}%</span>
           </div>
 
           <div class="bg-emerald-50 border border-emerald-150 rounded-xl p-3.5 text-center flex flex-col justify-between col-span-2 md:col-span-1">
-            <span class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block mb-1">Conformidade</span>
+            <span class="text-[11px] text-emerald-700 font-bold uppercase tracking-wider block mb-1">Conformidade</span>
             <span class="text-emerald-800 font-extrabold text-2xl">{{ stats.taxaConformidade }}%</span>
           </div>
         </div>
@@ -3013,12 +3013,12 @@
             Identificamos que o laudo possui textos salvos previamente que foram editados ou gerados <b>antes</b> de alterações recentes nesta vistoria (por exemplo: adição/edição de fichas de danos, alteração de criticidade P1/P2/P3, anamnese ou documentos).
           </p>
           <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
-            <span class="font-bold text-amber-950 uppercase tracking-wider text-[10px] block">Seções com texto potencialmente desalinhado dos dados:</span>
+            <span class="font-bold text-amber-950 uppercase tracking-wider text-[11px] block">Seções com texto potencialmente desalinhado dos dados:</span>
             <div class="space-y-1.5">
               @for (sec of obterSecoesDesatualizadas(vistoriaAtiva()); track sec.titulo) {
                 <div class="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border border-amber-200">
                   <span class="font-semibold text-slate-800 text-[11px]">{{ sec.titulo }}</span>
-                  <button (click)="sec.navegar(); fecharModalPreEmissao()" class="flex-shrink-0 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded text-[10px] border border-amber-300 transition-all cursor-pointer">
+                  <button (click)="sec.navegar(); fecharModalPreEmissao()" class="flex-shrink-0 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded text-[11px] border border-amber-300 transition-all cursor-pointer">
                     Revisar
                   </button>
                 </div>

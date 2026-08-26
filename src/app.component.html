@@ -91,9 +91,9 @@
     }
 
     <!-- MAIN CONTENT -->
-    <div class="lg:pl-64">
+    <div class="lg:pl-64 min-w-0 max-w-full overflow-x-hidden">
       <!-- STICKY HEADER FOR MOBILE -->
-      <header class="sticky top-0 bg-slate-100/80 backdrop-blur-sm p-4 z-10 flex items-center justify-between lg:hidden border-b border-slate-200">
+      <header class="sticky top-0 bg-slate-100/80 backdrop-blur-sm px-4 py-3 z-10 flex items-center justify-between lg:hidden border-b border-slate-200 min-w-0 max-w-full">
         <button (click)="isMenuOpen.set(true)" class="text-slate-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
         </button>
@@ -111,7 +111,7 @@
         }
       </header>
 
-      <div class="p-4 md:p-6 lg:p-8">
+      <div class="p-3 sm:p-4 md:p-6 lg:p-8 min-w-0 max-w-full overflow-x-hidden">
         <!-- DESKTOP HEADER -->
         <header class="hidden lg:flex justify-between items-center mb-8">
             <div>
@@ -182,7 +182,7 @@
         </header>
 
         <!-- MAIN VIEW CONTENT -->
-        <main>
+        <main class="min-w-0 max-w-full overflow-x-hidden">
           @switch (activeView()) {
             @case ('visao-geral') { <app-visao-geral /> }
             @case ('checklist') { <app-checklist-inspecao [isLoggedIn]="isLoggedIn()" [profile]="userProfile()" /> }

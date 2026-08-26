@@ -1,10 +1,10 @@
-<div class="space-y-12 animate-fade-in pb-16">
+<div class="space-y-8 sm:space-y-12 animate-fade-in pb-16 w-full max-w-full overflow-x-hidden">
   
   <!-- HERO BANNER PREDIAL 4.0 (AMORIM TECH) -->
-  <div class="relative bg-gradient-to-br from-slate-900 via-sky-950 to-slate-950 text-white rounded-3xl p-8 sm:p-12 shadow-2xl overflow-hidden border border-white/10">
+  <div class="relative bg-gradient-to-br from-slate-900 via-sky-950 to-slate-950 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 shadow-2xl overflow-hidden border border-white/10 w-full max-w-full">
     <!-- Efeitos de Brilho no Background -->
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.15),transparent_45%)]"></div>
-    <div class="absolute -right-10 -bottom-10 opacity-10 text-white select-none pointer-events-none">
+    <div class="absolute -right-10 -bottom-10 opacity-10 text-white select-none pointer-events-none overflow-hidden max-w-full">
       <svg xmlns="http://www.w3.org/2000/svg" width="350" height="350" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4.5 16.5c-1.5 1.26-2.5 3.19-2.5 5.5s1 4.24 2.5 5.5"/>
         <path d="M12 2s8 3 8 10c0 4.5-3.5 8-8 8s-8-3.5-8-8c0-7 8-10 8-10z"/>
@@ -14,68 +14,68 @@
       </svg>
     </div>
 
-    <div class="relative z-10 max-w-4xl space-y-6">
-      <span class="inline-flex items-center gap-1.5 bg-sky-500/10 text-sky-400 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest border border-sky-500/20 shadow-xs">
-        <span class="w-2 h-2 bg-sky-400 rounded-full animate-pulse"></span>
-        ECOSSISTEMA AMORIM TECH
+    <div class="relative z-10 max-w-4xl space-y-4 sm:space-y-6 min-w-0">
+      <span class="inline-flex items-center gap-1.5 bg-sky-500/10 text-sky-400 text-[11px] sm:text-xs font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full uppercase tracking-wider sm:tracking-widest border border-sky-500/20 shadow-xs max-w-full truncate">
+        <span class="w-2 h-2 bg-sky-400 rounded-full animate-pulse shrink-0"></span>
+        <span>ECOSSISTEMA AMORIM TECH</span>
       </span>
       
-      <div class="space-y-2">
-        <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-none text-white" style="font-family:'Poppins','Inter',sans-serif;">
+      <div class="space-y-1.5 sm:space-y-2">
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-tight sm:leading-none text-white break-words" style="font-family:'Poppins','Inter',sans-serif;">
           Predial <span style="color:#B5642A;">4.0</span>
         </h1>
-        <h2 class="text-lg sm:text-2xl font-bold text-sky-200 tracking-tight">
+        <h2 class="text-base sm:text-2xl font-bold text-sky-200 tracking-tight leading-snug break-words">
           Sua Plataforma de Gestão e Inteligência Predial Avançada
         </h2>
       </div>
 
-      <p class="text-slate-300 text-sm sm:text-base md:text-lg leading-relaxed font-normal max-w-3xl">
+      <p class="text-slate-300 text-xs sm:text-base md:text-lg leading-relaxed font-normal max-w-3xl break-words">
         O Predial 4.0 é uma solução inovadora projetada para transformar o modo como engenheiros, arquitetos e síndicos lidam com a conservação e valorização de edifícios. Atuando como um verdadeiro "copiloto técnico", a plataforma une dados estruturados, automação e inteligência artificial para eliminar burocracias, reduzir incertezas técnicas e garantir a total segurança das edificações.
       </p>
 
-      <div class="flex flex-wrap gap-4 pt-4">
-        <button (click)="scrollToFeatures()" data-tour-id="cta-explorar-funcionalidades" class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg hover:shadow-sky-500/20 hover:scale-103 transition-all duration-300 cursor-pointer text-sm">
-          Acessar Ecossistema Central
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+      <div class="flex flex-wrap gap-4 pt-2 sm:pt-4">
+        <button (click)="scrollToFeatures()" data-tour-id="cta-explorar-funcionalidades" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-sky-500/20 active:scale-98 transition-all duration-300 cursor-pointer text-xs sm:text-sm text-center">
+          <span>Acessar Ecossistema Central</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
         </button>
       </div>
     </div>
   </div>
 
   <!-- SEÇÃO: VISTORIAS LOCAIS & SINCRONIZAÇÃO EM NUVEM -->
-  <div data-tour-id="secao-vistorias-recentes">
+  <div data-tour-id="secao-vistorias-recentes" class="w-full max-w-full">
     @if (vistorias().length > 0) {
-      <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-100 space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-          <div>
-            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-              Vistorias no Dispositivo &amp; Sincronização em Nuvem
+      <div class="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-md border border-slate-100 space-y-6 w-full max-w-full overflow-hidden">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-4">
+          <div class="min-w-0">
+            <h3 class="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2 break-words">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-sky-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <span>Vistorias no Dispositivo &amp; Sincronização em Nuvem</span>
             </h3>
-            <p class="text-slate-500 text-xs sm:text-sm">Sincronize suas vistorias salvas neste aparelho com a nuvem</p>
+            <p class="text-slate-500 text-xs sm:text-sm mt-0.5">Sincronize suas vistorias salvas neste aparelho com a nuvem</p>
           </div>
           <button type="button"
                   (click)="sincronizarTudo()"
                   [disabled]="isSincronizandoGeral()"
-                  class="inline-flex items-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50">
+                  class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50 text-center">
             @if (isSincronizandoGeral()) {
-              <span class="w-4 h-4 border-2 border-sky-700 border-t-transparent rounded-full animate-spin"></span>
+              <span class="w-4 h-4 border-2 border-sky-700 border-t-transparent rounded-full animate-spin shrink-0"></span>
               <span>Sincronizando...</span>
             } @else {
-              <svg class="w-4 h-4 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <svg class="w-4 h-4 text-sky-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span>Sincronizar Nuvem</span>
             }
           </button>
         </div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           @for (vistoria of vistorias(); track vistoria.id) {
-            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 flex flex-col justify-between gap-3 hover:border-sky-300 transition-colors">
-              <div>
-                <div class="flex justify-between items-start gap-2 mb-1">
-                  <h4 class="font-bold text-slate-800 text-sm line-clamp-1">{{ vistoria.buildingName }}</h4>
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 flex flex-col justify-between gap-3 hover:border-sky-300 transition-colors w-full min-w-0 overflow-hidden">
+              <div class="min-w-0">
+                <div class="flex justify-between items-start gap-2 mb-1 min-w-0">
+                  <h4 class="font-bold text-slate-800 text-sm truncate" [title]="vistoria.buildingName">{{ vistoria.buildingName }}</h4>
                 </div>
-                <p class="text-slate-500 text-xs truncate mb-2">{{ vistoria.address }}</p>
+                <p class="text-slate-500 text-xs truncate mb-2" [title]="vistoria.address">{{ vistoria.address }}</p>
                 
                 <div class="flex items-center justify-between text-[11px] text-slate-500 mb-2">
                   <span>Progresso: <strong class="text-sky-700">{{ vistoria.progress }}%</strong></span>
@@ -83,32 +83,32 @@
                 </div>
               </div>
 
-              <div class="pt-3 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-2">
+              <div class="pt-3 border-t border-slate-200/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 min-w-0">
                 @if (vistoriaEmSincronizacaoId() === vistoria.id) {
-                  <span class="inline-flex items-center gap-1.5 text-sky-700 bg-sky-100/80 px-2.5 py-1 rounded-md text-[10px] font-bold">
-                    <span class="w-2.5 h-2.5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin"></span>
+                  <span class="inline-flex items-center justify-center gap-1.5 text-sky-700 bg-sky-100/80 px-2.5 py-1 rounded-md text-[11px] font-bold">
+                    <span class="w-2.5 h-2.5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin shrink-0"></span>
                     <span>Sincronizando...</span>
                   </span>
                 } @else if (vistoria.sincronizadoEm) {
                   @if (syncService.evidenciasComFalha() > 0 && vistoriaEmSincronizacaoId() === null) {
-                    <span class="inline-flex items-center gap-1 text-amber-800 bg-amber-100/80 px-2 py-1 rounded-md text-[10px] font-bold" title="Algumas fotos pendentes. Clique para reenviar.">
-                      <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                      <span>Sincronizado ({{ syncService.evidenciasComFalha() }} foto(s) pendente(s))</span>
+                    <span class="inline-flex items-center gap-1 text-amber-800 bg-amber-100/80 px-2 py-1 rounded-md text-[11px] font-bold truncate max-w-full" title="Algumas fotos pendentes. Clique para reenviar.">
+                      <svg class="w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                      <span class="truncate">Sincronizado ({{ syncService.evidenciasComFalha() }} foto(s) pendente(s))</span>
                     </span>
                   } @else {
-                    <span class="inline-flex items-center gap-1 text-emerald-800 bg-emerald-100/80 px-2 py-1 rounded-md text-[10px] font-bold">
-                      <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <span class="inline-flex items-center gap-1 text-emerald-800 bg-emerald-100/80 px-2 py-1 rounded-md text-[11px] font-bold truncate max-w-full">
+                      <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                       <span>Sincronizado {{ vistoria.sincronizadoEm | date:'HH:mm' }}</span>
                     </span>
                   }
                 } @else if (syncService.status() === 'error' && vistoriaEmSincronizacaoId() === null) {
-                  <span class="inline-flex items-center gap-1 text-red-800 bg-red-100/80 px-2 py-1 rounded-md text-[10px] font-bold">
-                    <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span class="inline-flex items-center gap-1 text-red-800 bg-red-100/80 px-2 py-1 rounded-md text-[11px] font-bold truncate max-w-full">
+                    <svg class="w-3.5 h-3.5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span>Falha no envio</span>
                   </span>
                 } @else {
-                  <span class="inline-flex items-center gap-1 text-slate-600 bg-slate-200/80 px-2 py-1 rounded-md text-[10px] font-medium">
-                    <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  <span class="inline-flex items-center gap-1 text-slate-600 bg-slate-200/80 px-2 py-1 rounded-md text-[11px] font-medium truncate max-w-full">
+                    <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                     <span>Somente local</span>
                   </span>
                 }
@@ -116,9 +116,9 @@
                 <button type="button"
                         (click)="sincronizarNuvem($event, vistoria)"
                         [disabled]="syncService.status() === 'syncing'"
-                        class="inline-flex items-center gap-1 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs transition-all shadow-xs active:scale-95 cursor-pointer"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold px-3 py-2 sm:py-1.5 rounded-lg text-xs transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 text-center"
                         title="Salvar esta vistoria e fotos na nuvem">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                   <span>Salvar na Nuvem</span>
                 </button>
               </div>
@@ -128,138 +128,138 @@
       </div>
     } @else {
       <!-- Placeholder explicativo quando não houver vistorias -->
-      <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-100 space-y-4">
+      <div class="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-md border border-slate-100 space-y-4 w-full max-w-full overflow-hidden">
         <div>
-          <h3 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-            Suas Vistorias de Campo &amp; Sincronização
+          <h3 class="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2 break-words">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-sky-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            <span>Suas Vistorias de Campo &amp; Sincronização</span>
           </h3>
-          <p class="text-slate-500 text-xs sm:text-sm">Acompanhe aqui as vistorias iniciadas no dispositivo e a sincronização com a nuvem.</p>
+          <p class="text-slate-500 text-xs sm:text-sm mt-0.5">Acompanhe aqui as vistorias iniciadas no dispositivo e a sincronização com a nuvem.</p>
         </div>
-        <div class="p-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-          <p class="text-xs text-slate-500">Nenhuma vistoria iniciada no dispositivo ainda. Você pode iniciar um novo laudo a qualquer momento pelo menu <strong>Check-up</strong> ou <strong>Cautelar</strong>.</p>
+        <div class="p-5 sm:p-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">Nenhuma vistoria iniciada no dispositivo ainda. Você pode iniciar um novo laudo a qualquer momento pelo menu <strong>Check-up</strong> ou <strong>Cautelar</strong>.</p>
         </div>
       </div>
     }
   </div>
 
   <!-- SEÇÃO: FUNCIONALIDADES ATUAIS -->
-  <div id="funcionalidades" data-tour-id="secao-funcionalidades" class="space-y-6 pt-4 scroll-mt-6">
+  <div id="funcionalidades" data-tour-id="secao-funcionalidades" class="space-y-6 pt-4 scroll-mt-6 w-full max-w-full">
     <div class="space-y-1">
-      <h3 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Funcionalidades Atuais</h3>
-      <p class="text-slate-500 text-sm sm:text-base">Módulos e capacidades de engenharia diagnóstica entregues na plataforma</p>
+      <h3 class="text-xl sm:text-3xl font-black text-slate-900 tracking-tight break-words">Funcionalidades Atuais</h3>
+      <p class="text-slate-500 text-xs sm:text-base">Módulos e capacidades de engenharia diagnóstica entregues na plataforma</p>
     </div>
 
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
       
       <!-- Card 1: Laudo Técnico de Inspeção Predial completo -->
-      <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-sky-200 transition-all duration-300 flex flex-col justify-between group">
-        <div class="space-y-4">
-          <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-sky-200 transition-all duration-300 flex flex-col justify-between group w-full min-w-0 overflow-hidden">
+        <div class="space-y-3 sm:space-y-4">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shrink-0">
             <!-- Icone de Documento Normativo / Prancheta -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-slate-800">Laudo Técnico de Inspeção Predial completo</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+          <h4 class="text-base sm:text-lg font-bold text-slate-800 break-words">Laudo Técnico de Inspeção Predial completo</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Conformidade com ABNT NBR 16747:2020, sumário navegável, sistemas e tipologias reais com normas técnicas vinculadas, anexos (documentos norteadores, relatório fotográfico, mapeamento de danos, ART/RRT), identidade do profissional emissor real no cabeçalho e capa.
           </p>
         </div>
       </div>
 
       <!-- Card 2: Vistoria Cautelar de Vizinhança completa -->
-      <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-sky-200 transition-all duration-300 flex flex-col justify-between group">
-        <div class="space-y-4">
-          <div class="w-12 h-12 bg-sky-50 text-sky-700 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-sky-200 transition-all duration-300 flex flex-col justify-between group w-full min-w-0 overflow-hidden">
+        <div class="space-y-3 sm:space-y-4">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 bg-sky-50 text-sky-700 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shrink-0">
             <!-- Icone de Imóveis / Edificações -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-slate-800">Vistoria Cautelar de Vizinhança completa</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+          <h4 class="text-base sm:text-lg font-bold text-slate-800 break-words">Vistoria Cautelar de Vizinhança completa</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Conforme norma IBAPE/SP 2025, com múltiplos imóveis vistoriados, níveis 1/2/3 de profundidade, assinaturas com dados reais do profissional logado, corresponsabilidade técnica quando aplicável e laudos emitidos imutáveis.
           </p>
         </div>
       </div>
 
       <!-- Card 3: Gerador de Caracterização com Inteligência Artificial -->
-      <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-amber-200 transition-all duration-300 flex flex-col justify-between group">
-        <div class="space-y-4">
-          <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-amber-200 transition-all duration-300 flex flex-col justify-between group w-full min-w-0 overflow-hidden">
+        <div class="space-y-3 sm:space-y-4">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shrink-0">
             <!-- Icone de Mapa com Anotações / Localização -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503-14.777 4.103 2.052a2.25 2.25 0 0 1 1.247 2.012v10.963a2.25 2.25 0 0 1-1.247 2.012l-4.103 2.052a2.25 2.25 0 0 1-2.01 0l-4.24-2.12a2.25 2.25 0 0 0-2.01 0l-3.35 1.675A2.25 2.25 0 0 1 3 20.364V9.4a2.25 2.25 0 0 1 1.247-2.012l3.35-1.675a2.25 2.25 0 0 1 2.01 0l4.24 2.12a2.25 2.25 0 0 0 2.01 0l.656-.328Z" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-slate-800">Gerador de Caracterização com IA</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+          <h4 class="text-base sm:text-lg font-bold text-slate-800 break-words">Gerador de Caracterização com IA</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Mapa de localização interativo com anotação manual (setas, hachuras, texto) e geração automática de memorial descritivo a partir de fotos e dados da edificação, usando IA multimodal.
           </p>
         </div>
       </div>
 
       <!-- Card 4: Diagnóstico Técnico por Imagem (IA) -->
-      <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group">
-        <div class="space-y-4">
-          <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group w-full min-w-0 overflow-hidden">
+        <div class="space-y-3 sm:space-y-4">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shrink-0">
             <!-- Icone de Câmera / Diagnóstico Visual -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-slate-800">Diagnóstico Técnico por Imagem (IA)</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+          <h4 class="text-base sm:text-lg font-bold text-slate-800 break-words">Diagnóstico Técnico por Imagem (IA)</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Análise de patologias construtivas a partir de fotografias de campo, apoio à identificação de causas prováveis e recomendações técnicas fundamentadas.
           </p>
         </div>
       </div>
 
       <!-- Card 5: Sincronização automática em nuvem -->
-      <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-cyan-200 transition-all duration-300 flex flex-col justify-between group">
-        <div class="space-y-4">
-          <div class="w-12 h-12 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-cyan-200 transition-all duration-300 flex flex-col justify-between group w-full min-w-0 overflow-hidden">
+        <div class="space-y-3 sm:space-y-4">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shrink-0">
             <!-- Icone de Nuvem com Seta -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-slate-800">Sincronização automática em nuvem</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+          <h4 class="text-base sm:text-lg font-bold text-slate-800 break-words">Sincronização automática em nuvem</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Trabalhe em qualquer aparelho: vistorias, laudos e evidências fotográficas sincronizam automaticamente entre dispositivos ao fazer login, com laudos já emitidos protegidos como imutáveis.
           </p>
         </div>
       </div>
 
       <!-- Card 6: Funciona 100% offline -->
-      <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-indigo-200 transition-all duration-300 flex flex-col justify-between group">
-        <div class="space-y-4">
-          <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-indigo-200 transition-all duration-300 flex flex-col justify-between group w-full min-w-0 overflow-hidden">
+        <div class="space-y-3 sm:space-y-4">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shrink-0">
             <!-- Icone de Celular / Offline -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-slate-800">Funciona 100% offline</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+          <h4 class="text-base sm:text-lg font-bold text-slate-800 break-words">Funciona 100% offline</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Toda a coleta de campo funciona sem internet, com armazenamento local seguro no seu aparelho, sincronizando automaticamente assim que a conexão voltar.
           </p>
         </div>
       </div>
 
       <!-- Card 7: Login seguro e identidade profissional real -->
-      <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-teal-200 transition-all duration-300 flex flex-col justify-between group md:col-span-2 lg:col-span-1">
-        <div class="space-y-4">
-          <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-md hover:shadow-xl border border-slate-100 hover:border-teal-200 transition-all duration-300 flex flex-col justify-between group md:col-span-2 lg:col-span-1 w-full min-w-0 overflow-hidden">
+        <div class="space-y-3 sm:space-y-4">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shrink-0">
             <!-- Icone de Escudo com Check / Identidade Segura -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286Z" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-slate-800">Login seguro e identidade profissional real</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+          <h4 class="text-base sm:text-lg font-bold text-slate-800 break-words">Login seguro e identidade profissional real</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Login seguro com e-mail e senha — cada documento gerado carrega a identidade real do profissional responsável (nome, CAU/CREA, empresa), nunca uma marca genérica.
           </p>
         </div>
@@ -269,63 +269,63 @@
   </div>
 
   <!-- SEÇÃO: VISÃO DE FUTURO (PRÓXIMOS UPGRADES) -->
-  <div class="bg-white p-8 sm:p-10 rounded-3xl shadow-lg border border-slate-100 space-y-8">
+  <div class="bg-white p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl shadow-lg border border-slate-100 space-y-6 sm:space-y-8 w-full max-w-full overflow-hidden">
     <div class="space-y-1">
-      <h3 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Visão de Futuro</h3>
-      <p class="text-slate-500 text-sm sm:text-base">Próximos passos do roadmap e expansão técnica da plataforma</p>
+      <h3 class="text-xl sm:text-3xl font-black text-slate-900 tracking-tight break-words">Visão de Futuro</h3>
+      <p class="text-slate-500 text-xs sm:text-base">Próximos passos do roadmap e expansão técnica da plataforma</p>
     </div>
 
-    <div class="grid gap-6">
+    <div class="grid gap-5 sm:gap-6 w-full">
       <!-- Item 1 -->
-      <div class="flex gap-4 sm:gap-6 items-start border-l-4 border-sky-600 pl-4 sm:pl-6 py-1">
-        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-sm">1</span>
-        <div class="space-y-1">
-          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base">Integração Curso → Módulo</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
-            Conclusão de cursos na Amorim Academy libera automaticamente módulos correspondentes no Predial 4.0, via <code class="text-sky-800 font-mono text-xs bg-sky-50 px-1 py-0.5 rounded">permissoes_acesso</code> compartilhado com a Comunidade Nova.
+      <div class="flex gap-3 sm:gap-6 items-start border-l-4 border-sky-600 pl-3 sm:pl-6 py-1 min-w-0">
+        <span class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-xs sm:text-sm mt-0.5">1</span>
+        <div class="space-y-1 min-w-0 flex-1">
+          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base break-words">Integração Curso → Módulo</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
+            Conclusão de cursos na Amorim Academy libera automaticamente módulos correspondentes no Predial 4.0, via <code class="text-sky-800 font-mono text-[11px] sm:text-xs bg-sky-50 px-1 py-0.5 rounded break-all">permissoes_acesso</code> compartilhado com a Comunidade Nova.
           </p>
         </div>
       </div>
 
       <!-- Item 2 -->
-      <div class="flex gap-4 sm:gap-6 items-start border-l-4 border-sky-600 pl-4 sm:pl-6 py-1">
-        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-sm">2</span>
-        <div class="space-y-1">
-          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base">Módulo de Orçamento e Planejamento</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+      <div class="flex gap-3 sm:gap-6 items-start border-l-4 border-sky-600 pl-3 sm:pl-6 py-1 min-w-0">
+        <span class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-xs sm:text-sm mt-0.5">2</span>
+        <div class="space-y-1 min-w-0 flex-1">
+          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base break-words">Módulo de Orçamento e Planejamento</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Roadmap de Recuperação Plurianual, plano de ação, orçamento de referência e caderno de encargos, como documento próprio e independente do LTIP.
           </p>
         </div>
       </div>
 
       <!-- Item 3 -->
-      <div class="flex gap-4 sm:gap-6 items-start border-l-4 border-sky-600 pl-4 sm:pl-6 py-1">
-        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-sm">3</span>
-        <div class="space-y-1">
-          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base">Verificação Automatizada de Valores Declarados</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+      <div class="flex gap-3 sm:gap-6 items-start border-l-4 border-sky-600 pl-3 sm:pl-6 py-1 min-w-0">
+        <span class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-xs sm:text-sm mt-0.5">3</span>
+        <div class="space-y-1 min-w-0 flex-1">
+          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base break-words">Verificação Automatizada de Valores Declarados</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Cruzamento inteligente entre metragem, sistemas inspecionados e referências de mercado da região, com alerta automático de inconsistência.
           </p>
         </div>
       </div>
 
       <!-- Item 4 -->
-      <div class="flex gap-4 sm:gap-6 items-start border-l-4 border-sky-600 pl-4 sm:pl-6 py-1">
-        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-sm">4</span>
-        <div class="space-y-1">
-          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base">Gestão de Manutenção Preventiva</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+      <div class="flex gap-3 sm:gap-6 items-start border-l-4 border-sky-600 pl-3 sm:pl-6 py-1 min-w-0">
+        <span class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-xs sm:text-sm mt-0.5">4</span>
+        <div class="space-y-1 min-w-0 flex-1">
+          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base break-words">Gestão de Manutenção Preventiva</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Evolução do cronograma estático para acompanhamento dinâmico de execução, com evidências e prazos.
           </p>
         </div>
       </div>
 
       <!-- Item 5 -->
-      <div class="flex gap-4 sm:gap-6 items-start border-l-4 border-sky-600 pl-4 sm:pl-6 py-1">
-        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-sm">5</span>
-        <div class="space-y-1">
-          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base">Expansão de Módulos Técnicos Certificáveis</h4>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+      <div class="flex gap-3 sm:gap-6 items-start border-l-4 border-sky-600 pl-3 sm:pl-6 py-1 min-w-0">
+        <span class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-50 text-sky-700 font-extrabold font-mono shrink-0 text-xs sm:text-sm mt-0.5">5</span>
+        <div class="space-y-1 min-w-0 flex-1">
+          <h4 class="font-extrabold text-slate-800 text-sm sm:text-base break-words">Expansão de Módulos Técnicos Certificáveis</h4>
+          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed break-words">
             Novos módulos técnicos lançados de forma sequencial, cada um com certificação própria integrada ao ecossistema de formação profissional.
           </p>
         </div>
@@ -334,27 +334,27 @@
   </div>
 
   <!-- SEÇÃO: COMUNIDADE EXCLUSIVA -->
-  <div data-tour-id="card-comunidade" class="relative bg-gradient-to-r from-sky-900 to-indigo-950 text-white rounded-3xl p-8 sm:p-10 shadow-xl border border-white/10 overflow-hidden">
+  <div data-tour-id="card-comunidade" class="relative bg-gradient-to-r from-sky-900 to-indigo-950 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 shadow-xl border border-white/10 overflow-hidden w-full max-w-full">
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(56,189,248,0.15),transparent_40%)]"></div>
     
-    <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-      <div class="space-y-4 max-w-2xl">
-        <span class="inline-flex items-center gap-1 bg-white/10 text-sky-300 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 14.44 14.44 0 00-2.25-1.084 5.25 5.25 0 00-6.516 0A14.44 14.44 0 006 20.148V19.12c0-2.202 1.202-4.12 3.012-5.162a6.7 6.7 0 013.488-.958 6.702 6.702 0 013.488.958 5.23 5.23 0 013.262 5.17z" /></svg>
-          Comunidade Exclusiva
+    <div class="relative z-10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 sm:gap-8 min-w-0">
+      <div class="space-y-3 sm:space-y-4 max-w-2xl min-w-0">
+        <span class="inline-flex items-center gap-1 bg-white/10 text-sky-300 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider max-w-full truncate">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 shrink-0"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 14.44 14.44 0 00-2.25-1.084 5.25 5.25 0 00-6.516 0A14.44 14.44 0 006 20.148V19.12c0-2.202 1.202-4.12 3.012-5.162a6.7 6.7 0 013.488-.958 6.702 6.702 0 013.488.958 5.23 5.23 0 013.262 5.17z" /></svg>
+          <span>Comunidade Exclusiva</span>
         </span>
-        <h3 class="text-2xl sm:text-3xl font-black tracking-tight">Faça Parte da Comunidade Business 4.0</h3>
-        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+        <h3 class="text-xl sm:text-2xl md:text-3xl font-black tracking-tight break-words">Faça Parte da Comunidade Business 4.0</h3>
+        <p class="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed break-words">
           Não baixe apenas guias. Conecte-se com engenheiros, gestores prediais e peritos que aplicam as tecnologias do ecossistema Amorim Tech para escalar faturamentos e otimizar rotinas corporativas.
         </p>
       </div>
 
       <!-- Link Direto para a Comunidade -->
-      <div class="w-full lg:w-96 shrink-0 bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 flex flex-col justify-center">
+      <div class="w-full lg:w-96 shrink-0 bg-white/5 backdrop-blur-md p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-white/10 flex flex-col justify-center min-w-0">
         <a href="https://emanoelamorim.com" target="_blank" rel="noopener"
-           class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-3.5 px-4 rounded-xl text-xs sm:text-sm tracking-wider uppercase transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-sky-500/20">
+           class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-3 sm:py-3.5 px-4 rounded-xl text-xs sm:text-sm tracking-wider uppercase transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-sky-500/20 text-center active:scale-98">
           <span>Acessar a Comunidade</span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
           </svg>
         </a>
