@@ -26,15 +26,28 @@
         
         <nav class="flex flex-col space-y-1.5">
           @for (item of navItemsVisiveis(); track item.id) {
+            @let bloqueado = isModuloBloqueado(item);
             <button 
               [attr.data-tour-id]="'nav-' + item.id"
               (click)="setActiveView(item.id)" 
               [disabled]="!isLoggedIn() && !tourService.isTourAtivo() && item.id !== 'visao-geral'"
-              [class]="'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ' + 
-                       (activeView() === item.id ? 'bg-sky-600 text-white shadow-md shadow-sky-600/10' : 'text-slate-300 hover:bg-white/5 hover:text-white') + 
+              [class]="'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ' + 
+                       (activeView() === item.id ? 'bg-sky-600 text-white shadow-md shadow-sky-600/10' : 
+                        bloqueado ? 'text-slate-400 bg-white/[0.02] hover:bg-white/5 cursor-pointer opacity-75' : 
+                        'text-slate-300 hover:bg-white/5 hover:text-white') + 
                        (!isLoggedIn() && !tourService.isTourAtivo() && item.id !== 'visao-geral' ? ' opacity-40 cursor-not-allowed' : ' cursor-pointer')">
-               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" /></svg>
-              <span>{{ item.label }}</span>
+              <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" /></svg>
+                <span>{{ item.label }}</span>
+              </div>
+              @if (bloqueado) {
+                <span class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0" title="Requer conclusão de curso na Comunidade">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
+                    <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd" />
+                  </svg>
+                  Curso
+                </span>
+              }
             </button>
           }
         </nav>

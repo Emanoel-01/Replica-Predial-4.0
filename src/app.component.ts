@@ -21,6 +21,14 @@ import { TourService } from './services/tour.service';
 import { TourStep } from './models/tour.model';
 import { Vistoria } from './components/checklist-inspecao/checklist-inspecao.component';
 
+export interface NavItem {
+  id: string;
+  label: string;
+  pageTitle?: string;
+  moduloVinculado?: string;
+  icon: string;
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -58,6 +66,7 @@ export class AppComponent implements OnInit {
   todasVistorias = signal<Vistoria[]>([]);
 
   admAcessoLiberado = signal<boolean>(false);
+  modulosLiberados = signal<Record<string, boolean>>({});
 
   // Controla se a sessão inicial desta execução da página já foi processada —
   // usado para diferenciar "a página acabou de carregar e restaurou a sessão" de
@@ -85,10 +94,10 @@ export class AppComponent implements OnInit {
   private supabaseService = inject(SupabaseService);
   private syncService = inject(SyncService);
 
-  navItems = [
+  navItems: NavItem[] = [
     { id: 'visao-geral', label: 'Visão Geral', icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10' },
-    { id: 'checklist', label: 'Check-up', pageTitle: 'Laudo Técnico de Inspeção Predial', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z' },
-    { id: 'cautelar', label: 'Cautelar', pageTitle: 'Vistoria Cautelar de Vizinhança', icon: 'M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z' },
+    { id: 'checklist', label: 'Check-up', moduloVinculado: 'Inspeção Predial', pageTitle: 'Laudo Técnico de Inspeção Predial', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z' },
+    { id: 'cautelar', label: 'Cautelar', moduloVinculado: 'Vistoria Cautelar', pageTitle: 'Vistoria Cautelar de Vizinhança', icon: 'M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z' },
     { id: 'orcamento', label: 'Eng. Condominial', pageTitle: 'Engenharia Condominial · Do Laudo à Obra Concluída', icon: 'M9 14l6-6m-5.5.5h.01M15 15v-3.5a1.5 1.5 0 00-3 0V15M3 9v10a1 1 0 001 1h16a1 1 0 001-1V9M3 9l9-6 9 6' },
     { id: 'modulos-futuros', label: 'Módulos Futuros', pageTitle: 'Módulos Futuros · Engenharia Legal', icon: 'M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z' },
     { id: 'admin', label: 'Ferramentas Admin', icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z' },
@@ -153,12 +162,39 @@ export class AppComponent implements OnInit {
     this.isAdminModalOpen.set(false);
   }
 
+  async checarCursosConcluidos(): Promise<void> {
+    const mapa: Record<string, boolean> = {};
+    for (const item of this.navItems) {
+      if (item.moduloVinculado) {
+        mapa[item.moduloVinculado] = await this.supabaseService.cursoConcluidoParaModulo(item.moduloVinculado);
+      }
+    }
+    this.modulosLiberados.set(mapa);
+  }
+
+  isModuloBloqueado(item: NavItem): boolean {
+    if (!this.isLoggedIn()) return false;
+    if (!item.moduloVinculado) return false;
+    return this.modulosLiberados()[item.moduloVinculado] === false;
+  }
+
   setActiveView(view: string): void {
     const tourAtivo = this.tourService.isTourAtivo();
     if (!this.isLoggedIn() && !tourAtivo && view !== 'visao-geral') {
       this.showLoginRequiredToast();
       return;
     }
+
+    const navItem = this.navItems.find(item => item.id === view);
+    if (navItem && this.isModuloBloqueado(navItem) && !tourAtivo) {
+      this.toastService.show(
+        `Este módulo é liberado após a conclusão do curso de ${navItem.moduloVinculado} na Comunidade AmorimTech.`,
+        'info',
+        6000
+      );
+      return;
+    }
+
     this.activeView.set(view);
     this.isMenuOpen.set(false);
   }
@@ -636,6 +672,9 @@ export class AppComponent implements OnInit {
       this.admAcessoLiberado.set(true);
     }
 
+    // Checagem de conclusão de cursos na Comunidade para liberação dos módulos correspondentes
+    await this.checarCursosConcluidos();
+
     // Perfil incompleto = falta o registro profissional (CAU/CREA/CFT), o dado
     // mínimo necessário para emitir laudos. Abre o modal automaticamente para
     // o usuário completar assim que loga.
@@ -683,6 +722,7 @@ export class AppComponent implements OnInit {
     this.showLogin.set(false);
     this.activeView.set('visao-geral');
     this.admAcessoLiberado.set(false);
+    this.modulosLiberados.set({});
   }
 
   showLoginRequiredToast(): void {
@@ -705,6 +745,7 @@ export class AppComponent implements OnInit {
     this.userName.set('');
     this.activeView.set('visao-geral');
     this.admAcessoLiberado.set(false);
+    this.modulosLiberados.set({});
     this.toastService.show('Você saiu com sucesso.', 'info');
   }
 
@@ -771,6 +812,7 @@ export class AppComponent implements OnInit {
         this.showLogin.set(true);
         this.userName.set('');
         this.admAcessoLiberado.set(false);
+        this.modulosLiberados.set({});
         return;
       }
 

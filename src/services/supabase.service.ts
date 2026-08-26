@@ -73,6 +73,41 @@ export class SupabaseService {
     }
   }
 
+  async cursoConcluidoParaModulo(nomeModulo: string): Promise<boolean> {
+    try {
+      const session = await this.getSession();
+      if (!session?.user) return false;
+
+      // 1. Encontrar curso(s) ativo(s) vinculado(s) a este módulo
+      const { data: cursos, error: erroCursos } = await this.client
+        .from('cursos')
+        .select('id')
+        .eq('modulo_predial_vinculado', nomeModulo)
+        .eq('ativo', true);
+
+      if (erroCursos || !cursos || cursos.length === 0) {
+        // Não há curso ativo vinculado a este módulo — não bloquear (comportamento permissivo por padrão)
+        return true;
+      }
+
+      const cursoIds = cursos.map(c => c.id);
+
+      // 2. Checar se o profissional tem matrícula com certificado emitido em algum desses cursos
+      const { data: matriculas, error: erroMatriculas } = await this.client
+        .from('cursos_matriculas')
+        .select('certificado_emitido_em')
+        .eq('profissional_id', session.user.id)
+        .in('curso_id', cursoIds)
+        .not('certificado_emitido_em', 'is', null);
+
+      if (erroMatriculas) return true; // falha de leitura não deve travar o usuário indevidamente
+
+      return Boolean(matriculas && matriculas.length > 0);
+    } catch {
+      return true; // erro de rede/consulta não deve travar acesso indevidamente
+    }
+  }
+
   async upsertProfissional(userId: string, payload: Record<string, any>): Promise<{ error: Error | null }> {
     try {
       const { error } = await this.client
