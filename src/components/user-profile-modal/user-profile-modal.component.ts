@@ -40,8 +40,12 @@ export class UserProfileModalComponent {
     this.closeModal.emit();
   }
 
+  get dadosDocumentaisTravados(): boolean {
+    return Boolean(this.profile.dadosDocumentaisConfirmados);
+  }
+
   saveProfile(): void {
-    if (this.saveState() !== 'idle') return;
+    if (this.dadosDocumentaisTravados || this.saveState() !== 'idle') return;
 
     this.saveState.set('saving');
 
@@ -58,6 +62,7 @@ export class UserProfileModalComponent {
   }
 
   onLogoChange(event: Event): void {
+    if (this.dadosDocumentaisTravados) return;
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -88,18 +93,12 @@ export class UserProfileModalComponent {
   }
 
   removerLogo(): void {
+    if (this.dadosDocumentaisTravados) return;
     this.profile = { ...this.profile, companyLogoBase64: undefined };
   }
 
-  private readonly TITULO_POR_CATEGORIA: Record<string, string> = {
-    arquiteto: 'Arquiteto(a) e Urbanista',
-    engenheiro: 'Engenheiro(a) Civil',
-    tecnico: 'Técnico(a) Industrial em Edificações',
-  };
-
   onCategoriaProfissionalChange(categoria: string): void {
-    this.profile.categoriaProfissional = categoria as any;
-    this.profile.professionalTitle = this.TITULO_POR_CATEGORIA[categoria] || this.profile.professionalTitle;
+    this.profile.categoriaProfissional = categoria;
   }
 
   onLogout(): void {

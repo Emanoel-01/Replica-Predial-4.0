@@ -12,74 +12,96 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </header>
+
+    @if (dadosDocumentaisTravados) {
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2 mb-4">
+        <span class="text-base">🔒</span>
+        <p class="text-xs text-amber-800 leading-relaxed">
+          Seus dados para documentos técnicos já foram confirmados e estão protegidos contra alterações.
+          Para corrigir, solicite alteração a um administrador pela Comunidade Nova.
+        </p>
+      </div>
+    }
+
     <div class="space-y-4">
       <div data-tour-id="perfil-dados-profissionais" class="space-y-4">
         <div>
           <label for="fullName" class="block text-sm font-medium text-stone-700">Nome Completo</label>
-          <input type="text" id="fullName" [(ngModel)]="profile.fullName" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+          <input type="text" id="fullName" [(ngModel)]="profile.fullName" [disabled]="dadosDocumentaisTravados" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div>
           <label for="professionalTitle" class="block text-sm font-medium text-stone-700">Título Profissional</label>
-          <input type="text" id="professionalTitle" [(ngModel)]="profile.professionalTitle" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+          <input type="text" id="professionalTitle" [(ngModel)]="profile.professionalTitle" [disabled]="dadosDocumentaisTravados" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div>
           <label for="categoriaProfissional" class="block text-sm font-medium text-stone-700">Categoria Profissional</label>
           <select id="categoriaProfissional" [ngModel]="profile.categoriaProfissional"
                   (ngModelChange)="onCategoriaProfissionalChange($event)"
-                  class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-            <option value="arquiteto">Arquiteto(a) e Urbanista (CAU)</option>
-            <option value="engenheiro">Engenheiro(a) Civil (CREA)</option>
-            <option value="tecnico">Técnico(a) Industrial em Edificações (CFT)</option>
+                  [disabled]="dadosDocumentaisTravados"
+                  class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
+            <option value="Engenheiro(a) Civil (CREA)">Engenheiro(a) Civil (CREA)</option>
+            <option value="Arquiteto(a) e Urbanista (CAU)">Arquiteto(a) e Urbanista (CAU)</option>
+            <option value="Engenheiro(a) Eletricista (CREA)">Engenheiro(a) Eletricista (CREA)</option>
+            <option value="Engenheiro(a) Mecânico (CREA)">Engenheiro(a) Mecânico (CREA)</option>
+            <option value="Engenheiro(a) de Segurança do Trabalho (CREA)">Engenheiro(a) de Segurança do Trabalho (CREA)</option>
+            <option value="Técnico(a) em Edificações (CFT)">Técnico(a) em Edificações (CFT)</option>
+            <option value="Perito(a) Judicial / Avaliador(a)">Perito(a) Judicial / Avaliador(a)</option>
+            <option value="Outro">Outro</option>
           </select>
           <p class="text-xs text-stone-500 mt-1">Define a base legal citada na Seção 2.0 do laudo.</p>
         </div>
         <div>
           <label for="professionalId" class="block text-sm font-medium text-stone-700">Registro Profissional (CREA/CAU)</label>
-          <input type="text" id="professionalId" [(ngModel)]="profile.professionalId" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+          <input type="text" id="professionalId" [(ngModel)]="profile.professionalId" [disabled]="dadosDocumentaisTravados" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
       </div>
       <div data-tour-id="perfil-dados-empresa" class="space-y-4">
         <div>
           <label for="companyName" class="block text-sm font-medium text-stone-700">Nome da Empresa</label>
-          <input type="text" id="companyName" [(ngModel)]="profile.companyName" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+          <input type="text" id="companyName" [(ngModel)]="profile.companyName" [disabled]="dadosDocumentaisTravados" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div>
           <label for="position" class="block text-sm font-medium text-stone-700">Cargo</label>
-          <input type="text" id="position" [(ngModel)]="profile.position" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+          <input type="text" id="position" [(ngModel)]="profile.position" [disabled]="dadosDocumentaisTravados" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div>
           <label for="companyCnpj" class="block text-sm font-medium text-stone-700">CNPJ da Empresa</label>
-          <input type="text" id="companyCnpj" [(ngModel)]="profile.companyCnpj" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+          <input type="text" id="companyCnpj" [(ngModel)]="profile.companyCnpj" [disabled]="dadosDocumentaisTravados" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div>
           <label for="companyAddress" class="block text-sm font-medium text-stone-700">Endereço da Empresa</label>
-          <input type="text" id="companyAddress" [(ngModel)]="profile.companyAddress" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+          <input type="text" id="companyAddress" [(ngModel)]="profile.companyAddress" [disabled]="dadosDocumentaisTravados" class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div>
           <label for="companyPhone" class="block text-sm font-medium text-stone-700">Telefone</label>
           <input type="text" id="companyPhone" [(ngModel)]="profile.companyPhone" placeholder="(81) 99999-9999"
-                 class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                 [disabled]="dadosDocumentaisTravados"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div>
           <label for="companyEmail" class="block text-sm font-medium text-stone-700">E-mail</label>
           <input type="email" id="companyEmail" [(ngModel)]="profile.companyEmail" placeholder="contato@suaempresa.com.br"
-                 class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                 [disabled]="dadosDocumentaisTravados"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div>
           <label for="companySite" class="block text-sm font-medium text-stone-700">Site</label>
           <input type="text" id="companySite" [(ngModel)]="profile.companySite" placeholder="https://suaempresa.com.br"
-                 class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                 [disabled]="dadosDocumentaisTravados"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label for="socialNetworkLabel" class="block text-sm font-medium text-stone-700">Rede Social (rótulo)</label>
             <input type="text" id="socialNetworkLabel" [(ngModel)]="profile.socialNetworkLabel" placeholder="Instagram"
-                   class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                   [disabled]="dadosDocumentaisTravados"
+                   class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
           </div>
           <div>
             <label for="socialNetworkUrl" class="block text-sm font-medium text-stone-700">Rede Social (link)</label>
             <input type="text" id="socialNetworkUrl" [(ngModel)]="profile.socialNetworkUrl" placeholder="https://instagram.com/suaempresa"
-                   class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                   [disabled]="dadosDocumentaisTravados"
+                   class="mt-1 block w-full px-3 py-2 bg-white border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed">
           </div>
         </div>
         <div class="space-y-2 pt-2 border-t border-slate-100">
@@ -89,14 +111,17 @@
           </label>
           <input type="file" accept="image/png,image/jpeg,image/jpg,image/svg+xml"
                  (change)="onLogoChange($event)"
-                 class="block w-full text-xs text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-slate-300 rounded-lg bg-white px-2 py-1.5">
+                 [disabled]="dadosDocumentaisTravados"
+                 class="block w-full text-xs text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-slate-300 rounded-lg bg-white px-2 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
           @if (profile.companyLogoBase64) {
             <div class="flex items-center gap-3 p-2 bg-slate-50 border border-slate-200 rounded-lg">
               <img [src]="profile.companyLogoBase64" alt="Logo" class="max-h-10 max-w-32 object-contain">
-              <button type="button" (click)="removerLogo()"
-                      class="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer ml-auto">
-                Remover logo
-              </button>
+              @if (!dadosDocumentaisTravados) {
+                <button type="button" (click)="removerLogo()"
+                        class="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer ml-auto">
+                  Remover logo
+                </button>
+              }
             </div>
           }
         </div>
@@ -131,26 +156,28 @@
         <button (click)="onClose()" class="w-full sm:w-auto bg-stone-200 text-stone-800 font-bold py-2 px-4 rounded-lg hover:bg-stone-300 transition-colors">
           Cancelar
         </button>
-        <button (click)="saveProfile()" [disabled]="saveState() !== 'idle'" 
-                data-tour-id="perfil-btn-salvar"
-                class="w-full sm:w-auto font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
-                [class.bg-green-600]="saveState() === 'saved'"
-                [class.text-white]="saveState() === 'saved' || saveState() === 'saving' || saveState() === 'idle'"
-                [class.bg-slate-700]="saveState() === 'saving'"
-                [class.cursor-wait]="saveState() === 'saving'"
-                [class.bg-slate-900]="saveState() === 'idle'"
-                [class.hover:bg-sky-600]="saveState() === 'idle'">
-          @switch (saveState()) {
-            @case ('idle') { <span>Salvar</span> }
-            @case ('saving') { <span>Salvando...</span> }
-            @case ('saved') { 
-              <span class="flex items-center justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                Salvo!
-              </span> 
+        @if (!dadosDocumentaisTravados) {
+          <button (click)="saveProfile()" [disabled]="saveState() !== 'idle'" 
+                  data-tour-id="perfil-btn-salvar"
+                  class="w-full sm:w-auto font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
+                  [class.bg-green-600]="saveState() === 'saved'"
+                  [class.text-white]="saveState() === 'saved' || saveState() === 'saving' || saveState() === 'idle'"
+                  [class.bg-slate-700]="saveState() === 'saving'"
+                  [class.cursor-wait]="saveState() === 'saving'"
+                  [class.bg-slate-900]="saveState() === 'idle'"
+                  [class.hover:bg-sky-600]="saveState() === 'idle'">
+            @switch (saveState()) {
+              @case ('idle') { <span>Salvar</span> }
+              @case ('saving') { <span>Salvando...</span> }
+              @case ('saved') { 
+                <span class="flex items-center justify-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Salvo!
+                </span> 
+              }
             }
-          }
-        </button>
+          </button>
+        }
       </div>
     </div>
   </div>

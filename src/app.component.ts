@@ -637,6 +637,7 @@ export class AppComponent implements OnInit {
       companyPhone: row.company_phone || '',
       companyEmail: row.company_email || '',
       companySite: row.company_site || '',
+      dadosDocumentaisConfirmados: Boolean(row.dados_documentais_confirmados),
     };
 
     this.userProfile.set(profile);
@@ -672,6 +673,12 @@ export class AppComponent implements OnInit {
 
     const session = await this.supabaseService.getSession();
     if (session?.user) {
+      // Proteção: se já confirmado/travado, não reenvia os campos documentais para o Supabase.
+      if (profile.dadosDocumentaisConfirmados) {
+        this.toastService.show('Estes dados estão confirmados e só podem ser alterados por um administrador.', 'info');
+        return;
+      }
+
       const { error } = await this.supabaseService.upsertProfissional(session.user.id, {
         full_name: profile.fullName,
         professional_title: profile.professionalTitle,

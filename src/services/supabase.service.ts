@@ -110,6 +110,17 @@ export class SupabaseService {
 
   async upsertProfissional(userId: string, payload: Record<string, any>): Promise<{ error: Error | null }> {
     try {
+      // Verifica se já existe e está travado antes de decidir upsert vs update condicional
+      const { data: existente } = await this.client
+        .from('profissionais')
+        .select('id, dados_documentais_confirmados')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (existente?.dados_documentais_confirmados === true) {
+        return { error: new Error('Dados documentais já confirmados e travados. Alteração requer um administrador.') };
+      }
+
       const { error } = await this.client
         .from('profissionais')
         .upsert({ id: userId, ...payload }, { onConflict: 'id' });

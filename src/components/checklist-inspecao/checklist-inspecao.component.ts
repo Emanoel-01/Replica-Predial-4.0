@@ -3339,16 +3339,16 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   }
 
   private gerarQualificacaoHtml(profile: UserProfile): string {
-    const categoria = profile.categoriaProfissional || 'arquiteto';
+    const catLower = (profile.categoriaProfissional || 'arquiteto').toLowerCase();
     const nome = profile.fullName;
     const registro = profile.professionalId || '';
     const empresa = profile.companyName || '';
     const cnpj = profile.companyCnpj || '';
 
     let baseLegal = '';
-    if (categoria === 'arquiteto') {
+    if (catLower.includes('arquiteto') || catLower.includes('cau')) {
       baseLegal = `no gozo das atribuições que lhe são conferidas pela Lei Federal nº 12.378, de 31 de dezembro de 2010, e pela Resolução CAU/BR nº 21, de 25 de abril de 2012, que tipifica os serviços de vistoria, perícia, avaliação, monitoramento e laudo técnico para efeito de registro de responsabilidade técnica`;
-    } else if (categoria === 'engenheiro') {
+    } else if (catLower.includes('engenheiro') || catLower.includes('crea')) {
       baseLegal = `no gozo das atribuições que lhe são conferidas pela Lei Federal nº 5.194, de 24 de dezembro de 1966, que regula o exercício da profissão de Engenheiro, e pela Resolução CONFEA nº 218, de 29 de junho de 1973, que discrimina as atividades das diferentes modalidades profissionais, including vistoria, perícia, avaliação, laudo e parecer técnico`;
     } else {
       baseLegal = `no gozo das atribuições que lhe são conferidas pelas Resoluções CFT nº 058, de 2019, e nº 108, de 2020, do Conselho Federal dos Técnicos Industriais, observados os limites de área construída e tipologia construtiva estabelecidos nos normativos de habilitação da categoria`;
