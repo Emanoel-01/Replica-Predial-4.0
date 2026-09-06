@@ -139,11 +139,23 @@ export class AppComponent implements OnInit {
     this.toastService.show('Tour concluído! Explore livremente o ecossistema.', 'success');
   }
 
+  private readonly SLUG_PERMISSAO_POR_MODULO: Record<string, string> = {
+    'Inspeção Predial': 'inspecao_predial',
+    'Vistoria Cautelar': 'vistoria_cautelar',
+  };
+
   async checarCursosConcluidos(): Promise<void> {
     const mapa: Record<string, boolean> = {};
     for (const item of this.navItems) {
       if (item.moduloVinculado) {
-        mapa[item.moduloVinculado] = await this.supabaseService.cursoConcluidoParaModulo(item.moduloVinculado);
+        const slug = this.SLUG_PERMISSAO_POR_MODULO[item.moduloVinculado];
+        if (slug) {
+          mapa[item.moduloVinculado] = await this.supabaseService.temPermissaoModulo('predial4', slug);
+        } else {
+          // Módulo sem slug de permissão mapeado ainda: mantém comportamento
+          // antigo (permissivo) só para não travar módulos futuros não migrados.
+          mapa[item.moduloVinculado] = await this.supabaseService.cursoConcluidoParaModulo(item.moduloVinculado);
+        }
       }
     }
     this.modulosLiberados.set(mapa);
