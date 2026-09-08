@@ -11,6 +11,7 @@ import { SupabaseService } from '../../services/supabase.service';
 })
 export class LoginComponent {
   loginAsGuest = output<void>();
+  startGuestTour = output<void>();
 
   email = signal('');
   password = signal('');

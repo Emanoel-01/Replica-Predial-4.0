@@ -1,6 +1,9 @@
 <!-- LOGIN VIEW -->
 @if (showLogin()) {
-  <app-login (loginAsGuest)="handleGuestAccess()"></app-login>
+  <app-login
+    (loginAsGuest)="handleGuestAccess()"
+    (startGuestTour)="handleGuestAccessWithTour()"
+  ></app-login>
 } @else {
   <!-- MAIN APP VIEW -->
   <div class="font-sans text-slate-800 antialiased bg-slate-50 min-h-screen">

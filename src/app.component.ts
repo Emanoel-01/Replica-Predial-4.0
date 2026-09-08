@@ -721,6 +721,11 @@ export class AppComponent implements OnInit {
     this.modulosLiberados.set({});
   }
 
+  handleGuestAccessWithTour(): void {
+    this.handleGuestAccess();
+    setTimeout(() => this.startTour(), 150);
+  }
+
   showLoginRequiredToast(): void {
     this.toastService.show('Faça login para acessar esta funcionalidade.', 'info');
   }
