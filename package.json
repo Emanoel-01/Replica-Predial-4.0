@@ -8,6 +8,7 @@
     "dev": "ng serve --host 0.0.0.0 --port 3000",
     "prebuild": "node scripts/generate-env.js",
     "build": "ng build",
+    "lint": "tsc --noEmit",
     "prepreview": "node scripts/generate-env.js",
     "preview": "ng serve --configuration=production"
   },

@@ -25,6 +25,13 @@ export class SupabaseService {
     return { data, error };
   }
 
+  async resetPasswordForEmail(email: string): Promise<{ error: Error | null }> {
+    const { error } = await this.client.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+    return { error };
+  }
+
   async signOut(): Promise<void> {
     await this.client.auth.signOut();
   }
