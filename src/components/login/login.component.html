@@ -1,123 +1,270 @@
-<div class="min-h-screen flex items-center justify-center bg-stone-100 font-sans p-4">
-  <div class="w-full max-w-md">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 md:p-10 border border-stone-200/80">
+<div class="min-h-screen flex items-center justify-center bg-stone-100 font-sans p-4 sm:p-6 lg:p-8">
+  <div class="w-full max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
       
-      <!-- CABEÇALHO DA MARCA -->
-      <div class="text-center mb-6 space-y-1">
-        <div class="text-2xl font-bold" style="font-family:'Poppins','Inter',sans-serif; color:#132A41; letter-spacing:-.02em;">
-          Amorim<span style="color:#B5642A;">Tech</span>
+      <!-- COLUNA DA ESQUERDA: FORMULÁRIO E CARD DO TOUR -->
+      <div class="lg:col-span-5 w-full max-w-md mx-auto lg:max-w-none">
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-stone-200/80">
+          
+          <!-- CABEÇALHO DA MARCA -->
+          <div class="text-center mb-6 space-y-1">
+            <div class="text-2xl font-bold" style="font-family:'Poppins','Inter',sans-serif; color:#132A41; letter-spacing:-.02em;">
+              Amorim<span style="color:#B5642A;">Tech</span>
+            </div>
+            <p class="text-[10px] uppercase text-stone-400 tracking-[0.2em]">Ecossistema 4.0</p>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight pt-2" style="font-family:'Poppins','Inter',sans-serif; color:#132A41;">
+              Predial <span style="color:#B5642A;">4.0</span>
+            </h1>
+          </div>
+
+          <!-- CONVITE AO TOUR GUIADO -->
+          <div class="mb-6 p-4 rounded-xl border-2 border-dashed" style="border-color:#B5642A; background: linear-gradient(135deg, #FBF8F2, #FFFFFF);">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:#B5642A;">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold" style="color:#132A41;">Sem conta ainda?</p>
+                <p class="text-xs text-stone-500 mt-0.5 leading-relaxed">Veja a plataforma funcionando, com dados de demonstração e sem precisar se cadastrar.</p>
+                <button
+                  type="button"
+                  (click)="startGuestTour.emit()"
+                  class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg text-white transition-colors cursor-pointer"
+                  style="background:#B5642A;"
+                >
+                  <span>Fazer tour guiado agora</span>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORMULÁRIO DE LOGIN -->
+          <div class="space-y-5">
+            <div class="text-center">
+              <h2 class="text-lg font-bold text-stone-800">Entrar na plataforma</h2>
+              <p class="text-xs text-stone-500 mt-0.5">Acesse com seu e-mail e senha cadastrados</p>
+            </div>
+
+            <form (ngSubmit)="handleLogin()" class="space-y-4">
+              <div>
+                <label for="login-email" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">E-mail</label>
+                <input
+                  type="email"
+                  id="login-email"
+                  [(ngModel)]="email"
+                  name="email"
+                  placeholder="seu.email@exemplo.com"
+                  autocomplete="email"
+                  class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                  required>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label for="login-password" class="block text-xs font-bold text-stone-700 uppercase tracking-wider">Senha</label>
+                  <button
+                    type="button"
+                    (click)="handleEsqueciSenha()"
+                    [disabled]="redefinindoSenha()"
+                    class="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline transition-colors cursor-pointer bg-transparent border-0 p-0">
+                    @if (redefinindoSenha()) {
+                      <span>Enviando...</span>
+                    } @else {
+                      <span>Esqueci minha senha</span>
+                    }
+                  </button>
+                </div>
+                <div class="relative">
+                  <input
+                    [type]="showPassword() ? 'text' : 'password'"
+                    id="login-password"
+                    [(ngModel)]="password"
+                    name="password"
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                    class="w-full px-3.5 py-2.5 pr-10 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
+                    required>
+                  <button
+                    type="button"
+                    (click)="toggleShowPassword()"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1 cursor-pointer"
+                    [title]="showPassword() ? 'Ocultar senha' : 'Ver senha'">
+                    @if (showPassword()) {
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                      </svg>
+                    } @else {
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    }
+                  </button>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button
+                  type="submit"
+                  [disabled]="loading()"
+                  class="w-full bg-sky-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-900 disabled:opacity-50 transition-colors shadow-md text-sm cursor-pointer flex items-center justify-center gap-2">
+                  @if (loading()) {
+                    <span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                    <span>Entrando...</span>
+                  } @else {
+                    <span>Entrar</span>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+
         </div>
-        <p class="text-[10px] uppercase text-stone-400 tracking-[0.2em]">Ecossistema 4.0</p>
-        <h1 class="text-3xl sm:text-4xl font-black tracking-tight pt-2" style="font-family:'Poppins','Inter',sans-serif; color:#132A41;">
-          Predial <span style="color:#B5642A;">4.0</span>
-        </h1>
       </div>
 
-      <!-- CONVITE AO TOUR GUIADO -->
-      <div class="mb-6 p-4 rounded-xl border-2 border-dashed" style="border-color:#B5642A; background: linear-gradient(135deg, #FBF8F2, #FFFFFF);">
-        <div class="flex items-start gap-3">
-          <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:#B5642A;">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+      <!-- COLUNA DA DIREITA: CONTEÚDO COMERCIAL -->
+      <div class="lg:col-span-7 w-full max-w-md mx-auto lg:max-w-none space-y-6">
+        
+        <!-- BLOCO 1: O QUE É O PREDIAL 4.0 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-stone-200/80 space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider" style="background:#FBF4EE; color:#B5642A;">
+            <span class="w-2 h-2 rounded-full" style="background:#B5642A;"></span>
+            Engenharia Diagnóstica 4.0
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight" style="font-family:'Poppins','Inter',sans-serif; color:#132A41;">
+            Do campo ao laudo assinado, sem retrabalho
+          </h2>
+          <p class="text-sm sm:text-base text-stone-600 leading-relaxed">
+            Plataforma de engenharia diagnóstica para inspeção predial e vistoria cautelar de vizinhança. O que você registra em campo vira documento normativo pronto para assinatura.
+          </p>
+        </div>
+
+        <!-- BLOCO 2: DOIS MÓDULOS EM OPERAÇÃO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Card 1 -->
+          <div class="bg-white rounded-2xl shadow-lg p-5 sm:p-6 border border-stone-200/80 flex flex-col justify-between">
+            <div>
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:#EBF3FA; color:#132A41;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <h3 class="text-sm font-bold" style="color:#132A41;">Inspeção Predial · ABNT NBR 16747</h3>
+              <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+                Laudo Técnico de Inspeção Predial com 15 seções, classificação por grau de risco e plano de manutenção gerado a partir de uma base de 41 tipologias construtivas.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="bg-white rounded-2xl shadow-lg p-5 sm:p-6 border border-stone-200/80 flex flex-col justify-between">
+            <div>
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:#FBF4EE; color:#B5642A;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 class="text-sm font-bold" style="color:#132A41;">Vistoria Cautelar de Vizinhança · IBAPE/SP e ABNT NBR 13752:2024</h3>
+              <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+                Registro do estado prévio por imóvel confrontante, com classificação de aberturas por medida em milímetros e marco temporal com opção de registro em cartório.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOCO 3: QUATRO DIFERENCIAIS -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-stone-200/80 space-y-4">
+          <h3 class="text-xs font-bold text-stone-400 uppercase tracking-[0.15em]">Diferenciais Técnicos</h3>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Diferencial 1 -->
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style="background:#FBF4EE; color:#B5642A;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold" style="color:#132A41;">Diagnóstico que sabe quando não sabe</h4>
+                <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+                  A análise compara a foto com a patologia informada. Quando não batem, a ferramenta não classifica — ela sinaliza a divergência.
+                </p>
+              </div>
+            </div>
+
+            <!-- Diferencial 2 -->
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style="background:#EBF3FA; color:#132A41;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold" style="color:#132A41;">Evidência com hora e lugar</h4>
+                <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+                  Cada registro fotográfico carrega coordenada e horário de captura.
+                </p>
+              </div>
+            </div>
+
+            <!-- Diferencial 3 -->
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style="background:#FBF4EE; color:#B5642A;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold" style="color:#132A41;">Trava normativa</h4>
+                <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+                  Na vistoria cautelar, o sistema impede a emissão de causa provável, recomendação ou grau de risco — porque a norma não permite.
+                </p>
+              </div>
+            </div>
+
+            <!-- Diferencial 4 -->
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style="background:#EBF3FA; color:#132A41;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16M8 4v4m4-4v4m4-4v4M8 16v4m4-4v4m4-4v4" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold" style="color:#132A41;">Medida, não adjetivo</h4>
+                <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+                  Fissura, trinca, rachadura, fenda e brecha classificadas por milímetro aferido com instrumento.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOCO 4: CHAMADA FINAL -->
+        <div class="rounded-2xl shadow-lg p-5 sm:p-6 border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style="background: linear-gradient(135deg, #FBF8F2, #FFFFFF); border-color: rgba(181, 100, 42, 0.25);">
+          <div class="space-y-1">
+            <p class="text-xs sm:text-sm font-semibold text-stone-800 leading-relaxed">
+              Ainda não tem acesso? Conheça o modelo de contratação, com licença por módulo e assentos para equipes.
+            </p>
+          </div>
+          <a
+            href="https://emanoelamorim.com/como-funciona"
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-bold text-white transition-colors cursor-pointer shrink-0 shadow-sm hover:opacity-95"
+            style="background:#132A41;"
+          >
+            <span>Ver como funciona</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold" style="color:#132A41;">Ainda não conhece o Predial 4.0?</p>
-            <p class="text-xs text-stone-500 mt-0.5 leading-relaxed">Faça um tour guiado pela plataforma, sem precisar de login. Você navega pelos módulos e vê como funciona na prática.</p>
-            <button
-              type="button"
-              (click)="startGuestTour.emit()"
-              class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg text-white transition-colors cursor-pointer"
-              style="background:#B5642A;"
-            >
-              <span>Fazer tour guiado agora</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- FORMULÁRIO DE LOGIN -->
-      <div class="space-y-5">
-        <div class="text-center">
-          <h2 class="text-lg font-bold text-stone-800">Entrar na plataforma</h2>
-          <p class="text-xs text-stone-500 mt-0.5">Acesse com seu e-mail e senha cadastrados</p>
+          </a>
         </div>
 
-        <form (ngSubmit)="handleLogin()" class="space-y-4">
-          <div>
-            <label for="login-email" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">E-mail</label>
-            <input
-              type="email"
-              id="login-email"
-              [(ngModel)]="email"
-              name="email"
-              placeholder="seu.email@exemplo.com"
-              autocomplete="email"
-              class="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
-              required>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="login-password" class="block text-xs font-bold text-stone-700 uppercase tracking-wider">Senha</label>
-              <button
-                type="button"
-                (click)="handleEsqueciSenha()"
-                [disabled]="redefinindoSenha()"
-                class="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline transition-colors cursor-pointer bg-transparent border-0 p-0">
-                @if (redefinindoSenha()) {
-                  <span>Enviando...</span>
-                } @else {
-                  <span>Esqueci minha senha</span>
-                }
-              </button>
-            </div>
-            <div class="relative">
-              <input
-                [type]="showPassword() ? 'text' : 'password'"
-                id="login-password"
-                [(ngModel)]="password"
-                name="password"
-                placeholder="••••••••"
-                autocomplete="current-password"
-                class="w-full px-3.5 py-2.5 pr-10 bg-stone-50 border border-stone-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition"
-                required>
-              <button
-                type="button"
-                (click)="toggleShowPassword()"
-                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-1 cursor-pointer"
-                [title]="showPassword() ? 'Ocultar senha' : 'Ver senha'">
-                @if (showPassword()) {
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                  </svg>
-                } @else {
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                }
-              </button>
-            </div>
-          </div>
-
-          <div class="pt-2">
-            <button
-              type="submit"
-              [disabled]="loading()"
-              class="w-full bg-sky-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-900 disabled:opacity-50 transition-colors shadow-md text-sm cursor-pointer flex items-center justify-center gap-2">
-              @if (loading()) {
-                <span class="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-                <span>Entrando...</span>
-              } @else {
-                <span>Entrar</span>
-              }
-            </button>
-          </div>
-        </form>
       </div>
 
     </div>
