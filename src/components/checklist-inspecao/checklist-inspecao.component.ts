@@ -833,6 +833,8 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   vistoriaEmEdicao = signal<Vistoria | null>(null);
   laudoSelecionado = signal<LaudoEmitido | null>(null);
   exibirModalPreEmissao = signal<boolean>(false);
+  exibirModalImpedimentos = signal<boolean>(false);
+  impedimentosEmissao = signal<string[]>([]);
   novoAvaliacaoManutencaoTexto = signal<string>('');
   novoAvaliacaoCriticidadeTexto = signal<string>('');
   novoConclusaoSinteseTexto = signal<string>('');
@@ -2348,6 +2350,67 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     return lista;
   }
 
+  obterTextosNaoHomologados(vistoria: Vistoria | null): string[] {
+    if (!vistoria) return [];
+    const pendentes: string[] = [];
+
+    const secoes: { campo: string | undefined; titulo: string }[] = [
+      { campo: vistoria.avaliacaoManutencaoTexto, titulo: 'Seção 11.0 — Avaliação da Manutenção e Uso' },
+      { campo: vistoria.avaliacaoCriticidadeTexto, titulo: 'Seção 12.0 — Avaliação do Grau de Criticidade' },
+      { campo: vistoria.conclusaoSinteseTexto, titulo: 'Seção 13.1 — Síntese Geral' },
+      { campo: vistoria.conclusaoRiscosTexto, titulo: 'Seção 13.2 — Riscos Identificados' },
+      { campo: vistoria.conclusaoRecomendacoesTexto, titulo: 'Seção 13.3 — Recomendações Prioritárias' },
+      { campo: vistoria.conclusaoConsideracoesTexto, titulo: 'Seção 13.4 — Considerações Finais' },
+    ];
+
+    secoes.forEach(s => {
+      if (!s.campo?.trim()) {
+        pendentes.push(`${s.titulo}: texto ainda não revisado e salvo pelo Responsável Técnico.`);
+      }
+    });
+
+    return pendentes;
+  }
+
+  obterImpedimentosEmissao(vistoria: Vistoria | null): string[] {
+    if (!vistoria) return [];
+    const impedimentos: string[] = [];
+
+    (vistoria.items ?? []).forEach(item => {
+      const ocorrencias = item.ocorrencias ?? [];
+      const ehConforme = item.status === 'PASS' || item.status === 'CONFORME';
+
+      if (ehConforme && ocorrencias.length > 0) {
+        impedimentos.push(
+          `${item.typologyTitle} — ${item.title}: item marcado como conforme, mas possui ${ocorrencias.length} ocorrência(s) registrada(s).`
+        );
+      }
+
+      ocorrencias.forEach((ficha, idx) => {
+        const rotulo = `${item.typologyTitle} — ${item.title}, ficha ${idx + 1}`;
+
+        const temDiagnostico =
+          !!(ficha.manifestacao || ficha.causaProvavel || ficha.recomendacaoTecnica) ||
+          !!ficha.memorialDescritivo?.trim();
+        if (!temDiagnostico) {
+          impedimentos.push(`${rotulo}: sem diagnóstico preenchido.`);
+        }
+
+        if (!ficha.criticidade) {
+          impedimentos.push(`${rotulo}: sem classificação de criticidade.`);
+        }
+
+        if (ficha.sugestaoIaPendente) {
+          impedimentos.push(`${rotulo}: há sugestão de IA pendente de aceitação ou descarte.`);
+        }
+      });
+    });
+
+    impedimentos.push(...this.obterTextosNaoHomologados(vistoria));
+
+    return impedimentos;
+  }
+
   solicitarExportarRelatorioPDF(): void {
     const ativa = this.vistoriaAtiva();
     const profile = this.userProfile();
@@ -2359,6 +2422,14 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       this.toastService.show('Dados insuficientes para gerar o relatório em PDF.', 'error');
       return;
     }
+
+    const impedimentos = this.obterImpedimentosEmissao(ativa);
+    if (impedimentos.length > 0) {
+      this.impedimentosEmissao.set(impedimentos);
+      this.exibirModalImpedimentos.set(true);
+      return;
+    }
+    this.impedimentosEmissao.set([]);
 
     const desatualizadas = this.obterSecoesDesatualizadas(ativa);
     if (desatualizadas.length > 0) {
@@ -2376,6 +2447,10 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
 
   fecharModalPreEmissao(): void {
     this.exibirModalPreEmissao.set(false);
+  }
+
+  fecharModalImpedimentos(): void {
+    this.exibirModalImpedimentos.set(false);
   }
 
   navegarParaAnexoArt(): void {
@@ -2456,6 +2531,13 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
     }
     if (!ativa) {
       this.toastService.show('Dados insuficientes para gerar o relatório em PDF.', 'error');
+      return;
+    }
+
+    const impedimentos = this.obterImpedimentosEmissao(ativa);
+    if (impedimentos.length > 0) {
+      this.impedimentosEmissao.set(impedimentos);
+      this.exibirModalImpedimentos.set(true);
       return;
     }
 
