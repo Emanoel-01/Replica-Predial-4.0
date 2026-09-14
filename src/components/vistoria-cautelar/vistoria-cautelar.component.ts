@@ -536,6 +536,8 @@ export class VistoriaCautelarComponent implements OnInit {
   // ─── VC-9a/VC-10: Painel de consolidação & Pré-visualização Lado a Lado ───
   modalConsolidacaoAberto = signal(false);
   modalRevisaoCamposAberto = signal(false);
+  modalImpedimentosCautelarAberto = signal(false);
+  impedimentosCautelar = signal<string[]>([]);
   camposCurtosParaRevisao = signal<string[]>([]);
   modalPreviewPdfAberto = signal(false);
   pdfPreviewHtmlContent = signal('');
@@ -1908,6 +1910,47 @@ sem inventar conteúdo.`;
     return camposCurtos;
   }
 
+  obterImpedimentosEmissaoCautelar(vistoria: VistoriaCautelar | null): string[] {
+    if (!vistoria) return [];
+    const impedimentos: string[] = [];
+
+    if (!vistoria.obraGeradora.logisticaCanteiro?.trim()) {
+      impedimentos.push('Seção 7.0 — Logística do canteiro não preenchida.');
+    }
+    if (!vistoria.obraGeradora.impactosVizinhanca?.trim()) {
+      impedimentos.push('Seção 7.0 — Impactos previstos à vizinhança não preenchidos.');
+    }
+    if (!vistoria.areaInfluencia?.memorialJustificativo?.trim()) {
+      impedimentos.push('Seção 8.0 — Memorial justificativo do raio de influência não preenchido.');
+    }
+    const temFotoCanteiro =
+      !!(vistoria.canteiroObras?.fotosExternas?.length || vistoria.canteiroObras?.fotosInternas?.length);
+    if (!temFotoCanteiro) {
+      impedimentos.push('Seção 9.0 — Nenhuma foto do canteiro registrada (item 6.4.2 da Norma IBAPE/SP 2025).');
+    }
+
+    vistoria.imoveis.forEach(im => {
+      const ref = im.endereco || 'imóvel sem endereço';
+      const acessoNegado = im.autorizacaoAcesso?.status === 'NEGADO';
+
+      if (!acessoNegado) {
+        if (!im.dataVistoria?.trim()) {
+          impedimentos.push(`${ref}: data da vistoria não informada.`);
+        }
+      }
+
+      im.ambientes.forEach(amb => {
+        if (amb.fotos.length > 0 && amb.ocorrencias.length === 0) {
+          impedimentos.push(
+            `${ref}, ambiente "${amb.nome}": possui ${amb.fotos.length} foto(s) sem nenhuma ficha de constatação vinculada.`
+          );
+        }
+      });
+    });
+
+    return impedimentos;
+  }
+
   iniciarGeracaoPDF(): void {
     if (!this.profile || !registroValido(this.profile.professionalId)) {
       this.toastService.show('Emissão bloqueada. É necessário possuir um registro profissional (CAU/CREA) válido cadastrado no seu perfil para emitir documentos técnicos.', 'error');
@@ -1920,6 +1963,14 @@ sem inventar conteúdo.`;
       this.toastService.show('Todos os imóveis precisam estar concluídos ou com acesso negado antes de gerar o PDF.', 'error');
       return;
     }
+
+    const impedimentos = this.obterImpedimentosEmissaoCautelar(vistoria);
+    if (impedimentos.length > 0) {
+      this.impedimentosCautelar.set(impedimentos);
+      this.modalImpedimentosCautelarAberto.set(true);
+      return;
+    }
+    this.impedimentosCautelar.set([]);
 
     const camposCurtos = this.detectarCamposCurtos(vistoria);
     if (camposCurtos.length > 0) {
@@ -1940,9 +1991,20 @@ sem inventar conteúdo.`;
     this.modalRevisaoCamposAberto.set(false);
   }
 
+  fecharModalImpedimentosCautelar(): void {
+    this.modalImpedimentosCautelarAberto.set(false);
+  }
+
   async gerarConsolidacaoPDF(): Promise<void> {
     const vistoria = this.vistoriaAtiva();
     if (!vistoria) return;
+
+    const impedimentos = this.obterImpedimentosEmissaoCautelar(vistoria);
+    if (impedimentos.length > 0) {
+      this.impedimentosCautelar.set(impedimentos);
+      this.modalImpedimentosCautelarAberto.set(true);
+      return;
+    }
 
     this.carregandoPreviewPdf.set(true);
 
@@ -2188,7 +2250,9 @@ sem inventar conteúdo.`;
                   ${oc.fotos.length > 0 ? `<div class="foto-grid">${oc.fotos.map(f => `<figure><img src="${f}"></figure>`).join('')}</div>` : ''}
                 </div>`;
             }).join('')
-          : '<p class="text-xs text-slate-400">Ambiente vistoriado sem ocorrências constatadas.</p>';
+          : (amb.fotos.length > 0
+              ? '<p class="text-xs" style="color:#B45309;font-style:italic;">Registro fotográfico do ambiente sem apontamento pericial vinculado.</p>'
+              : '<p class="text-xs text-slate-400">Ambiente vistoriado sem ocorrências constatadas.</p>');
 
         return `
           <div class="f-card">

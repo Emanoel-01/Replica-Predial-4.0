@@ -1195,6 +1195,44 @@
   </div>
 }
 
+<!-- MODAL: IMPEDIMENTOS MATERIAIS DE EMISSÃO CAUTELAR -->
+@if (modalImpedimentosCautelarAberto()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 my-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-slate-800">Emissão Bloqueada — Pendências Técnicas</h3>
+          <p class="text-xs text-slate-500 mt-0.5">O laudo cautelar não pode ser emitido enquanto houver pendência técnica não resolvida</p>
+        </div>
+        <button (click)="fecharModalImpedimentosCautelar()" class="text-slate-400 hover:text-slate-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <p class="text-xs text-slate-700 leading-relaxed">
+        A vistoria cautelar de vizinhança tem por função perpetuar a memória do estado dos imóveis. Um registro fotográfico sem apontamento vinculado, um imóvel sem data de vistoria ou sem estado de conservação, e a ausência de registro do canteiro comprometem essa função e enfraquecem o documento como prova.
+      </p>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
+        <span class="font-bold text-red-950 uppercase tracking-wider text-[11px] block">Pendências que impedem a emissão:</span>
+        <div class="space-y-1.5 max-h-64 overflow-y-auto">
+          @for (imp of impedimentosCautelar(); track imp) {
+            <div class="p-2 bg-white rounded-lg border border-red-200">
+              <span class="font-semibold text-slate-800 text-[11px]">{{ imp }}</span>
+            </div>
+          }
+        </div>
+      </div>
+      <p class="text-xs text-slate-500 italic">
+        Resolva as pendências listadas acima e tente novamente. Esta verificação não pode ser dispensada.
+      </p>
+      <div class="flex pt-2">
+        <button (click)="fecharModalImpedimentosCautelar()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors cursor-pointer">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
 <!-- MODAL: REVISÃO DE CAMPOS CURTOS ANTES DO PDF -->
 @if (modalRevisaoCamposAberto()) {
   <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
