@@ -25,7 +25,7 @@ export interface FichaDano {
     manifestacao?: string;
     causaProvavel?: string;
     recomendacaoTecnica?: string;
-    criticidadeSugerida?: string;
+    severitySugerida?: 'Mínimo' | 'Regular' | 'Crítico';
   } | null;
   quantitativo?: string;
   memorialDescritivo?: string;
@@ -182,10 +182,18 @@ const SCHEMA_ANALISE_EVIDENCIA = {
     manifestacao: { type: SchemaType.STRING },
     causaProvavel: { type: SchemaType.STRING },
     recomendacaoTecnica: { type: SchemaType.STRING },
-    criticidadeSugerida: { type: SchemaType.STRING, enum: ['P1', 'P2', 'P3'] },
   },
   required: ['texto', 'severitySugerida', 'correlacaoFotoPatologia'],
 };
+
+function derivarPatamarPrioridade(
+  grauRisco: 'Mínimo' | 'Regular' | 'Crítico' | undefined | null
+): 'P1' | 'P2' | 'P3' | '' {
+  if (grauRisco === 'Crítico') return 'P1';
+  if (grauRisco === 'Regular') return 'P2';
+  if (grauRisco === 'Mínimo') return 'P3';
+  return '';
+}
 
 const CONSTATACAO_META: Record<TipoConstatacao, { rotulo: string; labelPrincipal: string; placeholderPrincipal: string }> = {
   RELATO_OCUPANTE:      { rotulo: 'Relato de ocupante',              labelPrincipal: 'Relato',                    placeholderPrincipal: 'O que foi relatado…' },
@@ -1478,7 +1486,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
             oc.manifestacao = diag.manifestacao || oc.manifestacao;
             oc.causaProvavel = diag.causaProvavel || oc.causaProvavel;
             oc.recomendacaoTecnica = diag.recomendacaoTecnica || oc.recomendacaoTecnica;
-            oc.criticidade = (diag.criticidadeSugerida as any) || oc.criticidade;
+            oc.criticidade = (derivarPatamarPrioridade(diag.severitySugerida) as any) || oc.criticidade;
             oc.normasAplicaveis = this.dataService.getNormasTipologia(it.systemTitle, it.typologyTitle);
           }
           return it;
@@ -1666,8 +1674,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
             classificacaoSubtipo?: string;
             manifestacao?: string;
             causaProvavel?: string;
-            recomendacaoTecnica?: string;
-            criticidadeSugerida?: string; } | null> {
+            recomendacaoTecnica?: string; } | null> {
     try {
       const prompt = `Você é um engenheiro civil perito especializado em inspeção predial de acordo com a NBR 16747.
   ${imagens.length > 1 ? 'Anexamos ' + imagens.length + ' fotos de evidência (contexto e/ou detalhe)' : 'Uma foto de evidência foi anexada'} ao seguinte item de checklist marcado como não conforme:
@@ -1694,8 +1701,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   - manifestacao: descrição objetiva do que se observa na(s) imagem(ns).
   - causaProvavel: hipótese técnica da origem, com base no que é visível.
   - recomendacaoTecnica: ação corretiva recomendada, em linguagem técnica objetiva.
-  - criticidadeSugerida: 'P1' (crítico — risco à saúde/segurança/funcionalidade), 'P2' (médio) ou 'P3' (mínimo), conforme os patamares da NBR 16747.
-  Se correlacaoFotoPatologia for 'DIVERGENTE' ou 'INCONCLUSIVA', deixe esses 6 campos como string vazia — não invente classificação para foto(s) que não corresponde(m) ao item ou que não permite(m) conclusão.`;
+  Se correlacaoFotoPatologia for 'DIVERGENTE' ou 'INCONCLUSIVA', deixe esses 5 campos como string vazia — não invente classificação para foto(s) que não corresponde(m) ao item ou que não permite(m) conclusão.`;
 
       const textPart = { text: prompt };
       const imageParts = imagens.map(img => ({
@@ -1716,7 +1722,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
         manifestacao?: string;
         causaProvavel?: string;
         recomendacaoTecnica?: string;
-        criticidadeSugerida?: string;
       }>(contents, SCHEMA_ANALISE_EVIDENCIA);
 
       return {
@@ -1729,7 +1734,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
         manifestacao: result.manifestacao,
         causaProvavel: result.causaProvavel,
         recomendacaoTecnica: result.recomendacaoTecnica,
-        criticidadeSugerida: result.criticidadeSugerida,
       };
     } catch (e: any) {
       console.warn('Diagnóstico de IA indisponível:', e?.message || e);
@@ -1791,7 +1795,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
               manifestacao: diag.manifestacao,
               causaProvavel: diag.causaProvavel,
               recomendacaoTecnica: diag.recomendacaoTecnica,
-              criticidadeSugerida: diag.criticidadeSugerida,
+              severitySugerida: diag.severitySugerida,
             };
           }
           return it;
@@ -1837,7 +1841,7 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       oc.manifestacao = s.manifestacao || oc.manifestacao;
       oc.causaProvavel = s.causaProvavel || oc.causaProvavel;
       oc.recomendacaoTecnica = s.recomendacaoTecnica || oc.recomendacaoTecnica;
-      oc.criticidade = (s.criticidadeSugerida as any) || oc.criticidade;
+      oc.criticidade = (derivarPatamarPrioridade(s.severitySugerida) as any) || oc.criticidade;
       oc.normasAplicaveis = this.dataService.getNormasTipologia(it.systemTitle, it.typologyTitle);
       oc.sugestaoIaPendente = null;
       return it;
