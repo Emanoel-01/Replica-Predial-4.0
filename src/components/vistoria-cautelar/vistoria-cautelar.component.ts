@@ -2023,6 +2023,24 @@ sem inventar conteúdo.`;
     }
   }
 
+  labelCaracteristicaObservada(c: CaracteristicaObservada): string {
+    const mapa: Record<CaracteristicaObservada, string> = {
+      BORDAS_VIVAS: 'bordas vivas',
+      BORDAS_DESGASTADAS: 'bordas desgastadas',
+      SUJIDADE_NO_INTERIOR: 'sujidade no interior da abertura',
+      AUSENCIA_DE_SUJIDADE: 'ausência de sujidade no interior da abertura',
+      PINTURA_CONTINUA_SOBRE_A_ABERTURA: 'pintura contínua sobre a abertura',
+      PINTURA_INTERROMPIDA_PELA_ABERTURA: 'pintura interrompida pela abertura',
+      PRESENCA_DE_EFLORESCENCIA: 'presença de eflorescência',
+      PRESENCA_DE_OXIDACAO: 'presença de oxidação',
+      DESTACAMENTO_DE_MATERIAL: 'destacamento de material',
+      UMIDADE_APARENTE_NO_MOMENTO: 'umidade aparente no momento da vistoria',
+      AUSENCIA_DE_UMIDADE_NO_MOMENTO: 'ausência de umidade aparente no momento da vistoria',
+      REPARO_APARENTE_ANTERIOR: 'reparo aparente anterior',
+    };
+    return mapa[c] ?? c;
+  }
+
   /** Lista de manifestações cabíveis para o elemento construtivo selecionado no momento. */
   manifestacoesDisponiveis(): OutraManifestacao[] {
     return MANIFESTACOES_POR_ELEMENTO[this.edOcElementoConstrutivo()] ?? [];
@@ -2674,6 +2692,23 @@ sem inventar conteúdo.`;
                 : (oc.outraManifestacao === 'OUTRO'
                     ? oc.outraManifestacaoDescricao
                     : this.labelOutraManifestacao(oc.outraManifestacao!));
+
+              const partesMedicao: string[] = [];
+              if (oc.aberturaMm != null) partesMedicao.push(`abertura ${oc.aberturaMm} mm`);
+              if (oc.extensaoCm != null) partesMedicao.push(`extensão aproximada ${oc.extensaoCm} cm`);
+              if (oc.dimensoesCm) partesMedicao.push(`área afetada ${oc.dimensoesCm.largura} × ${oc.dimensoesCm.altura} cm`);
+              const medicaoHtml = partesMedicao.length > 0
+                ? `<p class="text-xs"><b>Medições:</b> ${partesMedicao.join(' · ')}</p>`
+                : '';
+
+              const caracteristicasHtml = (oc.caracteristicasObservadas?.length)
+                ? `<p class="text-xs"><b>Características observadas:</b> ${oc.caracteristicasObservadas.map(c => this.labelCaracteristicaObservada(c)).join('; ')}.</p>`
+                : '';
+
+              const ondeHtml = oc.descricaoEstruturada?.ondeNoElemento?.trim()
+                ? `<p class="text-xs"><b>Posição no elemento:</b> ${oc.descricaoEstruturada.ondeNoElemento}</p>`
+                : '';
+
               return `
                 <div class="nc-card">
                   <div class="nc-header">
@@ -2682,6 +2717,9 @@ sem inventar conteúdo.`;
                   </div>
                   <p>${oc.descricao}</p>
                   <p class="text-xs"><b>Localização:</b> ${oc.localizacaoNoAmbiente}</p>
+                  ${ondeHtml}
+                  ${medicaoHtml}
+                  ${caracteristicasHtml}
                   ${oc.testemunhoInstalado ? '<p class="text-xs"><b>Testemunho/selo instalado.</b></p>' : ''}
                   ${oc.fotos.length > 0 ? `<div class="foto-grid">${oc.fotos.map(f => `<figure><img src="${f}"></figure>`).join('')}</div>` : ''}
                 </div>`;
@@ -2853,6 +2891,401 @@ sem inventar conteúdo.`;
     this.modalConsolidacaoAberto.set(false);
     this.modalPreviewPdfAberto.set(true);
     this.carregandoPreviewPdf.set(false);
+  }
+
+  async gerarViaIndividualDoOcupante(imovelId: string): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return;
+
+    const imovel = vistoria.imoveis.find(im => im.id === imovelId);
+    if (!imovel) return;
+
+    this.carregandoPreviewPdf.set(true);
+
+    const dataFormatada = new Date().toLocaleDateString('pt-BR');
+    const numeroOuProvisorio = 'Via do ocupante — documento não numerado';
+
+    // ─── CAPA ───
+    const p = this.profile;
+    const capaHtml = `
+      <div class="capa">
+        <div>
+          ${p?.companyLogoBase64
+            ? `<img src="${p.companyLogoBase64}" style="max-height: 16mm; max-width: 65mm; object-fit: contain; margin-bottom: 2mm;" alt="Logo">`
+            : `<div class="capa-logo">${this.formatarLogoMarca(p?.companyName)}</div>
+               <div class="capa-logo-sub">${p?.companyName ? (p.companyCnpj ? `CNPJ ${p.companyCnpj}` : '') : 'Ecossistema 4.0'}</div>`
+          }
+          <div class="capa-rule"></div>
+        </div>
+        <div>
+          <div class="capa-kicker">Predial 4.0 · Módulo Cautelar</div>
+          <div class="capa-titulo">Laudo de Vistoria<br>Cautelar de Vizinhança</div>
+          <div class="capa-norma">
+            Elaborado em conformidade com a <b>Norma de Vistoria Cautelar de Vizinhança do
+            IBAPE/SP — 2025</b> (Procedimentos Básicos Executivos), vigente desde 09/04/2025,
+            e com a <b>ABNT NBR 13752:2024</b> — Perícias de engenharia na construção civil,
+            item 7.3.3.2 (Vistoria Cautelar de Vizinhança).
+          </div>
+        </div>
+        <div>
+          <div style="margin-bottom:4mm;font-size:8.4pt;font-weight:700;color:var(--p4-copper)">
+            ${numeroOuProvisorio}
+          </div>
+          <div class="capa-meta">
+            <div><b>Obra Geradora</b>${vistoria.obraGeradora.nome}</div>
+            <div><b>Nível de Vistoria</b>Nível ${vistoria.nivelVistoriaCautelar}</div>
+            <div><b>Endereço da Obra</b>${vistoria.obraGeradora.endereco}</div>
+            <div><b>Nº de Imóveis</b>1 imóvel</div>
+            <div><b>Solicitante</b>${vistoria.solicitante.nome}</div>
+            <div><b>Data de Consolidação</b>${dataFormatada}</div>
+          </div>
+        </div>
+      </div>`;
+
+    // ─── SUMÁRIO ───
+    const sumarioItens: [string, string, string][] = [
+      ['1.0', 'Identificação do Solicitante', 'sec-1'],
+      ['2.0', 'Identificação do Objeto da Vistoria', 'sec-2'],
+      ['3.0', 'Objetivo e Finalidade', 'sec-3'],
+      ['4.0', 'Nível de Vistoria', 'sec-4'],
+      ['5.0', 'Instruções e Recomendações de Uso do Laudo', 'sec-5'],
+      ['6.0', 'Pressupostos, Ressalvas e Condições Limitantes', 'sec-6'],
+      ['7.0', 'Identificação da Obra Geradora', 'sec-7'],
+      ['8.0', 'Área de Influência', 'sec-8'],
+      ['9.0', 'Registro Fotográfico do Canteiro de Obras', 'sec-9'],
+      ['10.1', `Imóvel — ${imovel.endereco}`, 'sec-10-1'],
+      ['11.0', 'Local, Data e Assinaturas', 'sec-12'],
+    ];
+    const temAnexoArt = !!(imovel.assinaturas.vistoriador as any).anexoArtRrt;
+    if (temAnexoArt) {
+      sumarioItens.push(['A-I', 'Anexo — Comprovantes de ART/RRT', 'sec-anexo-art']);
+    }
+    const sumarioHtml = `
+      <h2 class="sec-h">§ Sumário</h2>
+      ${sumarioItens.map(([n, t, href]) => `
+        <div class="toc-row">
+          <a href="#${href}" style="display:flex;justify-content:space-between;align-items:baseline;width:100%;text-decoration:none;color:inherit">
+            <span><span class="toc-num">${n}</span>${t}</span>
+            <span style="color:var(--p4-copper);font-size:8pt">→</span>
+          </a>
+        </div>`).join('')}
+      <div class="box">
+        <b>Estrutura normativa.</b> As seções deste laudo seguem os 14 itens mínimos
+        estabelecidos no item 7 da Norma IBAPE/SP 2025.
+      </div>`;
+
+    // ─── SEÇÕES 1-9 (DA OBRA, UMA VEZ) ───
+    const momentoLabel = vistoria.momentoVistoria === 'PRE_DEMOLICAO'
+      ? 'Período prévio à demolição dos imóveis no futuro canteiro de obras'
+      : 'Período prévio à movimentação de terra, execução de fundação e contenção';
+
+    const secoesObraHtml = `
+      <h2 class="sec-h" id="sec-1"><span class="sn">1.0</span>Identificação do Solicitante</h2>
+      <table class="dt">
+        <tr><td class="lbl">Nome / Razão Social</td><td>${vistoria.solicitante.nome}</td></tr>
+        <tr><td class="lbl">CNPJ/CPF</td><td>${vistoria.solicitante.cnpjCpf}</td></tr>
+        <tr><td class="lbl">Endereço</td><td>${vistoria.solicitante.endereco || '—'}</td></tr>
+        <tr><td class="lbl">Responsável Legal</td><td>${vistoria.solicitante.responsavelLegal || '—'}</td></tr>
+      </table>
+
+      <h2 class="sec-h" id="sec-2"><span class="sn">2.0</span>Identificação do Objeto da Vistoria</h2>
+      <p>O objeto da presente vistoria compreende o imóvel identificado na área de influência da obra geradora, detalhado individualmente na seção 10.1 deste laudo.</p>
+
+      <h2 class="sec-h" id="sec-3"><span class="sn">3.0</span>Objetivo e Finalidade</h2>
+      <p>A presente Vistoria Cautelar de Vizinhança tem por objetivo perpetuar a memória do estado
+      de conservação dos imóveis situados na área de influência da obra geradora, nos termos do
+      item 4 da Norma IBAPE/SP 2025.</p>
+      <p>Este instrumento tem, ainda, a finalidade de apurar e registrar o estado de conservação
+      dos imóveis lindeiros e do entorno previamente ao início das atividades construtivas,
+      constituindo prova testemunhal de constatação inicial apta a subsidiar, se necessário,
+      eventual esclarecimento sobre reclamações de danos formuladas por terceiros no decorrer ou
+      após a execução da obra.</p>
+      <div class="box box-alert">
+        <b>Delimitação de escopo — item 7.3.3.2 da ABNT NBR 13752:2024.</b> Por se tratar de
+        modalidade de Vistoria de Constatação, este laudo registra exclusivamente o estado
+        existente na data da vistoria. Não há determinação de causas, atribuição de
+        responsabilidades ou indicação de soluções para as ocorrências registradas.
+      </div>
+
+      <h2 class="sec-h" id="sec-4"><span class="sn">4.0</span>Nível de Vistoria</h2>
+      <p>Adotou-se o <b>Nível ${vistoria.nivelVistoriaCautelar}</b>, conforme item 5 da
+      Norma IBAPE/SP 2025.</p>
+
+      ${this.gerarInstrucoesUsoHtml()}
+
+      <h2 class="sec-h" id="sec-6"><span class="sn">6.0</span>Pressupostos, Ressalvas e Condições Limitantes</h2>
+      <ul>
+        <li>A vistoria foi realizada por constatação visual desarmada, sem ensaios
+        destrutivos, prospecções ou aberturas de revestimento.</li>
+        <li>A definição dos imóveis vistoriados decorre de escolha baseada em risco,
+        que pode ser minimizado, porém nunca anulado (item 6.2 da Norma IBAPE/SP 2025).</li>
+        <li>Os dados pessoais dos ocupantes foram tratados observando-se a Lei
+        nº 13.709/2018 (LGPD).</li>
+        <li>O marco temporal das constatações é estabelecido por
+        ${vistoria.marcoTemporal === 'ASSINATURA_DIGITAL' ? 'assinatura digital' : 'registro em cartório'}.</li>
+      </ul>
+
+      <h2 class="sec-h" id="sec-7"><span class="sn">7.0</span>Identificação da Obra Geradora</h2>
+      <table class="dt">
+        <tr><td class="lbl">Denominação</td><td>${vistoria.obraGeradora.nome}</td></tr>
+        <tr><td class="lbl">Endereço</td><td>${vistoria.obraGeradora.endereco}</td></tr>
+        <tr><td class="lbl">Momento da vistoria</td><td>${momentoLabel}</td></tr>
+        <tr><td class="lbl">Sistema de fundação</td><td>${vistoria.obraGeradora.fundacao || '—'}</td></tr>
+        <tr><td class="lbl">Sistema estrutural</td><td>${vistoria.obraGeradora.estrutura || '—'}</td></tr>
+        <tr><td class="lbl">Logística do canteiro</td><td>${vistoria.obraGeradora.logisticaCanteiro || '—'}</td></tr>
+        <tr><td class="lbl">Impactos previstos à vizinhança</td><td>${vistoria.obraGeradora.impactosVizinhanca || '—'}</td></tr>
+      </table>
+
+      <h2 class="sec-h" id="sec-8"><span class="sn">8.0</span>Área de Influência</h2>
+      <table class="dt">
+        <tr><td class="lbl">Raio considerado</td><td>${vistoria.areaInfluencia.raio || '—'}</td></tr>
+        <tr><td class="lbl">Memorial justificativo</td><td>${vistoria.areaInfluencia.memorialJustificativo || '—'}</td></tr>
+        <tr><td class="lbl">Estudos prévios considerados</td><td>${vistoria.areaInfluencia.estudosPreviosConsiderados || '—'}</td></tr>
+      </table>
+
+      <h2 class="sec-h" id="sec-9"><span class="sn">9.0</span>Registro Fotográfico do Canteiro de Obras</h2>
+      <p>Registro realizado a partir da via pública, nos termos do item 6.4.2 da Norma
+      IBAPE/SP 2025.</p>
+      ${vistoria.canteiroObras.fotosExternas.length > 0 || vistoria.canteiroObras.fotosInternas.length > 0 ? `
+        <div class="foto-grid">
+          ${vistoria.canteiroObras.fotosExternas.map((f, i) => `
+            <figure><img src="${f}"><figcaption><b>Externa ${i + 1}</b> — Vista do canteiro a partir da via pública.</figcaption></figure>
+          `).join('')}
+          ${vistoria.canteiroObras.fotosInternas.map((f, i) => `
+            <figure><img src="${f}"><figcaption><b>Interna ${i + 1}</b> — Registro interno do canteiro.</figcaption></figure>
+          `).join('')}
+        </div>` : '<p class="text-slate-400">Nenhuma foto do canteiro registrada.</p>'}
+    `;
+
+    // ─── BLOCO POR IMÓVEL (10.1) ───
+    const blocosImoveisHtml = [imovel].map((im, idx) => {
+      const numSecao = `10.${idx + 1}`;
+      const auth = im.autorizacaoAcesso;
+      const statusAcessoLabel = auth.status === 'AUTORIZADO' ? 'Autorizado'
+        : auth.status === 'AUTORIZADO_PARCIAL' ? 'Autorizado com restrições' : 'Negado';
+
+      // Regra: ambiente só entra no PDF se tiver ao menos 1 foto
+      const ambientesComFoto = im.ambientes.filter(a => a.fotos.length > 0);
+
+      const fichasHtml = ambientesComFoto.map(amb => {
+        const ocorrenciasHtml = amb.ocorrencias.length > 0
+          ? amb.ocorrencias.map(oc => {
+              const natureza = oc.tipoConstatacao === 'ANOMALIA' ? 'Anomalia'
+                : oc.tipoConstatacao === 'FALHA' ? 'Falha' : 'Manifestação patológica';
+              const familiaLabel = oc.familiaAbertura
+                ? this.labelFamiliaAbertura(oc.familiaAbertura).replace(/\s*\(.*\)$/, '')
+                : '';
+              const manifestacaoTexto = oc.familiaAbertura
+                ? `${familiaLabel} — abertura de ${oc.aberturaMm} mm`
+                : (oc.outraManifestacao === 'OUTRO'
+                    ? oc.outraManifestacaoDescricao
+                    : this.labelOutraManifestacao(oc.outraManifestacao!));
+
+              const partesMedicao: string[] = [];
+              if (oc.aberturaMm != null) partesMedicao.push(`abertura ${oc.aberturaMm} mm`);
+              if (oc.extensaoCm != null) partesMedicao.push(`extensão aproximada ${oc.extensaoCm} cm`);
+              if (oc.dimensoesCm) partesMedicao.push(`área afetada ${oc.dimensoesCm.largura} × ${oc.dimensoesCm.altura} cm`);
+              const medicaoHtml = partesMedicao.length > 0
+                ? `<p class="text-xs"><b>Medições:</b> ${partesMedicao.join(' · ')}</p>`
+                : '';
+
+              const caracteristicasHtml = (oc.caracteristicasObservadas?.length)
+                ? `<p class="text-xs"><b>Características observadas:</b> ${oc.caracteristicasObservadas.map(c => this.labelCaracteristicaObservada(c)).join('; ')}.</p>`
+                : '';
+
+              const ondeHtml = oc.descricaoEstruturada?.ondeNoElemento?.trim()
+                ? `<p class="text-xs"><b>Posição no elemento:</b> ${oc.descricaoEstruturada.ondeNoElemento}</p>`
+                : '';
+
+              return `
+                <div class="nc-card">
+                  <div class="nc-header">
+                    <span class="chip chip-${oc.tipoConstatacao === 'ANOMALIA' ? 'anom' : oc.tipoConstatacao === 'FALHA' ? 'falha' : 'mp'}">${natureza}</span>
+                    <span class="s9-title">${oc.elementoConstrutivo} — ${manifestacaoTexto}</span>
+                  </div>
+                  <p>${oc.descricao}</p>
+                  <p class="text-xs"><b>Localização:</b> ${oc.localizacaoNoAmbiente}</p>
+                  ${ondeHtml}
+                  ${medicaoHtml}
+                  ${caracteristicasHtml}
+                  ${oc.testemunhoInstalado ? '<p class="text-xs"><b>Testemunho/selo instalado.</b></p>' : ''}
+                  ${oc.fotos.length > 0 ? `<div class="foto-grid">${oc.fotos.map(f => `<figure><img src="${f}"></figure>`).join('')}</div>` : ''}
+                </div>`;
+            }).join('')
+          : (amb.fotos.length > 0
+              ? '<p class="text-xs" style="color:#B45309;font-style:italic;">Registro fotográfico do ambiente sem apontamento pericial vinculado.</p>'
+              : '<p class="text-xs text-slate-400">Ambiente vistoriado sem ocorrências constatadas.</p>');
+
+        return `
+          <div class="f-card">
+            <div class="f-head"><span class="f-id">${amb.nome}</span></div>
+            <div class="f-body">
+              <div class="foto-grid tri">
+                ${amb.fotos.map(f => `<figure><img src="${f}"></figure>`).join('')}
+              </div>
+              ${ocorrenciasHtml}
+            </div>
+          </div>`;
+      }).join('');
+
+      const elementosNivel3Html = im.elementosNivel3 ? `
+        <div class="box">
+          <b>Elementos do Nível 3 caracterizados:</b>
+          ${[
+            im.elementosNivel3.fachadas && 'Fachadas',
+            im.elementosNivel3.coberturas && 'Coberturas',
+            im.elementosNivel3.telhados && 'Telhados',
+            im.elementosNivel3.captacaoAguasPluviais && 'Captação de águas pluviais',
+            im.elementosNivel3.pisosExternos && 'Pisos externos',
+            im.elementosNivel3.vegetacaoCursosDagua && "Vegetação e cursos d'água",
+          ].filter(Boolean).join(' · ') || 'Nenhum elemento marcado'}
+          ${im.elementosNivel3.observacoes ? `<br>${im.elementosNivel3.observacoes}` : ''}
+        </div>` : '';
+
+      return `
+        <div class="pg"></div>
+        <h2 class="sec-h" id="sec-10-${idx + 1}"><span class="sn">${numSecao}</span>Imóvel — ${im.endereco}</h2>
+
+        <table class="dt">
+          <tr><td class="lbl">Status da autorização de acesso</td><td>${statusAcessoLabel}</td></tr>
+          ${auth.status === 'AUTORIZADO_PARCIAL' ? `<tr><td class="lbl">Ambientes restritos</td><td>${auth.ambientesRestritos || '—'}</td></tr>` : ''}
+          ${auth.status === 'NEGADO' ? `<tr><td class="lbl">Data da recusa</td><td>${auth.recusa?.data || '—'}</td></tr>
+          <tr><td class="lbl">Forma de notificação</td><td>${auth.recusa?.formaNotificacao === 'CORREIOS' ? 'Correios' : 'Cartório'}</td></tr>` : ''}
+          <tr><td class="lbl">Tipologia</td><td>${im.dadosImovel.tipologia}</td></tr>
+          <tr><td class="lbl">Ocupante</td><td>${im.dadosImovel.ocupante || '—'}</td></tr>
+          <tr><td class="lbl">Idade estimada</td><td>${im.dadosImovel.idadeEstimada || '—'}</td></tr>
+          <tr><td class="lbl">Posição relativa à obra</td><td>${this.labelPosicaoRelativa(im.posicaoRelativaObra || '')}</td></tr>
+          <tr><td class="lbl">Afastamento da divisa</td><td>${im.afastamentoDivisaMetros != null ? im.afastamentoDivisaMetros + ' m' : '—'}</td></tr>
+          <tr><td class="lbl">Data da vistoria</td><td>${im.dataVistoria ? new Date(im.dataVistoria + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}</td></tr>
+        </table>
+
+        ${auth.status === 'NEGADO' && auth.recusa?.fotoFachadaExterna ? `
+          <div class="box-alert box">
+            <b>Acesso negado — registro externo.</b>
+            <figure><img src="${auth.recusa.fotoFachadaExterna}"><figcaption>Fachada externa, vista da via pública.</figcaption></figure>
+          </div>` : ''}
+
+        ${auth.status !== 'NEGADO' ? `
+          <div class="ec-bar">
+            ${['OTIMO', 'BOM', 'REGULAR', 'MAL_CONSERVADO'].map(e => `
+              <div class="ec-cell ${im.estadoConservacao.classificacao === e ? 'on' : ''}">${
+                e === 'OTIMO' ? 'Ótimo' : e === 'BOM' ? 'Bom' : e === 'REGULAR' ? 'Regular' : 'Mal Conservado'
+              }</div>`).join('')}
+          </div>
+          ${elementosNivel3Html}
+          <div class="sub-h">Fichas de Constatação por Ambiente</div>
+          ${fichasHtml || '<p class="text-slate-400 text-sm">Nenhum ambiente com foto registrada.</p>'}
+        ` : ''}
+
+        <div class="ass-grid">
+          <div class="ass">
+            <div class="ass-line"></div>
+            <div class="ass-nome">${im.assinaturas.vistoriador.nome || '&nbsp;'}</div>
+            <div class="ass-reg">${
+              im.assinaturas.vistoriador.registro || im.assinaturas.vistoriador.artRrt
+                ? `${im.assinaturas.vistoriador.registro}${im.assinaturas.vistoriador.artRrt ? ` · ART/RRT ${im.assinaturas.vistoriador.artRrt}` : ''}`
+                : '&nbsp;'
+            }</div>
+            <div class="ass-papel">Responsável Técnico pela Vistoria</div>
+          </div>
+          ${im.assinaturas.ocupante ? `
+          <div class="ass">
+            <div class="ass-line"></div>
+            <div class="ass-nome">${im.assinaturas.ocupante.nome}</div>
+            <div class="ass-reg">${im.assinaturas.ocupante.documento}</div>
+            <div class="ass-papel">Ocupante do Imóvel</div>
+          </div>` : ''}
+          ${im.assinaturas.corresponsavelTecnico ? `
+          <div class="ass">
+            <div class="ass-line"></div>
+            <div class="ass-nome">${im.assinaturas.corresponsavelTecnico.nome}</div>
+            <div class="ass-reg">${im.assinaturas.corresponsavelTecnico.registro} · ART/RRT ${im.assinaturas.corresponsavelTecnico.artRrt}</div>
+            <div class="ass-papel">Corresponsável Técnico</div>
+          </div>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    const anexoArtHtml = (imovel.assinaturas.vistoriador as any).anexoArtRrt ? `
+      <div class="pg"></div>
+      <h2 class="sec-h" id="sec-anexo-art"><span class="sn">A-I</span>Anexo — Comprovantes de ART/RRT</h2>
+      <div class="box">
+        <b>${imovel.endereco}</b> — ART/RRT nº ${imovel.assinaturas.vistoriador.artRrt || '—'}
+      </div>
+      <figure><img src="${(imovel.assinaturas.vistoriador as any).anexoArtRrt}"></figure>
+    ` : '';
+
+    const encerramentoHtml = `
+      <div class="pg"></div>
+      <h2 class="sec-h" id="sec-12"><span class="sn">11.0</span>Local, Data e Assinaturas</h2>
+      <p>Nada mais havendo a consignar, encerra-se o presente Laudo de Vistoria
+      Cautelar de Vizinhança, composto pela obra geradora e 1
+      imóvel vistoriado, elaborado em conformidade com a Norma de Vistoria
+      Cautelar de Vizinhança do IBAPE/SP — 2025 e com a ABNT NBR 13752:2024.</p>
+      <p style="margin-top:5mm"><b>Recife/PE, ${dataFormatada}.</b></p>
+      <div class="ass-grid">
+        <div class="ass">
+          <div class="ass-line"></div>
+          <div class="ass-nome">${imovel.assinaturas.vistoriador.nome || '&nbsp;'}</div>
+          <div class="ass-reg">${
+            imovel.assinaturas.vistoriador.registro
+              ? `${imovel.assinaturas.vistoriador.registro}${imovel.assinaturas.vistoriador.artRrt ? ` · ART/RRT ${imovel.assinaturas.vistoriador.artRrt}` : ''}`
+              : '&nbsp;'
+          }</div>
+          <div class="ass-papel">Responsável Técnico pela Vistoria</div>
+        </div>
+      </div>
+      <div class="box" style="margin-top:10mm">
+        <b>Marco temporal.</b> O presente documento é ${
+          vistoria.marcoTemporal === 'ASSINATURA_DIGITAL'
+            ? 'assinado digitalmente, estabelecendo o marco temporal das constatações nele descritas'
+            : 'registrado em cartório, estabelecendo o marco temporal das constatações nele descritas'
+        }, conforme item 6.7 da Norma IBAPE/SP 2025.
+      </div>`;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="utf-8">
+        <title>Laudo de Vistoria Cautelar de Vizinhança — ${vistoria.obraGeradora.nome}</title>
+        <style>${this.cssLaudoCautelar()}</style>
+      </head>
+      <body>
+        ${capaHtml}
+        <div style="border:1px solid #B45309;background:#FFFBEB;border-radius:4mm;padding:4mm;margin-bottom:5mm;">
+          <p style="font-size:9pt;color:#7C2D12;margin:0;">
+            <b>Via do ocupante.</b> Este documento reproduz exclusivamente o registro referente ao imóvel acima identificado.
+            Não contém dados de outros imóveis vistoriados e não substitui o laudo consolidado entregue ao solicitante.
+          </p>
+        </div>
+        <table class="print-table">
+          <thead><tr><td class="print-thead-td">${this.headerLaudoCautelar()}</td></tr></thead>
+          <tfoot><tr><td class="print-tfoot-td">${this.footerLaudoCautelar(vistoria, numeroOuProvisorio)}</td></tr></tfoot>
+          <tbody><tr><td class="print-tbody-td">
+            ${sumarioHtml}
+            <div class="pg"></div>
+            ${secoesObraHtml}
+            ${blocosImoveisHtml}
+            ${anexoArtHtml}
+            ${encerramentoHtml}
+          </td></tr></tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    this.pdfPreviewHtmlContent.set(htmlContent);
+    this.pdfPreviewNumeroDocumento.set('Via do ocupante');
+    this.pdfPreviewDocumentoRegistrado.set(false);
+    this.modalPreviewPdfAberto.set(true);
+    this.carregandoPreviewPdf.set(false);
+  }
+
+  async gerarViaDoImovelEmEdicao(): Promise<void> {
+    const imovel = this.imovelEmEdicao();
+    if (!imovel) return;
+    await this.gerarViaIndividualDoOcupante(imovel.id);
   }
 
   private formatarLogoMarca(nome: string | undefined): string {
