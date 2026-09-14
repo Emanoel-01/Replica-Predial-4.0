@@ -163,6 +163,24 @@ export class SyncService {
     }
   }
 
+  async excluirVistoriaCautelarNaNuvem(id: string): Promise<boolean> {
+    try {
+      const session = await this.supabaseService.getSession();
+      if (!session?.user) return false;
+
+      const { error } = await this.supabaseService.client
+        .from('vistorias_cautelares')
+        .delete()
+        .eq('id', id)
+        .eq('profissional_id', session.user.id);
+
+      return !error;
+    } catch (e) {
+      console.error('Erro ao excluir vistoria cautelar na nuvem:', e);
+      return false;
+    }
+  }
+
   async salvarLaudoCautelarNaNuvem(laudo: LaudoCautelarEmitido): Promise<boolean> {
     try {
       const session = await this.supabaseService.getSession();

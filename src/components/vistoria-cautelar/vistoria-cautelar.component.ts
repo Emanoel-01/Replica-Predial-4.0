@@ -375,6 +375,8 @@ export class VistoriaCautelarComponent implements OnInit {
   vistoriaEmSincronizacaoId = signal<string | null>(null);
   sincronizandoTudo = signal(false);
   imovelPendenteConfirmacaoExclusao = signal<string | null>(null);
+  vistoriaParaExcluir = signal<VistoriaCautelar | null>(null);
+  excluindoVistoria = signal(false);
 
   // ─── Campos do formulário (Solicitante) ───
   novoSolicitanteNome = signal('');
@@ -975,10 +977,37 @@ export class VistoriaCautelarComponent implements OnInit {
     return this.todasVistoriasCautelares().find(v => v.id === this.vistoriaAtivaId());
   }
 
-  async excluirVistoriaCautelar(id: string): Promise<void> {
-    await this.dbService.deleteVistoriaCautelar(id);
+  solicitarExclusaoVistoria(event: Event, v: VistoriaCautelar): void {
+    event.stopPropagation();
+    this.vistoriaParaExcluir.set(v);
+  }
+
+  cancelarExclusaoVistoria(): void {
+    this.vistoriaParaExcluir.set(null);
+  }
+
+  async confirmarExclusaoVistoria(): Promise<void> {
+    const alvo = this.vistoriaParaExcluir();
+    if (!alvo) return;
+
+    this.excluindoVistoria.set(true);
+    const removidaNaNuvem = await this.syncService.excluirVistoriaCautelarNaNuvem(alvo.id);
+
+    if (!removidaNaNuvem) {
+      this.excluindoVistoria.set(false);
+      this.toastService.show(
+        'Não foi possível remover a obra na nuvem. A exclusão foi cancelada para evitar que ela retorne em outra sincronização.',
+        'error'
+      );
+      return;
+    }
+
+    await this.dbService.deleteVistoriaCautelar(alvo.id);
     await this.carregarVistorias();
-    this.toastService.show('Vistoria Cautelar excluída.', 'info');
+
+    this.excluindoVistoria.set(false);
+    this.vistoriaParaExcluir.set(null);
+    this.toastService.show('Obra e imóveis vistoriados excluídos.', 'info');
   }
 
   async sincronizarNuvem(event?: Event, vistoriaAlvo?: VistoriaCautelar): Promise<void> {

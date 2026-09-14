@@ -49,19 +49,27 @@
             <p class="text-xs text-slate-500 mb-3">{{ v.obraGeradora.endereco }}</p>
             <div class="flex justify-between items-center text-xs text-slate-400">
               <span>{{ v.imoveis.length }} imóve{{ v.imoveis.length === 1 ? 'l' : 'is' }} · Solicitante: {{ v.solicitante.nome }}</span>
-              <button type="button"
-                      (click)="sincronizarNuvem($event, v)"
-                      [disabled]="vistoriaEmSincronizacaoId() === v.id"
-                      class="inline-flex items-center gap-1 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] transition-all shadow-xs active:scale-95 cursor-pointer relative z-10"
-                      title="Salvar esta obra e imóveis na nuvem">
-                @if (vistoriaEmSincronizacaoId() === v.id) {
-                  <span class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>Salvando...</span>
-                } @else {
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                  <span>Salvar na Nuvem</span>
-                }
-              </button>
+              <div class="flex items-center gap-2">
+                <button type="button"
+                        (click)="sincronizarNuvem($event, v)"
+                        [disabled]="vistoriaEmSincronizacaoId() === v.id"
+                        class="inline-flex items-center gap-1 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] transition-all shadow-xs active:scale-95 cursor-pointer relative z-10"
+                        title="Salvar esta obra e imóveis na nuvem">
+                  @if (vistoriaEmSincronizacaoId() === v.id) {
+                    <span class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Salvando...</span>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    <span>Salvar na Nuvem</span>
+                  }
+                </button>
+                <button type="button"
+                        (click)="solicitarExclusaoVistoria($event, v)"
+                        class="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-xs transition-all cursor-pointer relative z-10"
+                        title="Excluir esta obra e todos os imóveis vistoriados">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
             </div>
           </div>
         }
@@ -867,6 +875,47 @@
         Marcar Imóvel como Concluído
       </button>
     }
+  </div>
+}
+
+<!-- MODAL: CONFIRMAÇÃO DE EXCLUSÃO DE OBRA -->
+@if (vistoriaParaExcluir()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">Excluir obra</h3>
+      </div>
+      <p class="text-sm text-slate-600 leading-relaxed">
+        Esta ação remove permanentemente a obra {{ vistoriaParaExcluir()!.obraGeradora.nome }}, os {{ vistoriaParaExcluir()!.imoveis.length }} imóvel(is) vistoriado(s) e todas as fichas de constatação, fotos e assinaturas vinculadas. A remoção ocorre neste dispositivo e na nuvem, e não pode ser desfeita.
+      </p>
+      <p class="text-xs text-slate-500 italic">
+        Laudos já emitidos a partir desta obra não são afetados.
+      </p>
+      <div class="flex gap-3 pt-2">
+        <button type="button"
+                (click)="cancelarExclusaoVistoria()"
+                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors cursor-pointer">
+          Cancelar
+        </button>
+        <button type="button"
+                (click)="confirmarExclusaoVistoria()"
+                [disabled]="excluindoVistoria()"
+                class="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-bold py-2.5 rounded-lg text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          @if (excluindoVistoria()) {
+            <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span>Excluindo...</span>
+          } @else {
+            <span>Excluir definitivamente</span>
+          }
+        </button>
+      </div>
+    </div>
   </div>
 }
 
