@@ -722,6 +722,8 @@ export class VistoriaCautelarComponent implements OnInit {
   edOcOutraManifestacao = signal<OutraManifestacao>('INFILTRACAO');
   edOcOutraManifestacaoDescricao = signal('');
   edOcDescricao = signal('');
+  edOcOQueSeVe = signal('');
+  edOcOndeNoElemento = signal('');
   edOcLocalizacaoNoAmbiente = signal('');
   edOcFotos = signal<string[]>([]);
   edOcTestemunhoInstalado = signal(false);
@@ -1638,10 +1640,36 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edOcOutraManifestacao.set('INFILTRACAO');
     this.edOcOutraManifestacaoDescricao.set('');
     this.edOcDescricao.set('');
+    this.edOcOQueSeVe.set('');
+    this.edOcOndeNoElemento.set('');
     this.edOcLocalizacaoNoAmbiente.set('');
     this.edOcFotos.set([]);
     this.edOcTestemunhoInstalado.set(false);
     this.edOcFotoTestemunho.set(null);
+    this.sugestaoIAPendente.set(null);
+    this.sugestaoIAAplicadaNestaSessao = null;
+    this.modalOcorrenciaAberto.set(true);
+  }
+
+  abrirModalEditarOcorrencia(ambienteId: string, oc: OcorrenciaCautelar): void {
+    this.ambienteDaOcorrenciaId.set(ambienteId);
+    this.ocorrenciaEmEdicaoId.set(oc.id);
+    this.edOcElementoConstrutivo.set(oc.elementoConstrutivo);
+    this.edOcTipoConstatacao.set(oc.tipoConstatacao);
+    this.edOcUsaFamiliaAbertura.set(!!oc.aberturaMm || !!oc.familiaAbertura);
+    this.edOcAberturaMm.set(oc.aberturaMm != null ? String(oc.aberturaMm) : '');
+    this.edOcExtensaoCm.set(oc.extensaoCm != null ? String(oc.extensaoCm) : '');
+    this.edOcDimensaoLargura.set(oc.dimensoesCm?.largura != null ? String(oc.dimensoesCm.largura) : '');
+    this.edOcDimensaoAltura.set(oc.dimensoesCm?.altura != null ? String(oc.dimensoesCm.altura) : '');
+    this.edOcOutraManifestacao.set(oc.outraManifestacao ?? 'INFILTRACAO');
+    this.edOcOutraManifestacaoDescricao.set(oc.outraManifestacaoDescricao ?? '');
+    this.edOcDescricao.set(oc.descricao ?? '');
+    this.edOcOQueSeVe.set(oc.descricaoEstruturada?.oQueSeVe ?? '');
+    this.edOcOndeNoElemento.set(oc.descricaoEstruturada?.ondeNoElemento ?? '');
+    this.edOcLocalizacaoNoAmbiente.set(oc.localizacaoNoAmbiente ?? '');
+    this.edOcFotos.set([...(oc.fotos ?? [])]);
+    this.edOcTestemunhoInstalado.set(!!oc.testemunhoInstalado);
+    this.edOcFotoTestemunho.set(oc.fotoTestemunho ?? null);
     this.sugestaoIAPendente.set(null);
     this.sugestaoIAAplicadaNestaSessao = null;
     this.modalOcorrenciaAberto.set(true);
@@ -1685,14 +1713,20 @@ export class VistoriaCautelarComponent implements OnInit {
 
   ocorrenciaSemDimensaoObrigatoria(): boolean {
     if (!this.edOcUsaFamiliaAbertura()) return false;
-    const abertura = parseFloat(this.edOcAberturaMm());
-    const extensao = parseFloat(this.edOcExtensaoCm());
-    return isNaN(abertura) || abertura <= 0 || isNaN(extensao) || extensao <= 0;
+    const abertura = parseFloat(this.edOcAberturaMm().replace(',', '.'));
+    return isNaN(abertura) || abertura <= 0;
+  }
+
+  composicaoDescricao(): string {
+    const oQue = this.edOcOQueSeVe().trim();
+    const onde = this.edOcOndeNoElemento().trim();
+    if (!oQue) return '';
+    return onde ? `${oQue} ${onde}` : oQue;
   }
 
   podeSalvarOcorrencia(): boolean {
     const temDescricaoOutro = this.edOcOutraManifestacao() !== 'OUTRO' || !!this.edOcOutraManifestacaoDescricao().trim();
-    return !!(this.edOcDescricao().trim() && this.edOcLocalizacaoNoAmbiente().trim()
+    return !!(this.edOcOQueSeVe().trim() && this.edOcLocalizacaoNoAmbiente().trim()
       && this.edOcFotos().length > 0 && temDescricaoOutro
       && !this.ocorrenciaSemDimensaoObrigatoria());
   }
@@ -1707,10 +1741,10 @@ export class VistoriaCautelarComponent implements OnInit {
     }
 
     const usaFamilia = this.edOcUsaFamiliaAbertura();
-    const mm = usaFamilia && this.edOcAberturaMm() ? parseFloat(this.edOcAberturaMm()) : undefined;
-    const extCm = this.edOcExtensaoCm() ? parseFloat(this.edOcExtensaoCm()) : undefined;
-    const larg = this.edOcDimensaoLargura() ? parseFloat(this.edOcDimensaoLargura()) : undefined;
-    const alt = this.edOcDimensaoAltura() ? parseFloat(this.edOcDimensaoAltura()) : undefined;
+    const mm = usaFamilia && this.edOcAberturaMm() ? parseFloat(this.edOcAberturaMm().replace(',', '.')) : undefined;
+    const extCm = this.edOcExtensaoCm() ? parseFloat(this.edOcExtensaoCm().replace(',', '.')) : undefined;
+    const larg = this.edOcDimensaoLargura() ? parseFloat(this.edOcDimensaoLargura().replace(',', '.')) : undefined;
+    const alt = this.edOcDimensaoAltura() ? parseFloat(this.edOcDimensaoAltura().replace(',', '.')) : undefined;
     const dimensoes = larg != null && alt != null ? { largura: larg, altura: alt } : undefined;
 
     const novaOcorrencia: OcorrenciaCautelar = {
@@ -1724,7 +1758,11 @@ export class VistoriaCautelarComponent implements OnInit {
       outraManifestacao: !usaFamilia ? this.edOcOutraManifestacao() : undefined,
       outraManifestacaoDescricao: !usaFamilia && this.edOcOutraManifestacao() === 'OUTRO'
         ? this.edOcOutraManifestacaoDescricao() : undefined,
-      descricao: this.edOcDescricao(),
+      descricao: this.composicaoDescricao(),
+      descricaoEstruturada: {
+        oQueSeVe: this.edOcOQueSeVe().trim(),
+        ondeNoElemento: this.edOcOndeNoElemento().trim(),
+      },
       fotos: this.edOcFotos(),
       localizacaoNoAmbiente: this.edOcLocalizacaoNoAmbiente(),
       testemunhoInstalado: this.edOcTestemunhoInstalado(),
@@ -1816,7 +1854,7 @@ Retorne apenas o texto transcrito, sem comentários adicionais.`,
         [{ base64, mimeType: 'audio/webm' }]
       );
       const transcricaoLimpa = this.geminiService.sanitizeAiText(texto);
-      this.edOcDescricao.update(atual => atual ? `${atual}\n${transcricaoLimpa}` : transcricaoLimpa);
+      this.edOcOQueSeVe.update(atual => atual ? `${atual}\n${transcricaoLimpa}` : transcricaoLimpa);
       this.toastService.show(
         'Áudio transcrito. Trechos que apontem causa, origem ou responsabilidade são omitidos — a vistoria cautelar é de constatação.',
         'info',
@@ -1925,6 +1963,7 @@ sem inventar conteúdo.`;
     if (sugestao.tipoConstatacao) this.edOcTipoConstatacao.set(sugestao.tipoConstatacao);
     if (sugestao.descricaoSugerida) {
       this.edOcDescricao.update(atual => atual ? atual : sugestao.descricaoSugerida!);
+      this.edOcOQueSeVe.update(atual => atual ? atual : sugestao.descricaoSugerida!);
     }
     this.sugestaoIAPendente.set(null);
     this.toastService.show('Sugestão aplicada. Revise antes de salvar.', 'success');

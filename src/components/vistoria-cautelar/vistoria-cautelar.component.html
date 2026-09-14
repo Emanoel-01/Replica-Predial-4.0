@@ -860,7 +860,10 @@
                       <strong>{{ oc.elementoConstrutivo }}</strong> —
                       {{ oc.familiaAbertura ? labelFamiliaAbertura(oc.familiaAbertura) : labelOutraManifestacao(oc.outraManifestacao!) }}
                     </span>
-                    <button (click)="excluirOcorrencia(amb.id, oc.id)" class="text-slate-400 hover:text-red-500 text-xs">Remover</button>
+                    <div class="flex items-center gap-2">
+                      <button (click)="abrirModalEditarOcorrencia(amb.id, oc)" class="text-slate-400 hover:text-sky-600 text-xs">Editar</button>
+                      <button (click)="excluirOcorrencia(amb.id, oc.id)" class="text-slate-400 hover:text-red-500 text-xs">Remover</button>
+                    </div>
                   </div>
                 }
               </div>
@@ -1286,14 +1289,14 @@
                 }
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1.5">Extensão (cm) *</label>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">Extensão (cm) <span class="font-normal text-slate-400">(opcional)</span></label>
                 <input type="number" step="0.1" min="0" [(ngModel)]="edOcExtensaoCm" name="ocExt" placeholder="ex.: 45"
                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
               </div>
             </div>
             @if (ocorrenciaSemDimensaoObrigatoria()) {
               <p class="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
-                Para fissuras, trincas, rachaduras, fendas e brechas, a abertura (mm) e a extensão (cm) são obrigatórias para permitir o confronto entre constatações.
+                Informe a abertura em milímetros. A medida é o que permite comparar esta ocorrência em uma vistoria futura do mesmo imóvel.
               </p>
             }
           </div>
@@ -1335,28 +1338,39 @@
                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
       </div>
 
-      <div>
-        <div class="flex items-center justify-between mb-1.5">
-          <label class="block text-xs font-bold text-slate-600">Descrição *</label>
-          <div class="flex items-center gap-2">
-            @if (!gravandoAudio()) {
-              <button (click)="iniciarGravacaoAudio()" [disabled]="transcrevendoAudio()" class="text-[11px] font-bold text-sky-600 hover:underline disabled:opacity-40 flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"/><path d="M19 11a1 1 0 10-2 0 5 5 0 01-10 0 1 1 0 10-2 0 7 7 0 006 6.92V20H9a1 1 0 100 2h6a1 1 0 100-2h-2v-2.08A7 7 0 0019 11z"/></svg>
-                Gravar
-              </button>
-            } @else {
-              <button (click)="pararGravacaoAudio()" class="text-[11px] font-bold text-red-600 flex items-center gap-1 animate-pulse">
-                <span class="w-2 h-2 bg-red-600 rounded-full"></span>
-                Parar gravação
-              </button>
-            }
-            @if (transcrevendoAudio()) {
-              <span class="text-[11px] text-slate-400">Transcrevendo...</span>
-            }
+      <div class="space-y-3">
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-bold text-slate-600">O que se vê *</label>
+            <div class="flex items-center gap-2">
+              @if (!gravandoAudio()) {
+                <button (click)="iniciarGravacaoAudio()" [disabled]="transcrevendoAudio()" class="text-[11px] font-bold text-sky-600 hover:underline disabled:opacity-40 flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"/><path d="M19 11a1 1 0 10-2 0 5 5 0 01-10 0 1 1 0 10-2 0 7 7 0 006 6.92V20H9a1 1 0 100 2h6a1 1 0 100-2h-2v-2.08A7 7 0 0019 11z"/></svg>
+                  Gravar
+                </button>
+              } @else {
+                <button (click)="pararGravacaoAudio()" class="text-[11px] font-bold text-red-600 flex items-center gap-1 animate-pulse">
+                  <span class="w-2 h-2 bg-red-600 rounded-full"></span>
+                  Parar gravação
+                </button>
+              }
+              @if (transcrevendoAudio()) {
+                <span class="text-[11px] text-slate-400">Transcrevendo...</span>
+              }
+            </div>
           </div>
+          <textarea [(ngModel)]="edOcOQueSeVe" name="ocOQueSeVe" rows="3"
+                    placeholder="ex.: fissura mapeada com abertura constante, sem destacamento de revestimento"
+                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+          <p class="text-[11px] text-slate-500 mt-1">Descreva apenas a aparência do que está visível. Não informe causa, origem, responsabilidade nem prognóstico — a vistoria cautelar é de constatação.</p>
         </div>
-        <textarea [(ngModel)]="edOcDescricao" name="ocDescricao" rows="3"
-                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Onde, no elemento</label>
+          <input type="text" [(ngModel)]="edOcOndeNoElemento" name="ocOndeNoElemento"
+                 placeholder="ex.: no terço inferior, próximo ao encontro com a laje"
+                 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
       </div>
 
       <div>
