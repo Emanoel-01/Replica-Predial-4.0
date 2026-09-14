@@ -27,6 +27,16 @@ export interface FichaDano {
     recomendacaoTecnica?: string;
     severitySugerida?: 'Mínimo' | 'Regular' | 'Crítico';
   } | null;
+  historicoSugestoesIa?: Array<{
+    classificacaoTipo?: string;
+    classificacaoSubtipo?: string;
+    manifestacao?: string;
+    causaProvavel?: string;
+    recomendacaoTecnica?: string;
+    severitySugerida?: 'Mínimo' | 'Regular' | 'Crítico';
+    decisao: 'aceita' | 'descartada';
+    decididaEm: string;
+  }>;
   quantitativo?: string;
   memorialDescritivo?: string;
   correlacaoFotoPatologia?: 'CONFIRMADA' | 'DIVERGENTE' | 'INCONCLUSIVA';
@@ -1480,14 +1490,14 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           oc.observacaoDivergencia = diag.observacaoDivergencia;
 
           if (diag.correlacaoFotoPatologia === 'CONFIRMADA') {
-            if (diag.classificacaoTipo) {
-              oc.classificacao = { tipo: diag.classificacaoTipo as any, subtipo: diag.classificacaoSubtipo as any };
-            }
-            oc.manifestacao = diag.manifestacao || oc.manifestacao;
-            oc.causaProvavel = diag.causaProvavel || oc.causaProvavel;
-            oc.recomendacaoTecnica = diag.recomendacaoTecnica || oc.recomendacaoTecnica;
-            oc.criticidade = (derivarPatamarPrioridade(diag.severitySugerida) as any) || oc.criticidade;
-            oc.normasAplicaveis = this.dataService.getNormasTipologia(it.systemTitle, it.typologyTitle);
+            oc.sugestaoIaPendente = {
+              classificacaoTipo: diag.classificacaoTipo,
+              classificacaoSubtipo: diag.classificacaoSubtipo,
+              manifestacao: diag.manifestacao,
+              causaProvavel: diag.causaProvavel,
+              recomendacaoTecnica: diag.recomendacaoTecnica,
+              severitySugerida: diag.severitySugerida,
+            };
           }
           return it;
         });
@@ -1497,14 +1507,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           oc.falhaAnaliseIa = true;
           return it;
         });
-      }
-
-      const itemAtualizado = this.vistoriaAtiva()?.items.find(it => it.id === item.id);
-      if (itemAtualizado) {
-        const ocAtivo = this.obterOcorrenciaAtiva(itemAtualizado);
-        if (diag?.severitySugerida && diag.correlacaoFotoPatologia === 'CONFIRMADA' && !ocAtivo.severity) {
-          this.alterarGravidadeItem(item.id, diag.severitySugerida);
-        }
       }
     } catch (e) {
       console.error('Falha no processamento do arquivo/análise', e);
@@ -1807,14 +1809,6 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           return it;
         });
       }
-
-      const itemAtualizado = this.vistoriaAtiva()?.items.find(it => it.id === item.id);
-      if (itemAtualizado) {
-        const ocAtivo = this.obterOcorrenciaAtiva(itemAtualizado);
-        if (diag?.severitySugerida && diag.correlacaoFotoPatologia === 'CONFIRMADA' && !ocAtivo.severity) {
-          this.alterarGravidadeItem(item.id, diag.severitySugerida);
-        }
-      }
     } catch (e) {
       console.error('Falha na captura/análise de evidência', e);
       this.toastService.show('Falha ao capturar ou analisar a evidência.', 'error');
@@ -1830,11 +1824,15 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
   }
 
   aceitarSugestaoIa(itemId: string, fichaId: string): void {
+    let grauRiscoAceito: 'Mínimo' | 'Regular' | 'Crítico' | undefined;
+
     this.aplicarMudancaNoItem(itemId, it => {
       const oc = it.ocorrencias?.find(f => f.id === fichaId);
       if (!oc || !oc.sugestaoIaPendente) return it;
 
       const s = oc.sugestaoIaPendente;
+      grauRiscoAceito = s.severitySugerida;
+
       if (s.classificacaoTipo) {
         oc.classificacao = { tipo: s.classificacaoTipo as any, subtipo: s.classificacaoSubtipo as any };
       }
@@ -1843,15 +1841,57 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       oc.recomendacaoTecnica = s.recomendacaoTecnica || oc.recomendacaoTecnica;
       oc.criticidade = (derivarPatamarPrioridade(s.severitySugerida) as any) || oc.criticidade;
       oc.normasAplicaveis = this.dataService.getNormasTipologia(it.systemTitle, it.typologyTitle);
+
+      const historico = oc.historicoSugestoesIa ?? [];
+      historico.push({
+        classificacaoTipo: s.classificacaoTipo,
+        classificacaoSubtipo: s.classificacaoSubtipo,
+        manifestacao: s.manifestacao,
+        causaProvavel: s.causaProvavel,
+        recomendacaoTecnica: s.recomendacaoTecnica,
+        severitySugerida: s.severitySugerida,
+        decisao: 'aceita',
+        decididaEm: new Date().toISOString(),
+      });
+      oc.historicoSugestoesIa = historico;
+
       oc.sugestaoIaPendente = null;
       return it;
     });
+
+    if (grauRiscoAceito) {
+      const itemAtualizado = this.vistoriaAtiva()?.items.find(it => it.id === itemId);
+      if (itemAtualizado) {
+        const ocAtivo = this.obterOcorrenciaAtiva(itemAtualizado);
+        if (!ocAtivo.severity) {
+          this.alterarGravidadeItem(itemId, grauRiscoAceito);
+        }
+      }
+    }
   }
 
   descartarSugestaoIa(itemId: string, fichaId: string): void {
     this.aplicarMudancaNoItem(itemId, it => {
       const oc = it.ocorrencias?.find(f => f.id === fichaId);
-      if (oc) oc.sugestaoIaPendente = null;
+      if (!oc) return it;
+
+      if (oc.sugestaoIaPendente) {
+        const s = oc.sugestaoIaPendente;
+        const historico = oc.historicoSugestoesIa ?? [];
+        historico.push({
+          classificacaoTipo: s.classificacaoTipo,
+          classificacaoSubtipo: s.classificacaoSubtipo,
+          manifestacao: s.manifestacao,
+          causaProvavel: s.causaProvavel,
+          recomendacaoTecnica: s.recomendacaoTecnica,
+          severitySugerida: s.severitySugerida,
+          decisao: 'descartada',
+          decididaEm: new Date().toISOString(),
+        });
+        oc.historicoSugestoesIa = historico;
+      }
+
+      oc.sugestaoIaPendente = null;
       return it;
     });
   }
