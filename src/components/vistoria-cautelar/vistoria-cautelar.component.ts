@@ -126,10 +126,39 @@ export const CARACTERISTICAS_OBSERVADAS = [
 
 export type CaracteristicaObservada = typeof CARACTERISTICAS_OBSERVADAS[number];
 
+export type MomentoConstatacao =
+  | 'PRE_DEMOLICAO'
+  | 'PRE_MOVIMENTACAO_TERRA'
+  | 'DURANTE_OBRA'
+  | 'POS_CONCLUSAO';
+
+export type OrigemSolicitacao = 'EMPREENDEDOR' | 'OCUPANTE';
+
+export const MOMENTOS_CONSTATACAO_LABEL: Record<MomentoConstatacao, string> = {
+  PRE_DEMOLICAO: 'Período prévio à demolição',
+  PRE_MOVIMENTACAO_TERRA: 'Período prévio à movimentação de terra, execução de fundação e contenção',
+  DURANTE_OBRA: 'Durante a execução da obra',
+  POS_CONCLUSAO: 'Após a conclusão da obra',
+};
+
+export const ORIGEM_SOLICITACAO_LABEL: Record<OrigemSolicitacao, string> = {
+  EMPREENDEDOR: 'Por iniciativa do empreendedor',
+  OCUPANTE: 'A pedido do ocupante do imóvel',
+};
+
+export type SituacaoEmRelacaoAnterior =
+  | 'SEM_ALTERACAO'
+  | 'COM_ALTERACAO'
+  | 'NAO_LOCALIZADA'
+  | 'NAO_CONSTA_DO_REGISTRO_ANTERIOR';
+
 // ─── Estruturas principais ───
 
 export interface OcorrenciaCautelar {
   id: string;                               // crypto.randomUUID()
+  chaveOcorrencia?: string;                   // identidade estável da ocorrência entre constatações do mesmo imóvel
+  ocorrenciaOrigemId?: string;                // id da ocorrência correspondente na constatação anterior
+  situacaoEmRelacaoAnterior?: SituacaoEmRelacaoAnterior;
   elementoConstrutivo: ElementoConstrutivo;
   tipoConstatacao: TipoConstatacaoCautelar;
   familiaAbertura?: FamiliaAbertura;         // se for da família fissura→brecha
@@ -203,6 +232,21 @@ export interface InstrumentacaoComplementar {   // OPCIONAL, extra-normativo
   fissurometros?: string; pinosRecalque?: string; inclinometros?: string;
 }
 
+export interface ConstatacaoImovel {
+  id: string;                                 // crypto.randomUUID()
+  ordem: number;                              // 1 para a primeira constatação do imóvel, 2 para a seguinte
+  momento: MomentoConstatacao;
+  origemSolicitacao: OrigemSolicitacao;
+  dataVistoria?: string;
+  ambientes: AmbienteCautelar[];
+  assinaturas: AssinaturasCautelar;
+  observacoesDoOcupante?: string;             // relato do ocupante que motivou a convocação, quando houver
+  criadoEm: string;                           // ISO
+  fechadaEm: string;                          // ISO — constatação só entra na série quando fechada
+  retificaConstatacaoId?: string;             // id da constatação que esta retifica, quando aplicável
+  motivoRetificacao?: string;                 // obrigatório quando retificaConstatacaoId estiver presente
+}
+
 export interface LaudoImovelVizinho {
   id: string;                                 // crypto.randomUUID()
   status: StatusImovelCautelar;
@@ -223,6 +267,15 @@ export interface LaudoImovelVizinho {
   instrumentacaoComplementar?: InstrumentacaoComplementar;
   assinaturas: AssinaturasCautelar;
   dataVistoria?: string;
+  constatacoes?: ConstatacaoImovel[];         // série cronológica; a rodada seguinte migra os consumidores
+  constatacaoAberta?: {
+    momento: MomentoConstatacao;
+    origemSolicitacao: OrigemSolicitacao;
+    observacoesDoOcupante?: string;
+    retificaConstatacaoId?: string;
+    motivoRetificacao?: string;
+    iniciadaEm: string;                       // ISO
+  };
 }
 
 export interface VistoriaCautelar {
@@ -233,7 +286,7 @@ export interface VistoriaCautelar {
     logisticaCanteiro?: string; impactosVizinhanca?: string;
     fotos?: FotoObra[];
   };
-  momentoVistoria: 'PRE_DEMOLICAO' | 'PRE_MOVIMENTACAO_TERRA';
+  momentoVistoria: MomentoConstatacao;
   areaInfluencia: {
     croqui?: string;                           // id de AnexoBlob
     raio?: string;
@@ -276,6 +329,8 @@ export class VistoriaCautelarComponent implements OnInit {
 
   readonly ELEMENTOS_CONSTRUTIVOS = ELEMENTOS_CONSTRUTIVOS;
   readonly CARACTERISTICAS_OBSERVADAS = CARACTERISTICAS_OBSERVADAS;
+  readonly MOMENTOS_CONSTATACAO_LABEL = MOMENTOS_CONSTATACAO_LABEL;
+  readonly ORIGEM_SOLICITACAO_LABEL = ORIGEM_SOLICITACAO_LABEL;
 
   readonly OPCOES_ESTRUTURA = [
     'Concreto armado convencional',
@@ -419,7 +474,7 @@ export class VistoriaCautelarComponent implements OnInit {
   novaObraFotos = signal<FotoObra[]>([]);
 
   // ─── Momento e nível ───
-  novoMomentoVistoria = signal<'PRE_DEMOLICAO' | 'PRE_MOVIMENTACAO_TERRA'>('PRE_MOVIMENTACAO_TERRA');
+  novoMomentoVistoria = signal<MomentoConstatacao>('PRE_MOVIMENTACAO_TERRA');
   novoNivelVistoriaCautelar = signal<'1' | '2' | '3'>('2');
 
   // ─── Área de influência ───
@@ -489,6 +544,12 @@ export class VistoriaCautelarComponent implements OnInit {
   // ─── VC-4: Painel de autorização de acesso (imóvel selecionado) ───
   imovelEmEdicaoId = signal<string | null>(null);
   modalAutorizacaoAberto = signal(false);
+  modalAbrirConstatacaoAberto = signal(false);
+  novaConstatacaoMomento = signal<MomentoConstatacao>('PRE_MOVIMENTACAO_TERRA');
+  novaConstatacaoOrigem = signal<OrigemSolicitacao>('EMPREENDEDOR');
+  novaConstatacaoRelatoOcupante = signal('');
+  novaConstatacaoRetificaId = signal<string>('');
+  novaConstatacaoMotivoRetificacao = signal('');
   edAutorizacaoStatus = signal<StatusAutorizacao>('AUTORIZADO');
   edDataContatoPrevio = signal('');
   edMeioContato = signal<'TELEFONE' | 'EMAIL' | 'PESSOAL'>('TELEFONE');
@@ -1435,7 +1496,9 @@ export class VistoriaCautelarComponent implements OnInit {
     const vistoria = this.vistoriaAtiva();
     const imovel = this.imovelEmEdicao();
     if (!vistoria || !imovel) return;
-    if (imovel.ambientes.length > 0) return; // já tem ambientes, não mexe
+    if (imovel.ambientes.length > 0) return;              // já tem ambientes, não mexe
+    if (!this.imovelTemConstatacaoAberta(imovel)) return; // sem constatação aberta, não há onde semear
+    if (this.constatacoesFechadasDoImovel(imovel).length > 0) return; // a partir da 2ª, herda da anterior
 
     const tipologia = imovel.dadosImovel.tipologia;
     const nomesPadrao = AMBIENTES_POR_TIPOLOGIA[tipologia] ?? [];
@@ -1971,6 +2034,239 @@ sem inventar conteúdo.`;
       });
     });
     return camposCurtos;
+  }
+
+  constatacoesFechadasDoImovel(imovel: LaudoImovelVizinho): ConstatacaoImovel[] {
+    return [...(imovel.constatacoes ?? [])].sort((a, b) => a.ordem - b.ordem);
+  }
+
+  proximaOrdemConstatacao(imovel: LaudoImovelVizinho): number {
+    return (imovel.constatacoes ?? []).length + 1;
+  }
+
+  imovelTemConstatacaoAberta(imovel: LaudoImovelVizinho): boolean {
+    return !!imovel.constatacaoAberta;
+  }
+
+  ambientesHerdadosDaConstatacaoAnterior(imovel: LaudoImovelVizinho): AmbienteCautelar[] {
+    const fechadas = this.constatacoesFechadasDoImovel(imovel);
+    if (fechadas.length === 0) return [];
+
+    const anterior = fechadas[fechadas.length - 1];
+    return anterior.ambientes.map(amb => ({
+      id: crypto.randomUUID(),
+      nome: amb.nome,
+      fotos: [],
+      ocorrencias: [],
+    }));
+  }
+
+  async abrirConstatacao(
+    imovelId: string,
+    momento: MomentoConstatacao,
+    origemSolicitacao: OrigemSolicitacao,
+    observacoesDoOcupante?: string,
+    retificaConstatacaoId?: string,
+    motivoRetificacao?: string
+  ): Promise<void> {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return;
+
+    const imovel = vistoria.imoveis.find(im => im.id === imovelId);
+    if (!imovel) return;
+
+    if (imovel.constatacaoAberta) {
+      this.toastService.show('Este imóvel já possui uma constatação em aberto.', 'error');
+      return;
+    }
+
+    const imoveisAtualizados = vistoria.imoveis.map(im =>
+      im.id !== imovelId ? im : {
+        ...im,
+        ambientes: this.ambientesHerdadosDaConstatacaoAnterior(imovel),
+        assinaturas: {
+          vistoriador: {
+            nome: this.profile?.fullName || '',
+            registro: this.profile?.professionalId || '',
+            artRrt: '',
+          },
+        },
+        dataVistoria: undefined,
+        constatacaoAberta: {
+          momento,
+          origemSolicitacao,
+          observacoesDoOcupante,
+          retificaConstatacaoId,
+          motivoRetificacao,
+          iniciadaEm: new Date().toISOString(),
+        },
+        status: 'EM_ANDAMENTO' as StatusImovelCautelar,
+      }
+    );
+
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+  }
+
+  obterImpedimentosDaConstatacao(imovel: LaudoImovelVizinho): string[] {
+    const impedimentos: string[] = [];
+    const acessoNegado = imovel.autorizacaoAcesso?.status === 'NEGADO';
+
+    if (!acessoNegado) {
+      if (!imovel.dataVistoria?.trim()) {
+        impedimentos.push('Data da vistoria não informada.');
+      }
+      if (!imovel.ambientes.length) {
+        impedimentos.push('Nenhum ambiente registrado nesta constatação.');
+      }
+      imovel.ambientes.forEach(amb => {
+        if (amb.fotos.length > 0 && amb.ocorrencias.length === 0) {
+          impedimentos.push(
+            `Ambiente "${amb.nome}": possui ${amb.fotos.length} foto(s) sem nenhuma ficha de constatação vinculada.`
+          );
+        }
+      });
+    }
+
+    const fechadas = this.constatacoesFechadasDoImovel(imovel);
+    if (fechadas.length > 0 && !acessoNegado) {
+      const anterior = fechadas[fechadas.length - 1];
+      const nomesAtuais = new Set(imovel.ambientes.map(a => a.nome.trim().toLowerCase()));
+      anterior.ambientes.forEach(ambAnterior => {
+        if (!nomesAtuais.has(ambAnterior.nome.trim().toLowerCase())) {
+          impedimentos.push(
+            `Ambiente "${ambAnterior.nome}" consta da constatação anterior e não foi reexaminado nesta.`
+          );
+        }
+      });
+    }
+
+    return impedimentos;
+  }
+
+  async fecharConstatacao(imovelId: string): Promise<boolean> {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return false;
+
+    const imovel = vistoria.imoveis.find(im => im.id === imovelId);
+    if (!imovel?.constatacaoAberta) {
+      this.toastService.show('Não há constatação em aberto neste imóvel.', 'error');
+      return false;
+    }
+
+    const pendencias = this.obterImpedimentosDaConstatacao(imovel);
+    if (pendencias.length > 0) {
+      this.impedimentosCautelar.set(pendencias);
+      this.modalImpedimentosCautelarAberto.set(true);
+      return false;
+    }
+
+    const aberta = imovel.constatacaoAberta;
+    const fechada: ConstatacaoImovel = {
+      id: crypto.randomUUID(),
+      ordem: this.proximaOrdemConstatacao(imovel),
+      momento: aberta.momento,
+      origemSolicitacao: aberta.origemSolicitacao,
+      dataVistoria: imovel.dataVistoria,
+      ambientes: imovel.ambientes,
+      assinaturas: imovel.assinaturas,
+      observacoesDoOcupante: aberta.observacoesDoOcupante,
+      retificaConstatacaoId: aberta.retificaConstatacaoId,
+      motivoRetificacao: aberta.motivoRetificacao,
+      criadoEm: aberta.iniciadaEm,
+      fechadaEm: new Date().toISOString(),
+    };
+
+    const imoveisAtualizados = vistoria.imoveis.map(im =>
+      im.id !== imovelId ? im : {
+        ...im,
+        constatacoes: [...(im.constatacoes ?? []), fechada],
+        constatacaoAberta: undefined,
+        ambientes: [],
+        dataVistoria: undefined,
+        status: 'CONCLUIDO' as StatusImovelCautelar,
+      }
+    );
+
+    const atualizada: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: new Date().toISOString(),
+    };
+    await this.dbService.salvarVistoriaCautelar(atualizada);
+    await this.carregarVistorias();
+    this.toastService.show('Constatação fechada e arquivada no histórico do imóvel.', 'success');
+    return true;
+  }
+
+  solicitarAberturaConstatacao(): void {
+    const vistoria = this.vistoriaAtiva();
+    this.novaConstatacaoMomento.set(vistoria?.momentoVistoria ?? 'PRE_MOVIMENTACAO_TERRA');
+    this.novaConstatacaoOrigem.set('EMPREENDEDOR');
+    this.novaConstatacaoRelatoOcupante.set('');
+    this.novaConstatacaoRetificaId.set('');
+    this.novaConstatacaoMotivoRetificacao.set('');
+    this.modalAbrirConstatacaoAberto.set(true);
+  }
+
+  cancelarAberturaConstatacao(): void {
+    this.modalAbrirConstatacaoAberto.set(false);
+  }
+
+  momentoDivergeDoCadastroDaObra(): boolean {
+    const vistoria = this.vistoriaAtiva();
+    if (!vistoria) return false;
+    return this.novaConstatacaoMomento() !== vistoria.momentoVistoria;
+  }
+
+  async confirmarAberturaConstatacao(): Promise<void> {
+    const imovel = this.imovelEmEdicao();
+    if (!imovel) return;
+
+    await this.abrirConstatacao(
+      imovel.id,
+      this.novaConstatacaoMomento(),
+      this.novaConstatacaoOrigem(),
+      this.novaConstatacaoRelatoOcupante().trim() || undefined,
+      this.novaConstatacaoRetificaId() || undefined,
+      this.novaConstatacaoMotivoRetificacao().trim() || undefined
+    );
+
+    this.modalAbrirConstatacaoAberto.set(false);
+    await this.garantirAmbientesPadrao();
+  }
+
+  async solicitarFechamentoConstatacao(): Promise<void> {
+    const imovel = this.imovelEmEdicao();
+    if (!imovel) return;
+    await this.fecharConstatacao(imovel.id);
+  }
+
+  labelMomentoConstatacao(m: MomentoConstatacao): string {
+    return MOMENTOS_CONSTATACAO_LABEL[m] ?? m;
+  }
+
+  labelOrigemSolicitacao(o: OrigemSolicitacao): string {
+    return ORIGEM_SOLICITACAO_LABEL[o] ?? o;
+  }
+
+  totalOcorrenciasDaConstatacao(c: ConstatacaoImovel): number {
+    return c.ambientes.reduce((soma, amb) => soma + amb.ocorrencias.length, 0);
+  }
+
+  formatarData(data?: string): string {
+    if (!data) return '—';
+    try {
+      const d = data.length === 10 ? new Date(data + 'T00:00:00') : new Date(data);
+      return isNaN(d.getTime()) ? data : d.toLocaleDateString('pt-BR');
+    } catch {
+      return data;
+    }
   }
 
   obterImpedimentosEmissaoCautelar(vistoria: VistoriaCautelar | null): string[] {

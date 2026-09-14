@@ -464,6 +464,105 @@
       </p>
     </div>
 
+    <!-- SEÇÃO: CONSTATAÇÕES -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Constatações</h3>
+      </div>
+
+      @if (imovelTemConstatacaoAberta(imovelEmEdicao()!)) {
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span class="text-xs font-bold text-amber-900 uppercase tracking-wide">Constatação em aberto</span>
+              <span class="text-xs text-amber-700 font-semibold">· Constatação nº {{ proximaOrdemConstatacao(imovelEmEdicao()!) }}</span>
+            </div>
+            <button
+              (click)="solicitarFechamentoConstatacao()"
+              class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer self-start sm:self-auto">
+              Fechar constatação
+            </button>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-2 text-xs text-slate-700">
+            <div>
+              <span class="font-bold text-slate-500">Momento:</span>
+              {{ labelMomentoConstatacao(imovelEmEdicao()!.constatacaoAberta!.momento) }}
+            </div>
+            <div>
+              <span class="font-bold text-slate-500">Origem:</span>
+              {{ labelOrigemSolicitacao(imovelEmEdicao()!.constatacaoAberta!.origemSolicitacao) }}
+            </div>
+          </div>
+
+          @if (imovelEmEdicao()!.constatacaoAberta!.observacoesDoOcupante) {
+            <div class="text-xs text-slate-700 bg-white/60 p-2.5 rounded-lg border border-amber-200/50">
+              <span class="font-bold text-slate-600">Relato do ocupante:</span>
+              <p class="mt-0.5 text-slate-800">{{ imovelEmEdicao()!.constatacaoAberta!.observacoesDoOcupante }}</p>
+            </div>
+          }
+
+          @if (imovelEmEdicao()!.constatacaoAberta!.motivoRetificacao) {
+            <div class="text-xs text-slate-700 bg-white/60 p-2.5 rounded-lg border border-amber-200/50">
+              <span class="font-bold text-slate-600">Retifica constatação anterior:</span>
+              <p class="mt-0.5 text-slate-800">{{ imovelEmEdicao()!.constatacaoAberta!.motivoRetificacao }}</p>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <p class="text-xs text-slate-600">Não há constatação em aberto neste imóvel.</p>
+          <button
+            (click)="solicitarAberturaConstatacao()"
+            class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap cursor-pointer self-start sm:self-auto">
+            Abrir constatação
+          </button>
+        </div>
+      }
+
+      @if (constatacoesFechadasDoImovel(imovelEmEdicao()!).length > 0) {
+        <div class="pt-3 border-t border-slate-100 space-y-2.5">
+          <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Histórico de constatações</h4>
+          <div class="space-y-2">
+            @for (c of constatacoesFechadasDoImovel(imovelEmEdicao()!); track c.id) {
+              <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/40 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-800">Constatação nº {{ c.ordem }}</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+                      FECHADA
+                    </span>
+                  </div>
+                  <span class="text-xs text-slate-500">
+                    {{ formatarData(c.dataVistoria) }}
+                  </span>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-1 text-xs text-slate-600">
+                  <div>
+                    <span class="text-slate-400">Momento:</span> {{ labelMomentoConstatacao(c.momento) }}
+                  </div>
+                  <div>
+                    <span class="text-slate-400">Origem:</span> {{ labelOrigemSolicitacao(c.origemSolicitacao) }}
+                  </div>
+                  <div class="sm:col-span-2 text-slate-500 text-[11px] pt-0.5">
+                    {{ c.ambientes.length }} ambiente(s) · {{ totalOcorrenciasDaConstatacao(c) }} ocorrência(s)
+                  </div>
+                </div>
+
+                @if (c.motivoRetificacao) {
+                  <div class="text-[11px] text-slate-600 bg-white p-2 rounded-lg border border-slate-200">
+                    <span class="font-bold text-slate-700">Retifica constatação anterior:</span> {{ c.motivoRetificacao }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
     <!-- SEÇÃO: DADOS DO IMÓVEL -->
     <div data-tour-id="imovel-dados" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
       <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Dados do Imóvel</h3>
@@ -706,6 +805,7 @@
       </div>
     </div>
 
+    @if (imovelTemConstatacaoAberta(imovelEmEdicao()!)) {
     <!-- SEÇÃO: CHECKLIST DE AMBIENTES -->
     <div data-tour-id="imovel-checklist-ambientes" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
       <div class="flex items-center justify-between">
@@ -789,6 +889,7 @@
         </button>
       </div>
     </div>
+    }
 
     <!-- SEÇÃO: ASSINATURAS -->
     <div data-tour-id="imovel-assinaturas" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
@@ -1039,6 +1140,87 @@
       <div class="flex gap-3 pt-2">
         <button (click)="fecharAutorizacaoAcesso()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">Cancelar</button>
         <button (click)="salvarAutorizacaoAcesso()" class="flex-1 bg-slate-900 hover:bg-sky-600 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">Salvar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: ABERTURA DE CONSTATAÇÃO -->
+@if (modalAbrirConstatacaoAberto() && imovelEmEdicao()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 my-8">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-800">Abrir constatação</h3>
+        <button (click)="cancelarAberturaConstatacao()" class="text-slate-400 hover:text-slate-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <p class="text-sm text-slate-500">
+        {{ imovelEmEdicao()!.endereco }} · <strong class="text-slate-700">Constatação nº {{ proximaOrdemConstatacao(imovelEmEdicao()!) }}</strong>
+      </p>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Momento</label>
+        <select [(ngModel)]="novaConstatacaoMomento" name="novaConstatacaoMomento" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <option value="PRE_DEMOLICAO">{{ MOMENTOS_CONSTATACAO_LABEL['PRE_DEMOLICAO'] }}</option>
+          <option value="PRE_MOVIMENTACAO_TERRA">{{ MOMENTOS_CONSTATACAO_LABEL['PRE_MOVIMENTACAO_TERRA'] }}</option>
+          <option value="DURANTE_OBRA">{{ MOMENTOS_CONSTATACAO_LABEL['DURANTE_OBRA'] }}</option>
+          <option value="POS_CONCLUSAO">{{ MOMENTOS_CONSTATACAO_LABEL['POS_CONCLUSAO'] }}</option>
+        </select>
+      </div>
+
+      @if (momentoDivergeDoCadastroDaObra()) {
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
+          <span class="text-amber-600 font-bold shrink-0">⚠</span>
+          <span>O momento selecionado difere do que consta no cadastro da obra. Isso é esperado quando o imóvel foi incluído após o início dos trabalhos — confirme que a escolha está correta.</span>
+        </div>
+      }
+
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">Origem</label>
+        <select [(ngModel)]="novaConstatacaoOrigem" name="novaConstatacaoOrigem" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <option value="EMPREENDEDOR">{{ ORIGEM_SOLICITACAO_LABEL['EMPREENDEDOR'] }}</option>
+          <option value="OCUPANTE">{{ ORIGEM_SOLICITACAO_LABEL['OCUPANTE'] }}</option>
+        </select>
+      </div>
+
+      @if (novaConstatacaoOrigem() === 'OCUPANTE') {
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Relato do ocupante</label>
+          <textarea [(ngModel)]="novaConstatacaoRelatoOcupante" name="novaConstatacaoRelatoOcupante" rows="2" placeholder="Descreva o relato do ocupante..."
+                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+        </div>
+      }
+
+      @if (constatacoesFechadasDoImovel(imovelEmEdicao()!).length > 0) {
+        <div class="space-y-3 pt-2 border-t border-slate-100">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1.5">Esta constatação retifica</label>
+            <select [(ngModel)]="novaConstatacaoRetificaId" name="novaConstatacaoRetificaId" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <option value="">Nenhuma</option>
+              @for (c of constatacoesFechadasDoImovel(imovelEmEdicao()!); track c.id) {
+                <option [value]="c.id">Constatação nº {{ c.ordem }}</option>
+              }
+            </select>
+          </div>
+
+          @if (novaConstatacaoRetificaId()) {
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1.5">Motivo da retificação *</label>
+              <textarea [(ngModel)]="novaConstatacaoMotivoRetificacao" name="novaConstatacaoMotivoRetificacao" rows="2" placeholder="Descreva o motivo da retificação..."
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+              @if (!novaConstatacaoMotivoRetificacao().trim()) {
+                <p class="text-[11px] text-amber-600 mt-1">O motivo da retificação é obrigatório.</p>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <div class="flex gap-3 pt-2">
+        <button (click)="cancelarAberturaConstatacao()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors cursor-pointer">Cancelar</button>
+        <button (click)="confirmarAberturaConstatacao()" [disabled]="!!novaConstatacaoRetificaId() && !novaConstatacaoMotivoRetificacao().trim()"
+                class="flex-1 bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-sm transition-colors cursor-pointer">Abrir</button>
       </div>
     </div>
   </div>
