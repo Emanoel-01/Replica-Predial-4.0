@@ -109,6 +109,23 @@ export type StatusAutorizacao = 'AUTORIZADO' | 'AUTORIZADO_PARCIAL' | 'NEGADO';
 
 export type StatusImovelCautelar = 'A_AGENDAR' | 'EM_ANDAMENTO' | 'CONCLUIDO' | 'ACESSO_NEGADO';
 
+export const CARACTERISTICAS_OBSERVADAS = [
+  'BORDAS_VIVAS',
+  'BORDAS_DESGASTADAS',
+  'SUJIDADE_NO_INTERIOR',
+  'AUSENCIA_DE_SUJIDADE',
+  'PINTURA_CONTINUA_SOBRE_A_ABERTURA',
+  'PINTURA_INTERROMPIDA_PELA_ABERTURA',
+  'PRESENCA_DE_EFLORESCENCIA',
+  'PRESENCA_DE_OXIDACAO',
+  'DESTACAMENTO_DE_MATERIAL',
+  'UMIDADE_APARENTE_NO_MOMENTO',
+  'AUSENCIA_DE_UMIDADE_NO_MOMENTO',
+  'REPARO_APARENTE_ANTERIOR',
+] as const;
+
+export type CaracteristicaObservada = typeof CARACTERISTICAS_OBSERVADAS[number];
+
 // ─── Estruturas principais ───
 
 export interface OcorrenciaCautelar {
@@ -117,9 +134,16 @@ export interface OcorrenciaCautelar {
   tipoConstatacao: TipoConstatacaoCautelar;
   familiaAbertura?: FamiliaAbertura;         // se for da família fissura→brecha
   aberturaMm?: number;                        // classifica familiaAbertura via classificarAbertura()
+  extensaoCm?: number;                         // extensão linear aproximada, quando aplicável
+  dimensoesCm?: { largura: number; altura: number };  // área afetada, para manchas e destacamentos
+  caracteristicasObservadas?: CaracteristicaObservada[];  // constatação física, nunca juízo de idade
   outraManifestacao?: OutraManifestacao;      // se não for da família de abertura
   outraManifestacaoDescricao?: string;        // obrigatório se outraManifestacao === 'OUTRO'
   descricao: string;
+  descricaoEstruturada?: {
+    oQueSeVe: string;                          // aparência, sem causa e sem idade
+    ondeNoElemento: string;                    // posição precisa dentro do elemento construtivo
+  };
   fotos: string[];                            // ids de Evidencia (store 'evidencias' já existente)
   geolocalizacao?: { lat: number; lng: number } | null;
   audioTranscrito?: string;
@@ -251,6 +275,7 @@ export class VistoriaCautelarComponent implements OnInit {
   }
 
   readonly ELEMENTOS_CONSTRUTIVOS = ELEMENTOS_CONSTRUTIVOS;
+  readonly CARACTERISTICAS_OBSERVADAS = CARACTERISTICAS_OBSERVADAS;
 
   readonly OPCOES_ESTRUTURA = [
     'Concreto armado convencional',
@@ -1724,7 +1749,8 @@ REGRA ABSOLUTA: este é um registro de CONSTATAÇÃO, não um diagnóstico. Voc�
 exclusivamente o que é visível na foto — tipo de elemento, aparência, localização, extensão
 aparente. É TERMINANTEMENTE PROIBIDO mencionar, sugerir ou insinuar: causa da ocorrência,
 responsabilidade de qualquer parte, origem da manifestação (ex.: não diga se uma infiltração
-vem "de cima" ou "de baixo", não diga se uma fissura está "ativa" ou "estabilizada"), ou
+vem "de cima" ou "de baixo", não diga se uma fissura está "ativa" ou "estabilizada"),
+estimativa de idade, tempo de existência ou época de surgimento da ocorrência, ou
 qualquer recomendação de reparo ou solução técnica.
 
 Analise a foto anexada e responda:
@@ -1738,6 +1764,7 @@ Analise a foto anexada e responda:
 - descricaoSugerida: um parágrafo curto e objetivo (2-3 frases) descrevendo apenas o que é
   visível na foto — aparência, localização aproximada, extensão — em linguagem técnica de
   constatação. Não inclua nenhuma palavra sobre causa, responsabilidade ou solução.
+- caracteristicasObservadas: lista das características físicas efetivamente visíveis na imagem, entre as opções do enum. Registre apenas o que a fotografia permite constatar. NÃO conclua, NÃO estime e NÃO mencione se a ocorrência parece recente ou antiga — a idade da ocorrência está fora do escopo desta modalidade de vistoria. Se a imagem não permitir constatar nenhuma característica com segurança, devolva lista vazia.
 
 Se a foto não permitir uma constatação clara (desfocada, mal enquadrada, sem elemento
 identificável), deixe descricaoSugerida em branco e explique isso não é possível determinar,
@@ -1752,6 +1779,13 @@ sem inventar conteúdo.`;
           elementoConstrutivo: { type: 'string' },
           tipoConstatacao: { type: 'string', enum: ['ANOMALIA', 'FALHA', 'MANIFESTACAO_PATOLOGICA'] },
           descricaoSugerida: { type: 'string' },
+          caracteristicasObservadas: {
+            type: 'array',
+            items: {
+              type: 'string',
+              enum: [...CARACTERISTICAS_OBSERVADAS],
+            },
+          },
         },
         required: ['elementoConstrutivo', 'tipoConstatacao', 'descricaoSugerida'],
       };
