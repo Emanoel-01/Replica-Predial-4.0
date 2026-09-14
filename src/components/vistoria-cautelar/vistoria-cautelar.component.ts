@@ -8,6 +8,7 @@ import { TourService } from '../../services/tour.service';
 import { FotoObra, DadosCaracterizacao } from '../../models/caracterizacao.model';
 import { GeradorCaracterizacaoComponent } from '../gerador-caracterizacao/gerador-caracterizacao.component';
 import { UserProfile } from '../../models/user-profile.model';
+import { AssinaturaCanvasComponent } from '../assinatura-canvas/assinatura-canvas.component';
 
 // ═══════════════════════════════════════════════════════════════════
 // VISTORIA CAUTELAR DE VIZINHANÇA — MODELO DE DADOS
@@ -212,13 +213,43 @@ export interface AutorizacaoAcesso {
   };
 }
 
+export type CondicaoOcupacao = 'PROPRIETARIO' | 'INQUILINO' | 'POSSEIRO' | 'OUTRO';
+
+export const CONDICAO_OCUPACAO_LABEL: Record<CondicaoOcupacao, string> = {
+  PROPRIETARIO: 'Proprietário',
+  INQUILINO: 'Inquilino',
+  POSSEIRO: 'Possuidor',
+  OUTRO: 'Outro',
+};
+
+export interface TermoAceite {
+  versaoTermo: string;                         // identifica a redação vigente no momento do aceite
+  textoIntegral: string;                       // texto exato exibido ao ocupante, congelado no aceite
+  aceitoEm: string;                            // ISO
+  geolocalizacao?: { lat: number; lng: number } | null;
+  autorizaRegistroFotografico: boolean;
+  autorizaGravacaoAudio: boolean;
+}
+
+export const VERSAO_TERMO_VIGENTE = '2026-09-1';
+
 export interface AssinaturasCautelar {
   vistoriador: { nome: string; registro: string; artRrt: string; anexoArtRrt?: string; imagemAssinatura?: string };
-  ocupante?: { nome: string; documento: string; imagemAssinatura?: string };
-  corresponsavelTecnico?: {                    // GENÉRICO — não vinculado ao Programa Anjo
+  ocupante?: {
+    nome: string;
+    documento: string;
+    imagemAssinatura?: string;
+    condicaoOcupacao?: CondicaoOcupacao;
+    email?: string;
+    telefone?: string;
+    recusouAssinar?: boolean;
+    dataRecusa?: string;                       // ISO
+  };
+  corresponsavelTecnico?: {
     nome: string; registro: string; artRrt: string;
     imagemAssinatura?: string; revisaoDocumentada: boolean;
   };
+  termoAceite?: TermoAceite;
 }
 
 export interface ElementosNivel3 {
@@ -317,7 +348,7 @@ export interface LaudoCautelarEmitido {
   selector: 'app-vistoria-cautelar',
   templateUrl: './vistoria-cautelar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, GeradorCaracterizacaoComponent],
+  imports: [FormsModule, GeradorCaracterizacaoComponent, AssinaturaCanvasComponent],
 })
 export class VistoriaCautelarComponent implements OnInit {
   @Input() profile: UserProfile | null = null;
@@ -635,6 +666,22 @@ export class VistoriaCautelarComponent implements OnInit {
   pdfPreviewDocumentoRegistrado = signal(false);
   pdfPreviewZoom = signal(100);
   carregandoPreviewPdf = signal(false);
+
+  modalFechoConstatacaoAberto = signal(false);
+  fechoOcupanteNome = signal('');
+  fechoOcupanteDocumento = signal('');
+  fechoOcupanteCondicao = signal<CondicaoOcupacao>('PROPRIETARIO');
+  fechoOcupanteEmail = signal('');
+  fechoOcupanteTelefone = signal('');
+  fechoAssinaturaOcupante = signal<string | null>(null);
+  fechoAssinaturaVistoriador = signal<string | null>(null);
+  fechoOcupanteRecusou = signal(false);
+  fechoAutorizaFoto = signal(true);
+  fechoAutorizaAudio = signal(true);
+  fechoGeo = signal<{ lat: number; lng: number } | null>(null);
+  fechoTextoTermo = signal('');
+  fechoSalvando = signal(false);
+  readonly CONDICAO_OCUPACAO_LABEL = CONDICAO_OCUPACAO_LABEL;
 
   fecharPreviewPDF(): void {
     this.modalPreviewPdfAberto.set(false);
@@ -2332,9 +2379,111 @@ sem inventar conteúdo.`;
     await this.garantirAmbientesPadrao();
   }
 
+  constatacaoTeveAudio(imovel: LaudoImovelVizinho): boolean {
+    return imovel.ambientes.some(amb => amb.ocorrencias.some(oc => !!oc.audioTranscrito?.trim()));
+  }
+
+  private async capturarGeolocalizacao(): Promise<{ lat: number; lng: number } | null> {
+    if (!navigator.geolocation) return null;
+    return new Promise(resolve => {
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => resolve(null),
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      );
+    });
+  }
+
   async solicitarFechamentoConstatacao(): Promise<void> {
     const imovel = this.imovelEmEdicao();
-    if (!imovel) return;
+    const vistoria = this.vistoriaAtiva();
+    if (!imovel || !vistoria) return;
+
+    const pendencias = this.obterImpedimentosDaConstatacao(imovel);
+    if (pendencias.length > 0) {
+      this.pendenciasFechamento.set(pendencias);
+      this.modalPendenciasFechamentoAberto.set(true);
+      return;
+    }
+
+    const oc = imovel.assinaturas.ocupante;
+    this.fechoOcupanteNome.set(oc?.nome ?? '');
+    this.fechoOcupanteDocumento.set(oc?.documento ?? '');
+    this.fechoOcupanteCondicao.set(oc?.condicaoOcupacao ?? 'PROPRIETARIO');
+    this.fechoOcupanteEmail.set(oc?.email ?? '');
+    this.fechoOcupanteTelefone.set(oc?.telefone ?? '');
+    this.fechoAssinaturaOcupante.set(null);
+    this.fechoAssinaturaVistoriador.set(null);
+    this.fechoOcupanteRecusou.set(false);
+    this.fechoAutorizaFoto.set(true);
+    this.fechoAutorizaAudio.set(this.constatacaoTeveAudio(imovel));
+    this.fechoGeo.set(null);
+    this.fechoTextoTermo.set(this.montarTextoTermo(imovel, vistoria, this.constatacaoTeveAudio(imovel)));
+    this.modalFechoConstatacaoAberto.set(true);
+
+    void this.capturarGeolocalizacao().then(g => this.fechoGeo.set(g));
+  }
+
+  cancelarFechoConstatacao(): void {
+    this.modalFechoConstatacaoAberto.set(false);
+  }
+
+  podeConfirmarFecho(): boolean {
+    if (!this.fechoOcupanteNome().trim()) return false;
+    if (!this.fechoAssinaturaVistoriador()) return false;
+    if (!this.fechoOcupanteRecusou() && !this.fechoAssinaturaOcupante()) return false;
+    return true;
+  }
+
+  async confirmarFechoConstatacao(): Promise<void> {
+    const imovel = this.imovelEmEdicao();
+    const vistoria = this.vistoriaAtiva();
+    if (!imovel || !vistoria || !this.podeConfirmarFecho()) return;
+
+    this.fechoSalvando.set(true);
+    const agora = new Date().toISOString();
+    const recusou = this.fechoOcupanteRecusou();
+
+    const assinaturasAtualizadas: AssinaturasCautelar = {
+      ...imovel.assinaturas,
+      vistoriador: {
+        ...imovel.assinaturas.vistoriador,
+        imagemAssinatura: this.fechoAssinaturaVistoriador() ?? undefined,
+      },
+      ocupante: {
+        nome: this.fechoOcupanteNome().trim(),
+        documento: this.fechoOcupanteDocumento().trim(),
+        imagemAssinatura: recusou ? undefined : (this.fechoAssinaturaOcupante() ?? undefined),
+        condicaoOcupacao: this.fechoOcupanteCondicao(),
+        email: this.fechoOcupanteEmail().trim() || undefined,
+        telefone: this.fechoOcupanteTelefone().trim() || undefined,
+        recusouAssinar: recusou || undefined,
+        dataRecusa: recusou ? agora : undefined,
+      },
+      termoAceite: {
+        versaoTermo: VERSAO_TERMO_VIGENTE,
+        textoIntegral: this.fechoTextoTermo(),
+        aceitoEm: agora,
+        geolocalizacao: this.fechoGeo(),
+        autorizaRegistroFotografico: this.fechoAutorizaFoto(),
+        autorizaGravacaoAudio: this.fechoAutorizaAudio(),
+      },
+    };
+
+    const imoveisAtualizados = vistoria.imoveis.map(im =>
+      im.id !== imovel.id ? im : { ...im, assinaturas: assinaturasAtualizadas }
+    );
+    const comTermo: VistoriaCautelar = {
+      ...vistoria,
+      imoveis: imoveisAtualizados,
+      dateUpdated: agora,
+    };
+    await this.dbService.salvarVistoriaCautelar(comTermo);
+    await this.carregarVistorias();
+
+    this.modalFechoConstatacaoAberto.set(false);
+    this.fechoSalvando.set(false);
+
     await this.fecharConstatacao(imovel.id);
   }
 
@@ -3286,6 +3435,47 @@ sem inventar conteúdo.`;
     const imovel = this.imovelEmEdicao();
     if (!imovel) return;
     await this.gerarViaIndividualDoOcupante(imovel.id);
+  }
+
+  montarTextoTermo(imovel: LaudoImovelVizinho, vistoria: VistoriaCautelar, incluiAudio: boolean): string {
+    const p = this.profile;
+    const dataHora = new Date().toLocaleString('pt-BR');
+    const nomeOcupante = imovel.assinaturas.ocupante?.nome?.trim() || '_____________________';
+    const docOcupante = imovel.assinaturas.ocupante?.documento?.trim() || '_____________________';
+
+    const itemAudio = incluiAudio
+      ? ', e a gravação de áudio das observações técnicas feitas durante a vistoria'
+      : '';
+
+    return [
+      'TERMO DE AUTORIZAÇÃO E ACOMPANHAMENTO DE VISTORIA CAUTELAR DE VIZINHANÇA',
+      '',
+      `Imóvel: ${imovel.endereco}`,
+      `Obra geradora: ${vistoria.obraGeradora.nome}, situada em ${vistoria.obraGeradora.endereco}`,
+      `Solicitante: ${vistoria.solicitante?.nome ?? '—'}`,
+      `Responsável técnico: ${p?.fullName ?? '—'}, ${p?.categoriaProfissional?.toLowerCase().includes('engenheiro') ? 'CREA' : 'CAU'} nº ${p?.professionalId ?? '—'}`,
+      `Data e hora: ${dataHora}`,
+      '',
+      `Eu, ${nomeOcupante}, portador do documento nº ${docOcupante}, na condição de ocupante do imóvel acima identificado, declaro que:`,
+      '',
+      '1. Autorizei, de forma livre e espontânea, o acesso do responsável técnico acima identificado ao interior deste imóvel, nesta data.',
+      '',
+      '2. Acompanhei a realização da vistoria, que consistiu na observação visual e no registro fotográfico do estado de conservação aparente dos ambientes.',
+      '',
+      '3. Fui informado de que esta vistoria tem por única finalidade registrar o estado existente do imóvel antes do início das obras do empreendimento acima identificado, e que o material produzido não será utilizado para nenhuma outra finalidade.',
+      '',
+      '4. Fui informado de que este documento NÃO contém apreciação técnica sobre causas, responsabilidades ou soluções, e que a minha assinatura NÃO significa concordância com qualquer avaliação técnica — apenas que autorizei o acesso e acompanhei a vistoria.',
+      '',
+      `5. Autorizo o registro fotográfico dos ambientes vistoriados${itemAudio}.`,
+      '',
+      `6. Fui informado de que meus dados de identificação e contato serão utilizados exclusivamente para a elaboração e a entrega deste documento, ficando sob responsabilidade de ${p?.companyName ?? '—'}, CNPJ ${p?.companyCnpj ?? '—'}, e que posso solicitar acesso, correção ou exclusão desses dados pelo contato ${p?.companyEmail ?? '—'}.`,
+      '',
+      '7. Receberei, no endereço eletrônico informado, uma via do registro referente exclusivamente a este imóvel.',
+      '',
+      `8. Fui informado de que, caso eu observe qualquer alteração no meu imóvel durante a execução da obra, posso solicitar ao responsável técnico ou ao empreendedor a realização de nova vistoria de constatação, sem custo, para registro da situação naquele momento. Novas vistorias também podem ser realizadas por iniciativa do empreendedor durante e após a obra. Em cada nova vistoria, o imóvel é percorrido integralmente e as ocorrências já registradas são reexaminadas, de modo a documentar se permanecem como estavam ou se apresentaram alteração, bem como registrar eventuais ocorrências não constantes do registro anterior. Cada vistoria documenta exclusivamente o estado observado na sua respectiva data e hora.`,
+      '',
+      `Contato para solicitação: ${p?.companyPhone ?? '—'} · ${p?.companyEmail ?? '—'}`,
+    ].join('\n');
   }
 
   private formatarLogoMarca(nome: string | undefined): string {

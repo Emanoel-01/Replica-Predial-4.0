@@ -1517,6 +1517,179 @@
   </div>
 }
 
+<!-- MODAL: FECHO DA CONSTATAÇÃO COM TERMO E ASSINATURAS -->
+@if (modalFechoConstatacaoAberto() && imovelEmEdicao()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-2xl space-y-5 my-8 max-h-[90vh] overflow-y-auto">
+      
+      <!-- Cabeçalho -->
+      <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-800">Encerramento da vistoria neste imóvel</h3>
+          <p class="text-xs text-slate-500 mt-0.5">{{ imovelEmEdicao()!.endereco }}</p>
+        </div>
+        <button type="button" (click)="cancelarFechoConstatacao()" class="text-slate-400 hover:text-slate-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Bloco 1 — Dados de quem acompanhou -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Dados de quem acompanhou</h4>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-600 mb-1">Nome completo *</label>
+            <input
+              type="text"
+              [(ngModel)]="fechoOcupanteNome"
+              name="fechoOcupanteNome"
+              placeholder="Nome de quem acompanhou a vistoria"
+              class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Documento</label>
+            <input
+              type="text"
+              [(ngModel)]="fechoOcupanteDocumento"
+              name="fechoOcupanteDocumento"
+              placeholder="opcional"
+              class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Condição de ocupação</label>
+            <select
+              [(ngModel)]="fechoOcupanteCondicao"
+              name="fechoOcupanteCondicao"
+              class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <option value="PROPRIETARIO">{{ CONDICAO_OCUPACAO_LABEL['PROPRIETARIO'] }}</option>
+              <option value="INQUILINO">{{ CONDICAO_OCUPACAO_LABEL['INQUILINO'] }}</option>
+              <option value="POSSEIRO">{{ CONDICAO_OCUPACAO_LABEL['POSSEIRO'] }}</option>
+              <option value="OUTRO">{{ CONDICAO_OCUPACAO_LABEL['OUTRO'] }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">E-mail</label>
+            <input
+              type="email"
+              [(ngModel)]="fechoOcupanteEmail"
+              name="fechoOcupanteEmail"
+              placeholder="opcional"
+              class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            <p class="text-[11px] text-slate-500 mt-1">Informado o e-mail, o ocupante pode receber a via referente exclusivamente a este imóvel.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Telefone</label>
+            <input
+              type="tel"
+              [(ngModel)]="fechoOcupanteTelefone"
+              name="fechoOcupanteTelefone"
+              placeholder="opcional"
+              class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloco 2 — O termo -->
+      <div class="space-y-1.5">
+        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Termo de autorização e acompanhamento</h4>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 max-h-[280px] overflow-y-auto">
+          <pre class="whitespace-pre-wrap font-sans text-xs text-slate-700 leading-relaxed m-0">{{ fechoTextoTermo() }}</pre>
+        </div>
+      </div>
+
+      <!-- Bloco 3 — Autorizações -->
+      <div class="space-y-2 pt-1 border-t border-slate-100">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            [(ngModel)]="fechoAutorizaFoto"
+            name="fechoAutorizaFoto"
+            class="rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+          <span class="text-xs font-semibold text-slate-700">Autoriza o registro fotográfico dos ambientes</span>
+        </label>
+        @if (constatacaoTeveAudio(imovelEmEdicao()!)) {
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              [(ngModel)]="fechoAutorizaAudio"
+              name="fechoAutorizaAudio"
+              class="rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+            <span class="text-xs font-semibold text-slate-700">Autoriza a gravação de áudio das observações técnicas</span>
+          </label>
+        }
+      </div>
+
+      <!-- Bloco 4 — Assinatura do ocupante -->
+      <div class="space-y-2 pt-2 border-t border-slate-100">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Assinatura do ocupante</label>
+        <app-assinatura-canvas
+          [disabled]="fechoOcupanteRecusou()"
+          (assinaturaAlterada)="fechoAssinaturaOcupante.set($event)">
+        </app-assinatura-canvas>
+        <label class="flex items-center gap-2 cursor-pointer pt-1">
+          <input
+            type="checkbox"
+            [(ngModel)]="fechoOcupanteRecusou"
+            name="fechoOcupanteRecusou"
+            class="rounded border-slate-300 text-amber-600 focus:ring-amber-500" />
+          <span class="text-xs font-semibold text-slate-700">O ocupante acompanhou a vistoria e recusou assinar</span>
+        </label>
+        @if (fechoOcupanteRecusou()) {
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 leading-relaxed">
+            A recusa será registrada no documento, com data e hora. A vistoria permanece válida — o registro da recusa é constatação de fato.
+          </div>
+        }
+      </div>
+
+      <!-- Bloco 5 — Assinatura do responsável técnico -->
+      <div class="space-y-2 pt-2 border-t border-slate-100">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Assinatura do responsável técnico</label>
+          <p class="text-xs text-slate-500 mt-0.5">
+            {{ profile?.fullName || 'Responsável técnico' }} · {{ profile?.professionalId ? (profile?.categoriaProfissional?.toLowerCase()?.includes('engenheiro') ? 'CREA' : 'CAU') + ' nº ' + profile?.professionalId : 'Registro não informado' }}
+          </p>
+        </div>
+        <app-assinatura-canvas
+          (assinaturaAlterada)="fechoAssinaturaVistoriador.set($event)">
+        </app-assinatura-canvas>
+      </div>
+
+      <!-- Rodapé -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
+        <div class="flex items-center gap-1.5 text-xs text-slate-500">
+          @if (fechoGeo()) {
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Localização registrada</span>
+          } @else {
+            <span class="inline-block w-2 h-2 rounded-full bg-slate-300"></span>
+            <span>Localização não disponível</span>
+          }
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button
+            type="button"
+            (click)="cancelarFechoConstatacao()"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="confirmarFechoConstatacao()"
+            [disabled]="!podeConfirmarFecho() || fechoSalvando()"
+            class="px-4 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer shadow-xs flex items-center gap-1.5">
+            @if (fechoSalvando()) {
+              <span>Salvando...</span>
+            } @else {
+              <span>Encerrar e assinar</span>
+            }
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
 <!-- MODAL: IMPEDIMENTOS MATERIAIS DE EMISSÃO CAUTELAR -->
 @if (modalImpedimentosCautelarAberto()) {
   <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
