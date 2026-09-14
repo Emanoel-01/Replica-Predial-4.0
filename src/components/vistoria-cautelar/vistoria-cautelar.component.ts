@@ -626,6 +626,8 @@ export class VistoriaCautelarComponent implements OnInit {
   modalRevisaoCamposAberto = signal(false);
   modalImpedimentosCautelarAberto = signal(false);
   impedimentosCautelar = signal<string[]>([]);
+  modalPendenciasFechamentoAberto = signal(false);
+  pendenciasFechamento = signal<string[]>([]);
   camposCurtosParaRevisao = signal<string[]>([]);
   modalPreviewPdfAberto = signal(false);
   pdfPreviewHtmlContent = signal('');
@@ -714,6 +716,9 @@ export class VistoriaCautelarComponent implements OnInit {
   edOcTipoConstatacao = signal<TipoConstatacaoCautelar>('ANOMALIA');
   edOcUsaFamiliaAbertura = signal(true); // toggle: abertura em mm vs. outra manifestação
   edOcAberturaMm = signal('');
+  edOcExtensaoCm = signal('');
+  edOcDimensaoLargura = signal('');
+  edOcDimensaoAltura = signal('');
   edOcOutraManifestacao = signal<OutraManifestacao>('INFILTRACAO');
   edOcOutraManifestacaoDescricao = signal('');
   edOcDescricao = signal('');
@@ -1627,6 +1632,9 @@ export class VistoriaCautelarComponent implements OnInit {
     this.edOcTipoConstatacao.set('ANOMALIA');
     this.edOcUsaFamiliaAbertura.set(true);
     this.edOcAberturaMm.set('');
+    this.edOcExtensaoCm.set('');
+    this.edOcDimensaoLargura.set('');
+    this.edOcDimensaoAltura.set('');
     this.edOcOutraManifestacao.set('INFILTRACAO');
     this.edOcOutraManifestacaoDescricao.set('');
     this.edOcDescricao.set('');
@@ -1675,10 +1683,18 @@ export class VistoriaCautelarComponent implements OnInit {
     input.value = '';
   }
 
+  ocorrenciaSemDimensaoObrigatoria(): boolean {
+    if (!this.edOcUsaFamiliaAbertura()) return false;
+    const abertura = parseFloat(this.edOcAberturaMm());
+    const extensao = parseFloat(this.edOcExtensaoCm());
+    return isNaN(abertura) || abertura <= 0 || isNaN(extensao) || extensao <= 0;
+  }
+
   podeSalvarOcorrencia(): boolean {
     const temDescricaoOutro = this.edOcOutraManifestacao() !== 'OUTRO' || !!this.edOcOutraManifestacaoDescricao().trim();
     return !!(this.edOcDescricao().trim() && this.edOcLocalizacaoNoAmbiente().trim()
-      && this.edOcFotos().length > 0 && temDescricaoOutro);
+      && this.edOcFotos().length > 0 && temDescricaoOutro
+      && !this.ocorrenciaSemDimensaoObrigatoria());
   }
 
   async salvarOcorrencia(): Promise<void> {
@@ -1692,6 +1708,10 @@ export class VistoriaCautelarComponent implements OnInit {
 
     const usaFamilia = this.edOcUsaFamiliaAbertura();
     const mm = usaFamilia && this.edOcAberturaMm() ? parseFloat(this.edOcAberturaMm()) : undefined;
+    const extCm = this.edOcExtensaoCm() ? parseFloat(this.edOcExtensaoCm()) : undefined;
+    const larg = this.edOcDimensaoLargura() ? parseFloat(this.edOcDimensaoLargura()) : undefined;
+    const alt = this.edOcDimensaoAltura() ? parseFloat(this.edOcDimensaoAltura()) : undefined;
+    const dimensoes = larg != null && alt != null ? { largura: larg, altura: alt } : undefined;
 
     const novaOcorrencia: OcorrenciaCautelar = {
       id: this.ocorrenciaEmEdicaoId() ?? crypto.randomUUID(),
@@ -1699,6 +1719,8 @@ export class VistoriaCautelarComponent implements OnInit {
       tipoConstatacao: this.edOcTipoConstatacao(),
       familiaAbertura: usaFamilia && mm != null ? classificarAbertura(mm) : undefined,
       aberturaMm: usaFamilia && mm != null ? mm : undefined,
+      extensaoCm: extCm,
+      dimensoesCm: dimensoes,
       outraManifestacao: !usaFamilia ? this.edOcOutraManifestacao() : undefined,
       outraManifestacaoDescricao: !usaFamilia && this.edOcOutraManifestacao() === 'OUTRO'
         ? this.edOcOutraManifestacaoDescricao() : undefined,
@@ -1782,12 +1804,24 @@ export class VistoriaCautelarComponent implements OnInit {
     try {
       const base64 = await this.blobParaBase64(audioBlob);
       const texto = await this.geminiService.generateTextWithImages(
-        'Transcreva fielmente o áudio a seguir, em português. Retorne apenas o texto transcrito, sem comentários adicionais.',
+        `Transcreva o áudio a seguir, em português, no contexto de uma vistoria cautelar de vizinhança.
+
+REGRA ABSOLUTA: esta é uma vistoria de CONSTATAÇÃO. Transcreva apenas o que descreve o ESTADO OBSERVADO — elemento, aparência, localização, dimensão, extensão.
+
+É TERMINANTEMENTE PROIBIDO transcrever trechos que mencionem, sugiram ou insinuem: causa da ocorrência, responsabilidade de qualquer parte, origem da manifestação (por exemplo, dizer que uma infiltração "vem de cima" ou "vem do telhado", ou que uma fissura está "ativa" ou "estabilizada"), estimativa de idade ou época de surgimento, prognóstico, e recomendação de reparo ou solução técnica.
+
+Ao encontrar um trecho assim, simplesmente OMITA esse trecho e siga transcrevendo o restante. Não o substitua por reticências, não o comente e não avise que houve omissão.
+
+Retorne apenas o texto transcrito, sem comentários adicionais.`,
         [{ base64, mimeType: 'audio/webm' }]
       );
       const transcricaoLimpa = this.geminiService.sanitizeAiText(texto);
       this.edOcDescricao.update(atual => atual ? `${atual}\n${transcricaoLimpa}` : transcricaoLimpa);
-      this.toastService.show('Áudio transcrito e adicionado à descrição.', 'success');
+      this.toastService.show(
+        'Áudio transcrito. Trechos que apontem causa, origem ou responsabilidade são omitidos — a vistoria cautelar é de constatação.',
+        'info',
+        7000
+      );
     } catch (err) {
       console.warn('Erro ao transcrever áudio:', err);
       this.toastService.show('Não foi possível transcrever o áudio. Você pode digitar a descrição manualmente.', 'info', 6000);
@@ -2161,8 +2195,8 @@ sem inventar conteúdo.`;
 
     const pendencias = this.obterImpedimentosDaConstatacao(imovel);
     if (pendencias.length > 0) {
-      this.impedimentosCautelar.set(pendencias);
-      this.modalImpedimentosCautelarAberto.set(true);
+      this.pendenciasFechamento.set(pendencias);
+      this.modalPendenciasFechamentoAberto.set(true);
       return false;
     }
 
@@ -2352,6 +2386,10 @@ sem inventar conteúdo.`;
 
   fecharModalImpedimentosCautelar(): void {
     this.modalImpedimentosCautelarAberto.set(false);
+  }
+
+  fecharModalPendenciasFechamento(): void {
+    this.modalPendenciasFechamentoAberto.set(false);
   }
 
   async gerarConsolidacaoPDF(): Promise<void> {
