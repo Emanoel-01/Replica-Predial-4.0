@@ -235,4 +235,10 @@ export class VistoriaDbService {
     const db = await this.dbPromise;
     return db.count('laudosCautelaresEmitidos');
   }
+
+  async countLaudosCautelaresEmitidosNoAno(ano: number): Promise<number> {
+    const db = await this.dbPromise;
+    const todos = await db.getAll('laudosCautelaresEmitidos');
+    return todos.filter(l => new Date(l.dataEmissao).getFullYear() === ano).length;
+  }
 }

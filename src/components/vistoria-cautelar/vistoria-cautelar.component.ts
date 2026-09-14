@@ -2017,7 +2017,7 @@ sem inventar conteúdo.`;
     const anoAtual = new Date().getFullYear();
     let numeroEmissao = 1;
     try {
-      numeroEmissao = (await this.dbService.countLaudosCautelaresEmitidos()) + 1;
+      numeroEmissao = (await this.dbService.countLaudosCautelaresEmitidosNoAno(anoAtual)) + 1;
       numeroDocumentoFormatado = `P4-VCV-nº${String(numeroEmissao).padStart(3, '0')}/${anoAtual}`;
       const novoLaudo: LaudoCautelarEmitido = {
         id: crypto.randomUUID(),
