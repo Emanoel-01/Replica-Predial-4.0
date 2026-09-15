@@ -1,0 +1,14 @@
+{
+  "name": "Predial 4.0",
+  "short_name": "Predial 4.0",
+  "description": "Laudos tecnicos, vistoria cautelar e diagnostico assistido por IA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#132A41",
+  "theme_color": "#132A41",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
