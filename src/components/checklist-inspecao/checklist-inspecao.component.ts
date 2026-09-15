@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, computed, inject, effect, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataService, NormaRef } from '../../services/data.service';
+import { DataService, NormaRef, normaAplicavelATipologia } from '../../services/data.service';
 import { ToastService } from '../../services/toast.service';
 import { TourService } from '../../services/tour.service';
 import { UserProfile } from '../../models/user-profile.model';
@@ -1849,7 +1849,9 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
       oc.causaProvavel = s.causaProvavel || oc.causaProvavel;
       oc.recomendacaoTecnica = s.recomendacaoTecnica || oc.recomendacaoTecnica;
       oc.criticidade = (derivarPatamarPrioridade(s.severitySugerida) as any) || oc.criticidade;
-      oc.normasAplicaveis = this.dataService.getNormasTipologia(it.systemTitle, it.typologyTitle);
+      oc.normasAplicaveis = this.dataService
+        .getNormasTipologia(it.systemTitle, it.typologyTitle)
+        .filter(n => normaAplicavelATipologia(n.codigo, this.vistoriaAtiva()?.tipoUso));
 
       const historico = oc.historicoSugestoesIa ?? [];
       historico.push({
@@ -2858,22 +2860,34 @@ export class ChecklistInspecaoComponent implements OnInit, OnDestroy {
           ${(() => {
             const sistemasUsados = [...new Set(ativa.items.map((i: any) => i.systemTitle))];
             const normas = this.dataService.getNormasParaRTIPA(sistemasUsados);
+            const transversais = normas.transversais.filter((n: NormaRef) =>
+              normaAplicavelATipologia(n.codigo, ativa.tipoUso)
+            );
+            const porSistema = normas.porSistema
+              .map((s: any) => ({
+                ...s,
+                normasSistema: s.normasSistema.filter((n: NormaRef) =>
+                  normaAplicavelATipologia(n.codigo, ativa.tipoUso)
+                ),
+              }))
+              .filter((s: any) => s.normasSistema.length > 0);
+
             let html = '';
             // Normas transversais
             html += `<p style="font-size:8.5pt;font-weight:600;color:#132A41;margin:3mm 0 1mm;">Normas transversais (todos os sistemas):</p>`;
             html += `<table style="width:100%;border-collapse:collapse;font-size:8pt;margin-bottom:4mm;">`;
             html += `<thead><tr style="background:#2C5AA0;color:#fff;"><th style="padding:2mm 3mm;text-align:left;width:30%">Norma</th><th style="padding:2mm 3mm;text-align:left">Título e Aplicação</th></tr></thead><tbody>`;
-            normas.transversais.forEach((n: NormaRef, idx: number) => {
+            transversais.forEach((n: NormaRef, idx: number) => {
               const bg = idx % 2 === 0 ? '#fff' : '#F7F5F0';
               html += `<tr style="background:${bg};"><td style="padding:2mm 3mm;font-weight:600;color:#B5642A;vertical-align:top;">${n.codigo}</td><td style="padding:2mm 3mm;vertical-align:top;">${n.titulo}</td></tr>`;
             });
             html += `</tbody></table>`;
             // Normas por sistema
-            if (normas.porSistema.length > 0) {
+            if (porSistema.length > 0) {
               html += `<p style="font-size:8.5pt;font-weight:600;color:#132A41;margin:3mm 0 1mm;">Normas específicas dos sistemas inspecionados:</p>`;
               html += `<table style="width:100%;border-collapse:collapse;font-size:8pt;margin-bottom:4mm;">`;
               html += `<thead><tr style="background:#2C5AA0;color:#fff;"><th style="padding:2mm 3mm;text-align:left;width:22%">Norma</th><th style="padding:2mm 3mm;text-align:left;width:35%">Título</th><th style="padding:2mm 3mm;text-align:left">Sistema / Aplicação</th></tr></thead><tbody>`;
-              normas.porSistema.forEach((s: any) => {
+              porSistema.forEach((s: any) => {
                 s.normasSistema.forEach((n: NormaRef, idx: number) => {
                   const bg = idx % 2 === 0 ? '#fff' : '#F7F5F0';
                   html += `<tr style="background:${bg};"><td style="padding:2mm 3mm;font-weight:600;color:#B5642A;vertical-align:top;">${n.codigo}</td><td style="padding:2mm 3mm;vertical-align:top;">${n.titulo}</td><td style="padding:2mm 3mm;vertical-align:top;color:#4A5A66;">${s.titulo} — ${n.aplicacao}</td></tr>`;

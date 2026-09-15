@@ -121,15 +121,16 @@ export function gerarMetodologiaHtml(): string {
         </tbody>
       </table>
 
-      <p style="margin-top:5mm;font-size:9.5pt;font-weight:bold;color:#132A41;margin-bottom:2mm;">Patamares de criticidade:</p>
+      <p style="margin-top:5mm;font-size:9.5pt;font-weight:bold;color:#132A41;margin-bottom:2mm;">Grau de risco — ABNT NBR 16747</p>
       <table class="t-std">
         <thead><tr><th style="width:16%">Nível</th><th>Definição</th></tr></thead>
         <tbody>
-          <tr><td><span class="badge p1">P1 — Crítico</span></td><td>Ações necessárias quando a perda de desempenho compromete a saúde e/ou a segurança dos usuários, e/ou a funcionalidade dos sistemas construtivos, com possíveis paralisações; comprometimento de durabilidade (vida útil) e/ou aumento expressivo de custo de manutenção e de recuperação. Também devem ser classificadas no patamar "Prioridade 1" as ações necessárias quando a perda de desempenho, real ou potencial, pode gerar riscos ao meio ambiente.</td></tr>
-          <tr style="background:#F7F5F0;"><td><span class="badge p2">P2 — Regular</span></td><td>Ações necessárias quando a perda parcial de desempenho (real ou potencial) tem impacto sobre a funcionalidade da edificação, sem prejuízo à operação direta de sistemas e sem comprometer a saúde e segurança dos usuários.</td></tr>
-          <tr><td><span class="badge p3">P3 — Mínimo</span></td><td>Ações necessárias quando a perda de desempenho (real ou potencial) pode ocasionar pequenos prejuízos à estética ou quando as ações necessárias são atividades programáveis e passíveis de planejamento, além de baixo ou nenhum comprometimento do valor da edificação. Neste caso, as ações podem ser feitas sem urgência porque a perda parcial de desempenho não tem impacto sobre a funcionalidade da edificação, não causa prejuízo à operação direta de sistemas e não compromete a saúde e segurança do usuário.</td></tr>
+          <tr><td><span class="badge p1">CRÍTICO</span></td><td>Ações necessárias quando a perda de desempenho compromete a saúde e/ou a segurança dos usuários, e/ou a funcionalidade dos sistemas construtivos, com possíveis paralisações; comprometimento de durabilidade (vida útil) e/ou aumento expressivo de custo de manutenção e de recuperação. Também devem ser classificadas no patamar "Prioridade 1" as ações necessárias quando a perda de desempenho, real ou potencial, pode gerar riscos ao meio ambiente.</td></tr>
+          <tr style="background:#F7F5F0;"><td><span class="badge p2">REGULAR</span></td><td>Ações necessárias quando a perda parcial de desempenho (real ou potencial) tem impacto sobre a funcionalidade da edificação, sem prejuízo à operação direta de sistemas e sem comprometer a saúde e segurança dos usuários.</td></tr>
+          <tr><td><span class="badge p3">MÍNIMO</span></td><td>Ações necessárias quando a perda de desempenho (real ou potencial) pode ocasionar pequenos prejuízos à estética ou quando as ações necessárias são atividades programáveis e passíveis de planejamento, além de baixo ou nenhum comprometimento do valor da edificação. Neste caso, as ações podem ser feitas sem urgência porque a perda parcial de desempenho não tem impacto sobre a funcionalidade da edificação, não causa prejuízo à operação direta de sistemas e não compromete a saúde e segurança do usuário.</td></tr>
         </tbody>
       </table>
+      <p style="font-size:8pt;color:#8A949C;margin-top:2mm;line-height:1.5;">A priorização operacional das ações corretivas é apresentada na Seção 13.3 em patamares P1, P2 e P3, organizados a partir do grau de risco acima e das diretrizes de gestão de manutenção da ABNT NBR 5674. Os patamares são instrumento de planejamento e não constam da ABNT NBR 16747.</p>
       <p style="font-size:8pt;color:#8A949C;margin-top:2mm;line-height:1.5;">Matriz GUT (Gravidade × Urgência × Tendência): disponível como camada complementar de priorização, aplicada
       de forma opcional a fichas específicas quando indicado pelo Responsável Técnico (ver Anexo III).</p>`;
   }

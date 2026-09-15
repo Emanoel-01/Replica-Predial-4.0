@@ -12,6 +12,13 @@ export interface NormasSistema {
   tipologias: { [tipologiaTitle: string]: NormaRef[] };
 }
 
+export function normaAplicavelATipologia(codigo: string, tipoUso: string | undefined): boolean {
+  const ehFamilia15575 = codigo.replace(/\s+/g, '').toUpperCase().includes('NBR15575');
+  if (!ehFamilia15575) return true;
+  const uso = (tipoUso ?? '').toLowerCase();
+  return uso.includes('residencial') || uso.includes('habitacional') || uso.includes('multifamiliar') || uso.includes('unifamiliar');
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -1362,6 +1369,7 @@ export class DataService {
   // ── Camada 0: normas transversais (aplicam-se a TODOS os sistemas) ──────────
   readonly normasTransversais: NormaRef[] = [
     { codigo: 'ABNT NBR 16747', titulo: 'Inspeção predial — Diretrizes, conceitos, terminologia e procedimento', aplicacao: 'Metodologia base para toda a inspeção predial, classificação de risco e emissão do LTIP.', status: 'CONFIRMADO' },
+    { codigo: 'ABNT NBR 13752', titulo: 'Perícias de engenharia na construção civil — Procedimento', aplicacao: 'Requisitos aplicáveis à atividade pericial e à qualificação do responsável técnico, invocados na Seção 2.0 deste laudo.', status: 'CONFIRMADO' },
     { codigo: 'ABNT NBR 5674', titulo: 'Manutenção de edificações — Requisitos para o sistema de gestão de manutenção', aplicacao: 'Auditoria do plano de manutenção preventiva e verificação de cronogramas por sistema.', status: 'CONFIRMADO' },
     { codigo: 'ABNT NBR 14037', titulo: 'Diretrizes para elaboração de manuais de uso, operação e manutenção das edificações', aplicacao: 'Verificação se o manual do imóvel foi entregue e contém os limites de carga e diretrizes de conservação.', status: 'CONFIRMADO' },
     { codigo: 'ABNT NBR 16280', titulo: 'Reforma em edificações — Sistema de gestão de reformas — Requisitos', aplicacao: 'Auditoria de reformas realizadas nas unidades para verificar comprometimento do sistema estrutural ou de vedação.', status: 'CONFIRMADO' },
