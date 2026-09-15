@@ -1357,7 +1357,7 @@
             <label class="block text-xs font-bold text-slate-600">O que se vê *</label>
             <div class="flex items-center gap-2">
               @if (!gravandoAudio()) {
-                <button (click)="iniciarGravacaoAudio()" [disabled]="transcrevendoAudio()" class="text-[11px] font-bold text-sky-600 hover:underline disabled:opacity-40 flex items-center gap-1">
+                <button (click)="solicitarGravacaoAudio()" [disabled]="transcrevendoAudio()" class="text-[11px] font-bold text-sky-600 hover:underline disabled:opacity-40 flex items-center gap-1">
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"/><path d="M19 11a1 1 0 10-2 0 5 5 0 01-10 0 1 1 0 10-2 0 7 7 0 006 6.92V20H9a1 1 0 100 2h6a1 1 0 100-2h-2v-2.08A7 7 0 0019 11z"/></svg>
                   Gravar
                 </button>
@@ -1446,6 +1446,40 @@
       <div class="flex gap-3 pt-2">
         <button (click)="fecharModalOcorrencia()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors">Cancelar</button>
         <button (click)="salvarOcorrencia()" [disabled]="!podeSalvarOcorrencia()" class="flex-1 bg-slate-900 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-sm transition-colors">Salvar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: AVISO DE CAPTAÇÃO DE ÁUDIO (AMTECH-TUP-v2, item 4.4) -->
+@if (modalAvisoAudioAberto()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
+      <div class="flex items-center gap-2.5 text-amber-600 font-bold text-base">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Aviso de captação de áudio</span>
+      </div>
+
+      <div class="space-y-2 text-sm text-slate-600">
+        <p>Antes de gravar, informe os presentes no imóvel de que a captação de áudio está sendo realizada exclusivamente para fins de transcrição da descrição pericial.</p>
+        <p class="text-xs text-slate-500">O áudio é processado e descartado em seguida, não compondo o acervo permanente do laudo.</p>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button
+          type="button"
+          (click)="cancelarAvisoAudio()"
+          class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="confirmarAvisoAudio()"
+          class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors"
+        >
+          Ciente, iniciar gravação
+        </button>
       </div>
     </div>
   </div>
@@ -1659,7 +1693,7 @@
         <div class="flex items-center gap-1.5 text-xs text-slate-500">
           @if (fechoGeo()) {
             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Localização registrada</span>
+            <span>Localização registrada@if (fechoGeo()?.precisaoM != null) { (precisão: ~{{ fechoGeo()?.precisaoM }} m)}</span>
           } @else {
             <span class="inline-block w-2 h-2 rounded-full bg-slate-300"></span>
             <span>Localização não disponível</span>

@@ -226,7 +226,7 @@ export interface TermoAceite {
   versaoTermo: string;                         // identifica a redação vigente no momento do aceite
   textoIntegral: string;                       // texto exato exibido ao ocupante, congelado no aceite
   aceitoEm: string;                            // ISO
-  geolocalizacao?: { lat: number; lng: number } | null;
+  geolocalizacao?: { lat: number; lng: number; precisaoM?: number } | null;
   autorizaRegistroFotografico: boolean;
   autorizaGravacaoAudio: boolean;
 }
@@ -678,7 +678,7 @@ export class VistoriaCautelarComponent implements OnInit {
   fechoOcupanteRecusou = signal(false);
   fechoAutorizaFoto = signal(true);
   fechoAutorizaAudio = signal(true);
-  fechoGeo = signal<{ lat: number; lng: number } | null>(null);
+  fechoGeo = signal<{ lat: number; lng: number; precisaoM?: number } | null>(null);
   fechoTextoTermo = signal('');
   fechoSalvando = signal(false);
   readonly CONDICAO_OCUPACAO_LABEL = CONDICAO_OCUPACAO_LABEL;
@@ -777,6 +777,8 @@ export class VistoriaCautelarComponent implements OnInit {
   edOcFotoTestemunho = signal<string | null>(null);
 
   // ─── VC-6b-ii: Gravação de voz ───
+  modalAvisoAudioAberto = signal(false);
+  avisoAudioConfirmadoNestaConstatacao = signal(false);
   gravandoAudio = signal(false);
   transcrevendoAudio = signal(false);
   private mediaRecorder: MediaRecorder | null = null;
@@ -1846,6 +1848,24 @@ export class VistoriaCautelarComponent implements OnInit {
     this.toastService.show('Ocorrência registrada.', 'success');
   }
 
+  async solicitarGravacaoAudio(): Promise<void> {
+    if (this.avisoAudioConfirmadoNestaConstatacao()) {
+      await this.iniciarGravacaoAudio();
+      return;
+    }
+    this.modalAvisoAudioAberto.set(true);
+  }
+
+  async confirmarAvisoAudio(): Promise<void> {
+    this.avisoAudioConfirmadoNestaConstatacao.set(true);
+    this.modalAvisoAudioAberto.set(false);
+    await this.iniciarGravacaoAudio();
+  }
+
+  cancelarAvisoAudio(): void {
+    this.modalAvisoAudioAberto.set(false);
+  }
+
   async iniciarGravacaoAudio(): Promise<void> {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -2249,6 +2269,7 @@ sem inventar conteúdo.`;
     };
     await this.dbService.salvarVistoriaCautelar(atualizada);
     await this.carregarVistorias();
+    this.avisoAudioConfirmadoNestaConstatacao.set(false);
   }
 
   obterImpedimentosDaConstatacao(imovel: LaudoImovelVizinho): string[] {
@@ -2339,6 +2360,7 @@ sem inventar conteúdo.`;
     await this.dbService.salvarVistoriaCautelar(atualizada);
     await this.carregarVistorias();
     this.toastService.show('Constatação fechada e arquivada no histórico do imóvel.', 'success');
+    this.avisoAudioConfirmadoNestaConstatacao.set(false);
     return true;
   }
 
@@ -2383,11 +2405,15 @@ sem inventar conteúdo.`;
     return imovel.ambientes.some(amb => amb.ocorrencias.some(oc => !!oc.audioTranscrito?.trim()));
   }
 
-  private async capturarGeolocalizacao(): Promise<{ lat: number; lng: number } | null> {
+  private async capturarGeolocalizacao(): Promise<{ lat: number; lng: number; precisaoM?: number } | null> {
     if (!navigator.geolocation) return null;
     return new Promise(resolve => {
       navigator.geolocation.getCurrentPosition(
-        pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        pos => resolve({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          precisaoM: typeof pos.coords.accuracy === 'number' ? Math.round(pos.coords.accuracy) : undefined,
+        }),
         () => resolve(null),
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
       );
@@ -2910,7 +2936,7 @@ sem inventar conteúdo.`;
           Aceito em ${new Date(im.assinaturas.termoAceite.aceitoEm).toLocaleString('pt-BR')} ·
           versão ${im.assinaturas.termoAceite.versaoTermo}
           ${im.assinaturas.termoAceite.geolocalizacao
-            ? ` · coordenadas ${im.assinaturas.termoAceite.geolocalizacao.lat.toFixed(6)}, ${im.assinaturas.termoAceite.geolocalizacao.lng.toFixed(6)}`
+            ? ` · coordenadas ${im.assinaturas.termoAceite.geolocalizacao.lat.toFixed(6)}, ${im.assinaturas.termoAceite.geolocalizacao.lng.toFixed(6)}${im.assinaturas.termoAceite.geolocalizacao.precisaoM != null ? ` · precisão aproximada de ${im.assinaturas.termoAceite.geolocalizacao.precisaoM} m` : ' · precisão não informada pelo dispositivo'}`
             : ' · localização não registrada'}
           · registro fotográfico ${im.assinaturas.termoAceite.autorizaRegistroFotografico ? 'autorizado' : 'não autorizado'}
           · gravação de áudio ${im.assinaturas.termoAceite.autorizaGravacaoAudio ? 'autorizada' : 'não autorizada'}
@@ -3322,7 +3348,7 @@ sem inventar conteúdo.`;
           Aceito em ${new Date(im.assinaturas.termoAceite.aceitoEm).toLocaleString('pt-BR')} ·
           versão ${im.assinaturas.termoAceite.versaoTermo}
           ${im.assinaturas.termoAceite.geolocalizacao
-            ? ` · coordenadas ${im.assinaturas.termoAceite.geolocalizacao.lat.toFixed(6)}, ${im.assinaturas.termoAceite.geolocalizacao.lng.toFixed(6)}`
+            ? ` · coordenadas ${im.assinaturas.termoAceite.geolocalizacao.lat.toFixed(6)}, ${im.assinaturas.termoAceite.geolocalizacao.lng.toFixed(6)}${im.assinaturas.termoAceite.geolocalizacao.precisaoM != null ? ` · precisão aproximada de ${im.assinaturas.termoAceite.geolocalizacao.precisaoM} m` : ' · precisão não informada pelo dispositivo'}`
             : ' · localização não registrada'}
           · registro fotográfico ${im.assinaturas.termoAceite.autorizaRegistroFotografico ? 'autorizado' : 'não autorizado'}
           · gravação de áudio ${im.assinaturas.termoAceite.autorizaGravacaoAudio ? 'autorizada' : 'não autorizada'}
