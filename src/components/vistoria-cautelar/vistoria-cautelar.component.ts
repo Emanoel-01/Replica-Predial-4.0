@@ -2903,6 +2903,19 @@ sem inventar conteúdo.`;
           ${im.elementosNivel3.observacoes ? `<br>${im.elementosNivel3.observacoes}` : ''}
         </div>` : '';
 
+      const termoHtml = im.assinaturas.termoAceite ? `
+        <h3 class="sub-h">Termo de Autorização e Acompanhamento</h3>
+        <div class="termo-box">${im.assinaturas.termoAceite.textoIntegral}</div>
+        <p class="termo-meta">
+          Aceito em ${new Date(im.assinaturas.termoAceite.aceitoEm).toLocaleString('pt-BR')} ·
+          versão ${im.assinaturas.termoAceite.versaoTermo}
+          ${im.assinaturas.termoAceite.geolocalizacao
+            ? ` · coordenadas ${im.assinaturas.termoAceite.geolocalizacao.lat.toFixed(6)}, ${im.assinaturas.termoAceite.geolocalizacao.lng.toFixed(6)}`
+            : ' · localização não registrada'}
+          · registro fotográfico ${im.assinaturas.termoAceite.autorizaRegistroFotografico ? 'autorizado' : 'não autorizado'}
+          · gravação de áudio ${im.assinaturas.termoAceite.autorizaGravacaoAudio ? 'autorizada' : 'não autorizada'}
+        </p>` : '';
+
       return `
         <div class="pg"></div>
         <h2 class="sec-h" id="sec-10-${idx + 1}"><span class="sn">${numSecao}</span>Imóvel — ${im.endereco}</h2>
@@ -2938,8 +2951,10 @@ sem inventar conteúdo.`;
           ${fichasHtml || '<p class="text-slate-400 text-sm">Nenhum ambiente com foto registrada.</p>'}
         ` : ''}
 
+        ${termoHtml}
         <div class="ass-grid">
           <div class="ass">
+            ${this.assinaturaImgHtml(im.assinaturas.vistoriador.imagemAssinatura)}
             <div class="ass-line"></div>
             <div class="ass-nome">${im.assinaturas.vistoriador.nome || '&nbsp;'}</div>
             <div class="ass-reg">${
@@ -2951,13 +2966,21 @@ sem inventar conteúdo.`;
           </div>
           ${im.assinaturas.ocupante ? `
           <div class="ass">
+            ${this.assinaturaImgHtml(im.assinaturas.ocupante.imagemAssinatura)}
             <div class="ass-line"></div>
             <div class="ass-nome">${im.assinaturas.ocupante.nome}</div>
             <div class="ass-reg">${im.assinaturas.ocupante.documento}</div>
+            ${im.assinaturas.ocupante.condicaoOcupacao
+              ? `<div class="ass-reg">${CONDICAO_OCUPACAO_LABEL[im.assinaturas.ocupante.condicaoOcupacao]}</div>`
+              : ''}
             <div class="ass-papel">Ocupante do Imóvel</div>
+            ${im.assinaturas.ocupante.recusouAssinar
+              ? `<div class="ass-recusa">Acompanhou a vistoria e recusou assinar em ${im.assinaturas.ocupante.dataRecusa ? new Date(im.assinaturas.ocupante.dataRecusa).toLocaleString('pt-BR') : '—'}.</div>`
+              : ''}
           </div>` : ''}
           ${im.assinaturas.corresponsavelTecnico ? `
           <div class="ass">
+            ${this.assinaturaImgHtml(im.assinaturas.corresponsavelTecnico.imagemAssinatura)}
             <div class="ass-line"></div>
             <div class="ass-nome">${im.assinaturas.corresponsavelTecnico.nome}</div>
             <div class="ass-reg">${im.assinaturas.corresponsavelTecnico.registro} · ART/RRT ${im.assinaturas.corresponsavelTecnico.artRrt}</div>
@@ -2990,6 +3013,7 @@ sem inventar conteúdo.`;
       <p style="margin-top:5mm"><b>Recife/PE, ${dataFormatada}.</b></p>
       <div class="ass-grid">
         <div class="ass">
+          ${this.assinaturaImgHtml(vistoria.imoveis[0]?.assinaturas.vistoriador.imagemAssinatura)}
           <div class="ass-line"></div>
           <div class="ass-nome">${vistoria.imoveis[0]?.assinaturas.vistoriador.nome || '&nbsp;'}</div>
           <div class="ass-reg">${
@@ -3291,6 +3315,19 @@ sem inventar conteúdo.`;
           ${im.elementosNivel3.observacoes ? `<br>${im.elementosNivel3.observacoes}` : ''}
         </div>` : '';
 
+      const termoHtml = im.assinaturas.termoAceite ? `
+        <h3 class="sub-h">Termo de Autorização e Acompanhamento</h3>
+        <div class="termo-box">${im.assinaturas.termoAceite.textoIntegral}</div>
+        <p class="termo-meta">
+          Aceito em ${new Date(im.assinaturas.termoAceite.aceitoEm).toLocaleString('pt-BR')} ·
+          versão ${im.assinaturas.termoAceite.versaoTermo}
+          ${im.assinaturas.termoAceite.geolocalizacao
+            ? ` · coordenadas ${im.assinaturas.termoAceite.geolocalizacao.lat.toFixed(6)}, ${im.assinaturas.termoAceite.geolocalizacao.lng.toFixed(6)}`
+            : ' · localização não registrada'}
+          · registro fotográfico ${im.assinaturas.termoAceite.autorizaRegistroFotografico ? 'autorizado' : 'não autorizado'}
+          · gravação de áudio ${im.assinaturas.termoAceite.autorizaGravacaoAudio ? 'autorizada' : 'não autorizada'}
+        </p>` : '';
+
       return `
         <div class="pg"></div>
         <h2 class="sec-h" id="sec-10-${idx + 1}"><span class="sn">${numSecao}</span>Imóvel — ${im.endereco}</h2>
@@ -3326,8 +3363,10 @@ sem inventar conteúdo.`;
           ${fichasHtml || '<p class="text-slate-400 text-sm">Nenhum ambiente com foto registrada.</p>'}
         ` : ''}
 
+        ${termoHtml}
         <div class="ass-grid">
           <div class="ass">
+            ${this.assinaturaImgHtml(im.assinaturas.vistoriador.imagemAssinatura)}
             <div class="ass-line"></div>
             <div class="ass-nome">${im.assinaturas.vistoriador.nome || '&nbsp;'}</div>
             <div class="ass-reg">${
@@ -3339,13 +3378,21 @@ sem inventar conteúdo.`;
           </div>
           ${im.assinaturas.ocupante ? `
           <div class="ass">
+            ${this.assinaturaImgHtml(im.assinaturas.ocupante.imagemAssinatura)}
             <div class="ass-line"></div>
             <div class="ass-nome">${im.assinaturas.ocupante.nome}</div>
             <div class="ass-reg">${im.assinaturas.ocupante.documento}</div>
+            ${im.assinaturas.ocupante.condicaoOcupacao
+              ? `<div class="ass-reg">${CONDICAO_OCUPACAO_LABEL[im.assinaturas.ocupante.condicaoOcupacao]}</div>`
+              : ''}
             <div class="ass-papel">Ocupante do Imóvel</div>
+            ${im.assinaturas.ocupante.recusouAssinar
+              ? `<div class="ass-recusa">Acompanhou a vistoria e recusou assinar em ${im.assinaturas.ocupante.dataRecusa ? new Date(im.assinaturas.ocupante.dataRecusa).toLocaleString('pt-BR') : '—'}.</div>`
+              : ''}
           </div>` : ''}
           ${im.assinaturas.corresponsavelTecnico ? `
           <div class="ass">
+            ${this.assinaturaImgHtml(im.assinaturas.corresponsavelTecnico.imagemAssinatura)}
             <div class="ass-line"></div>
             <div class="ass-nome">${im.assinaturas.corresponsavelTecnico.nome}</div>
             <div class="ass-reg">${im.assinaturas.corresponsavelTecnico.registro} · ART/RRT ${im.assinaturas.corresponsavelTecnico.artRrt}</div>
@@ -3374,6 +3421,7 @@ sem inventar conteúdo.`;
       <p style="margin-top:5mm"><b>Recife/PE, ${dataFormatada}.</b></p>
       <div class="ass-grid">
         <div class="ass">
+          ${this.assinaturaImgHtml(imovel.assinaturas.vistoriador.imagemAssinatura)}
           <div class="ass-line"></div>
           <div class="ass-nome">${imovel.assinaturas.vistoriador.nome || '&nbsp;'}</div>
           <div class="ass-reg">${
@@ -3516,6 +3564,12 @@ sem inventar conteúdo.`;
     </div>`;
   }
 
+  private assinaturaImgHtml(imagem?: string): string {
+    return imagem
+      ? `<img class="ass-img" src="${imagem}" alt="">`
+      : '<div class="ass-img-vazia"></div>';
+  }
+
   private cssLaudoCautelar(): string {
     return `
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
@@ -3626,6 +3680,12 @@ sem inventar conteúdo.`;
       .ass-reg{font-size:7.4pt;color:var(--p4-soft)}
       .ass-papel{font-size:6.6pt;letter-spacing:.14em;text-transform:uppercase;
         color:var(--p4-faint);margin-top:.8mm}
+      .ass-img{display:block;margin:0 auto 1mm;max-height:16mm;max-width:52mm;object-fit:contain}
+      .ass-img-vazia{height:16mm}
+      .ass-recusa{font-size:7pt;color:#B45309;font-style:italic;margin-top:1mm}
+      .termo-box{border:.6pt solid var(--p4-soft);border-radius:2mm;padding:3mm;margin-top:6mm;
+        background:#FAFAF9;white-space:pre-wrap;font-size:7.2pt;line-height:1.45;color:var(--p4-ink)}
+      .termo-meta{font-size:6.8pt;color:var(--p4-faint);margin-top:2mm}
       .pg{page-break-before:always}
     `;
   }
